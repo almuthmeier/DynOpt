@@ -1,0 +1,18 @@
+# Eclipse project files
+/.metadata
+*.project
+*.classpath
+*.core.prefs
+*.prefs
+
+# PyCharm project files
+.idea/
+
+# PyDev project files
+*.pydevproject
+
+# Python Cache files
+*.pyc
+
+# Ausgabe
+
