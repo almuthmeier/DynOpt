@@ -1,16 +1,14 @@
 '''
-Benchmarks where only the position of the fitness landscape is changed but not
-the fitness level.
- 
-Created on May 4, 2018
+Contains the function to create the dynamic optimization problems for the GECCO 
+2018 paper. Afterwards extended to re-create the EvoStar 2018 data (14.3.18).
 
-@author: ameier
-'''
-'''
-Contains the function to create the dynamic optimization problems for the
-Predictorcomparison (GECCO: PSO with prediction)
+Only the position of the fitness landscape is is changed but not the fitnesss 
+level.
 
-In addition: some functions to test and plot new movements
+Additionally, this module contains functions to test and plot new movements.
+
+Note: in predictor_comparison.py are the data modified so that they have one
+entry for each generation.
 
 Created on Jan 17, 2018
 
@@ -35,35 +33,20 @@ sys.path.append(os.path.abspath(os.pardir))
 
 def create_str_problems():
     '''
-    Call this function to create and save benchmark functions with different settings
-    For each change the position of the global optimum is stored. 
-
     Computes for each change the global optimum position. The new position
     is computed by adding a movement vector that depends on the change number.
-
-    For the Predictor Comparison (GECCO 2018, PSO with prediction).
-    Afterwards extended to re-create the EvoStar data (14.3.18)
-
-Note: in predictor_comparison.py are the data modified so that they have 
-    one entry for each generation.
-
-    18.1.18
     '''
     day, time = get_current_day_time()
-
-    # the new optimum is reached by adding "linear_movement_factor" to the old
-    # one
-
     # -------------------------------------------------------------------------
     # TODO parameters to adjust
     n_changes = 10000
     dims = [2, 5, 10, 20, 50, 100]
-    # -------------------------------------------------------------------------
-
     functions = [sphere, rosenbrock, rastrigin]
     pos_chng_types = ['pch-linear', 'pch-sine']
     fit_chng_type = 'fch-none'
     conference = "evostar_2018"  # "evostar_2018" or "gecco_2018"
+    # -------------------------------------------------------------------------
+
     if conference == "gecco_2018":
         linear_movement_factor = 5
     elif conference == "evostar_2018":
@@ -248,8 +231,8 @@ def plot_scatter(points):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     color = range(len(points))
-    ttt = ax.scatter(points[:, 0], points[:, 1],
-                     marker='x', c=color)
+    ax.scatter(points[:, 0], points[:, 1],
+               marker='x', c=color)
 
     plt.title('Optimum position during time')
     plt.xlabel('1st dimension')
