@@ -41,15 +41,18 @@ def create_str_problems():
     # TODO parameters to adjust
     n_changes = 10000
     dims = [2, 5, 10, 20, 50, 100]
+    dims = [2, 50]
     functions = [sphere, rosenbrock, rastrigin]
+    functions = [sphere, rosenbrock]
     pos_chng_types = ['pch-linear', 'pch-sine']
     fit_chng_type = 'fch-none'
-    conference = "evostar_2018"  # "evostar_2018" or "gecco_2018"
+    # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory
+    conference = "EvoStar_2018"
     # -------------------------------------------------------------------------
 
-    if conference == "gecco_2018":
+    if conference == "GECCO_2018":
         linear_movement_factor = 5
-    elif conference == "evostar_2018":
+    elif conference == "EvoStar_2018":
         linear_movement_factor = 2
 
     splitted_path = os.path.abspath(os.pardir).split('/')  # ".../DynOpt/code"
@@ -61,7 +64,7 @@ def create_str_problems():
             func_name = func.__name__
             orig_global_opt_position, _ = get_original_global_opt_pos_and_fit(
                 func, dim)
-            folder_path = path_to_dynopt + "/datasets/GECCO_2018/" + func_name
+            folder_path = path_to_dynopt + "/datasets/" + conference + "/" + func_name
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
             folder_path = folder_path + "/"
@@ -76,7 +79,7 @@ def create_str_problems():
             # compute optimum movement
             for pos_chng_type in pos_chng_types:
                 if pos_chng_type == 'pch-sine':
-                    if conference == "gecco_2018":
+                    if conference == "GECCO_2018":
                         opts = []
                         np_rand_gen = np.random.RandomState(234012)
                         amplitudes = np_rand_gen.randint(5, 50, dim)
@@ -93,7 +96,7 @@ def create_str_problems():
                             # new optimum position
                             new_opt = orig_global_opt_position + movement
                             opts.append(copy.copy(new_opt))
-                    elif conference == "evostar_2018":
+                    elif conference == "EvoStar_2018":
                         opts = []
                         for chg in range(n_changes):
                             step = chg * linear_movement_factor
@@ -110,7 +113,7 @@ def create_str_problems():
                                 30.0 * math.sin(0.25 * step)
                             opts.append(copy.copy(new_opt))
                 elif pos_chng_type == 'pch-linear':
-                    if conference == "gecco_2018" or conference == "evostar_2018":
+                    if conference == "GECCO_2018" or conference == "EvoStar_2018":
                         opts = []
                         for chg in range(n_changes):
                             movement = np.array(
@@ -122,8 +125,8 @@ def create_str_problems():
                 ds_file_name = folder_path + func_name + "_d-" + \
                     str(dim) + "_chgs-" + str(n_changes) + "_" + pos_chng_type + "_" + \
                     fit_chng_type + "_" + day + '_' + time + ".npz"
-                np.savez(ds_file_name, global_opt_fit=global_opt_fit,
-                         global_opt_pos=opts, orig_opt_pos=orig_global_opt_position)
+                np.savez(ds_file_name, global_opt_fit_per_chg=global_opt_fit,
+                         global_opt_pos_per_chg=opts, orig_global_opt_pos=orig_global_opt_position)
 
 
 def get_global_optimum(gen, global_opt_fit):
@@ -136,6 +139,8 @@ def get_global_optimum_position(gen, global_opt_pos):
 
 def original_fitness(x, problem):
     '''
+    TODO warum ist problem als String übergeben???
+
     Computes fitness for this individual.
     Assumes that the individual/fitness function is not moved.
     '''
