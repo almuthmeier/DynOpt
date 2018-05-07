@@ -22,77 +22,13 @@ Created on Jan 17, 2018
 import copy
 import math
 import os
+import sys
 import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
 from utils.fitnessfunctions import sphere, rosenbrock, rastrigin
 from utils.utils_print import get_current_day_time
-
-
-def create_and_plot_different_movements():
-    '''
-    Creates different movements and plots them. Only for testing new movements.
-    '''
-    dim = 2
-    n_changes = 3000
-    opts = []
-    for c in range(n_changes):
-        # movement same in all dimensions
-        new_opt = np.zeros(dim)
-        for d in range(dim):
-            new_opt[d] = 30 * np.sin(0.25 * c) + 30 + c
-
-        # different movement for each dimension
-        new_opt = np.zeros(dim)
-        new_opt[1] = 30 * np.sin(0.25 * c) + 30 + c
-        # sinus linear nach oben
-        new_opt[0] = c
-        # sinus als Sättigungskurve nach oben
-        new_opt[0] = c + (0.1 * c**2)
-        # 8er-Kurve linear nach oben
-        new_opt[0] = 15 * np.sin(0.5 * c) + 15 + c
-        # 8er-Kurve als Sättigungskurve nach oben
-        new_opt[0] = 15 * np.sin(0.5 * c) + 15 + (0.1 * c**2)
-
-        opts.append(copy.copy(new_opt))
-
-    opts = np.array(opts)
-    plot_scatter(opts)
-
-
-def create_and_plot_random_sine_movement():
-    '''
-    Global optimum is moved with a random sine-function in each dimension. 
-    '''
-    dim = 2
-    n_changes = 3000  # 100
-    opts = []
-    aplitudes = np.random.randint(5, 50, dim)
-    width_factors = np.random.rand(dim)
-    for c in range(n_changes):
-        new_opt = np.zeros(dim)
-        for d in range(dim):
-            new_opt[d] = aplitudes[d] * \
-                np.sin(width_factors[d] * c) + aplitudes[d] + c
-
-        opts.append(copy.copy(new_opt))
-
-    opts = np.array(opts)
-    plot_scatter(opts)
-
-
-def plot_scatter(points):
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    color = range(len(points))
-    ttt = ax.scatter(points[:, 0], points[:, 1],
-                     marker='x', c=color)
-
-    plt.title('Optimum position during time')
-    plt.xlabel('1st dimension')
-    plt.ylabel('2nd dimension')
-    plt.show()
 
 
 def create_str_problems():
@@ -106,19 +42,18 @@ def create_str_problems():
     For the Predictor Comparison (GECCO 2018, PSO with prediction).
     Afterwards extended to re-create the EvoStar data (14.3.18)
 
-    Note: in predictor_comparison.py are the data modified so that they have
-    for each generation an entry.
+Note: in predictor_comparison.py are the data modified so that they have 
+    one entry for each generation.
 
     18.1.18
     '''
-    # file name of this data set
     day, time = get_current_day_time()
 
     # the new optimum is reached by adding "linear_movement_factor" to the old
     # one
 
-    n_changes = 10000
-    experiment_name = 'str'
+    n_changes = 10000  # TODO adjust
+    experiment_name = 'str'  # TODO this folder must be created manually if not existing
     dims = [2, 5, 10, 20, 50, 100]
     functions = ['sphere', 'rosenbrock', 'rastrigin']
     pos_chng_types = ['linear_pos_ch', 'sine_pos_ch']
@@ -129,8 +64,18 @@ def create_str_problems():
     elif conference == "evostar_2018":
         linear_movement_factor = 2
 
-    folder_path = os.path.expanduser(
-        "~/Documents/Promotion/GITs/datasets/Predictorvergleich/" + experiment_name + "/")
+    # TODO pfad anpassen
+    # folder_path = os.path.expanduser(
+    #    "~/Documents/Promotion/GITs/datasets/Predictorvergleich/" + experiment_name + "/")
+
+    # /home/ameier/Documents/Promotion/GITs/DynOpt/code
+    print(os.path.abspath(os.pardir))
+    splitted_path = os.path.abspath(os.pardir).split('/')
+    path_to_dynopt = '/'.join(splitted_path[:-1])
+    # sys.path.append(path_to_dynopt)  # path to DynOpt/
+
+    # TODO Unterstriche aus DAteinamen raus ??? (stattdessen '-' wo nötig
+    folder_path = path_to_dynopt + "/datasets/GECCO_2018/" + experiment_name + "/"
 
     for dim in dims:
         orig_opt_positions = {'sphere': np.array(dim * [0]),
@@ -235,6 +180,77 @@ def compute_fitness(x, gen, problem, global_opt_pos_per_gen, orig_opt_pos):
     # function
     moved_x = x - optimum_movement
     return original_fitness(moved_x, problem)
+
+###############################################################################
+# only for testing new movements
+###############################################################################
+
+
+def create_and_plot_different_movements():
+    '''
+    Creates different movements and plots them. Only for testing new movements.
+    '''
+    dim = 2
+    n_changes = 3000
+    opts = []
+    for c in range(n_changes):
+        # movement same in all dimensions
+        new_opt = np.zeros(dim)
+        for d in range(dim):
+            new_opt[d] = 30 * np.sin(0.25 * c) + 30 + c
+
+        # different movement for each dimension
+        new_opt = np.zeros(dim)
+        new_opt[1] = 30 * np.sin(0.25 * c) + 30 + c
+        # sinus linear nach oben
+        new_opt[0] = c
+        # sinus als Sättigungskurve nach oben
+        new_opt[0] = c + (0.1 * c**2)
+        # 8er-Kurve linear nach oben
+        new_opt[0] = 15 * np.sin(0.5 * c) + 15 + c
+        # 8er-Kurve als Sättigungskurve nach oben
+        new_opt[0] = 15 * np.sin(0.5 * c) + 15 + (0.1 * c**2)
+
+        opts.append(copy.copy(new_opt))
+
+    opts = np.array(opts)
+    plot_scatter(opts)
+
+
+def create_and_plot_random_sine_movement():
+    '''
+    Global optimum is moved with a random sine-function in each dimension. 
+    '''
+    dim = 2
+    n_changes = 3000  # 100
+    opts = []
+    aplitudes = np.random.randint(5, 50, dim)
+    width_factors = np.random.rand(dim)
+    for c in range(n_changes):
+        new_opt = np.zeros(dim)
+        for d in range(dim):
+            new_opt[d] = aplitudes[d] * \
+                np.sin(width_factors[d] * c) + aplitudes[d] + c
+
+        opts.append(copy.copy(new_opt))
+
+    opts = np.array(opts)
+    plot_scatter(opts)
+
+
+def plot_scatter(points):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    color = range(len(points))
+    ttt = ax.scatter(points[:, 0], points[:, 1],
+                     marker='x', c=color)
+
+    plt.title('Optimum position during time')
+    plt.xlabel('1st dimension')
+    plt.ylabel('2nd dimension')
+    plt.show()
+
+###############################################################################
 
 
 if __name__ == '__main__':
