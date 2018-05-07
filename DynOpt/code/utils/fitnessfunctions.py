@@ -67,3 +67,18 @@ def double_sum(x):
         # i+1, otherwise false result if array has only one entry
         s = s + np.square(sum(x[:(i + 1)]))
     return s
+
+
+def get_original_global_opt_pos_and_fit(function, dimensionality):
+    '''
+    Global optimum position and its fitness for unmoved fitness function.
+
+    TODO: what if function has multiple global optima?
+    @return: tupel: (position, fitness)
+    '''
+    function_name = function.__name__
+    glob_opt_pos = {'sphere': np.array(dimensionality * [0]),
+                    'rosenbrock': np.array(dimensionality * [1]),
+                    'rastrigin': np.array(dimensionality * [0])}
+    pos = glob_opt_pos[function_name]
+    return pos, function(pos)

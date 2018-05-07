@@ -16,8 +16,6 @@ Created on Jan 17, 2018
 
 @author: ameier
 '''
-#from dynamicopt.utils.utils_print import get_current_day_time
-#from main.fitnessfunctions import sphere, rosenbrock, rastrigin
 
 import copy
 import math
@@ -25,10 +23,14 @@ import os
 import sys
 import warnings
 
+from code.utils.fitnessfunctions import sphere, rosenbrock, rastrigin,\
+    get_original_global_opt_pos_and_fit
+from code.utils.utils_print import get_current_day_time
 import matplotlib.pyplot as plt
 import numpy as np
-from utils.fitnessfunctions import sphere, rosenbrock, rastrigin
-from utils.utils_print import get_current_day_time
+
+
+sys.path.append(os.path.abspath(os.pardir))
 
 
 def create_str_problems():
@@ -52,42 +54,45 @@ Note: in predictor_comparison.py are the data modified so that they have
     # the new optimum is reached by adding "linear_movement_factor" to the old
     # one
 
-    n_changes = 10000  # TODO adjust
-    experiment_name = 'str'  # TODO this folder must be created manually if not existing
+    # -------------------------------------------------------------------------
+    # TODO parameters to adjust
+    n_changes = 10000
     dims = [2, 5, 10, 20, 50, 100]
-    functions = ['sphere', 'rosenbrock', 'rastrigin']
-    pos_chng_types = ['linear_pos_ch', 'sine_pos_ch']
-    fit_chng_type = 'none_fit_ch'
+    # -------------------------------------------------------------------------
+
+    functions = [sphere, rosenbrock, rastrigin]
+    pos_chng_types = ['pch-linear', 'pch-sine']
+    fit_chng_type = 'fch-none'
     conference = "evostar_2018"  # "evostar_2018" or "gecco_2018"
     if conference == "gecco_2018":
         linear_movement_factor = 5
     elif conference == "evostar_2018":
         linear_movement_factor = 2
 
-    # TODO pfad anpassen
-    # folder_path = os.path.expanduser(
-    #    "~/Documents/Promotion/GITs/datasets/Predictorvergleich/" + experiment_name + "/")
-
-    # /home/ameier/Documents/Promotion/GITs/DynOpt/code
-    print(os.path.abspath(os.pardir))
-    splitted_path = os.path.abspath(os.pardir).split('/')
+    splitted_path = os.path.abspath(os.pardir).split('/')  # ".../DynOpt/code"
     path_to_dynopt = '/'.join(splitted_path[:-1])
-    # sys.path.append(path_to_dynopt)  # path to DynOpt/
-
-    # TODO Unterstriche aus DAteinamen raus ??? (stattdessen '-' wo nötig
-    folder_path = path_to_dynopt + "/datasets/GECCO_2018/" + experiment_name + "/"
 
     for dim in dims:
-        orig_opt_positions = {'sphere': np.array(dim * [0]),
-                              'rosenbrock': np.array(dim * [1]),
-                              'rastrigin': np.array(dim * [0])}
+
         for func in functions:
-            # store global optimum fitness (stays same because "none_fit_ch"
-            global_opt_fit = np.array(n_changes * [0])
+            func_name = func.__name__
+            orig_global_opt_position, _ = get_original_global_opt_pos_and_fit(
+                func, dim)
+            folder_path = path_to_dynopt + "/datasets/GECCO_2018/" + func_name
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            folder_path = folder_path + "/"
+
+            if fit_chng_type == "fch-none":
+                # store global optimum fitness (stays same for all changes
+                global_opt_fit = np.array(n_changes * [0])
+            else:
+                # TODO implement if desired
+                pass
 
             # compute optimum movement
             for pos_chng_type in pos_chng_types:
-                if pos_chng_type == 'sine_pos_ch':
+                if pos_chng_type == 'pch-sine':
                     if conference == "gecco_2018":
                         opts = []
                         np_rand_gen = np.random.RandomState(234012)
@@ -97,18 +102,19 @@ Note: in predictor_comparison.py are the data modified so that they have
                             # compute movement in all dimensions
                             movement = np.zeros(dim)
                             for d in range(dim):
+                                # computing schema as follows:
                                 #new_opt[d] = 30 * np.sin(0.25 * c) + 30 + c
                                 movement[d] = amplitudes[d] * \
                                     np.sin(width_factors[d] *
                                            chg) + amplitudes[d] + chg
                             # new optimum position
-                            new_opt = orig_opt_positions[func] + movement
+                            new_opt = orig_global_opt_position + movement
                             opts.append(copy.copy(new_opt))
                     elif conference == "evostar_2018":
                         opts = []
                         for chg in range(n_changes):
                             step = chg * linear_movement_factor
-                            x = orig_opt_positions[func]
+                            x = orig_global_opt_position
                             new_opt = copy.copy(x)
                             # move first dimension
                             new_opt[0] = new_opt[0] + step
@@ -120,21 +126,21 @@ Note: in predictor_comparison.py are the data modified so that they have
                             new_opt[1] = new_opt[1] + \
                                 30.0 * math.sin(0.25 * step)
                             opts.append(copy.copy(new_opt))
-                elif pos_chng_type == 'linear_pos_ch':
+                elif pos_chng_type == 'pch-linear':
                     if conference == "gecco_2018" or conference == "evostar_2018":
                         opts = []
                         for chg in range(n_changes):
                             movement = np.array(
                                 dim * [chg * linear_movement_factor])
-                            new_opt = orig_opt_positions[func] + movement
+                            new_opt = orig_global_opt_position + movement
                             opts.append(copy.copy(new_opt))
                 opts = np.array(opts)
                 # save optimum
-                ds_file_name = folder_path + experiment_name + "_" + func + "_d-" + \
+                ds_file_name = folder_path + func_name + "_d-" + \
                     str(dim) + "_chgs-" + str(n_changes) + "_" + pos_chng_type + "_" + \
                     fit_chng_type + "_" + day + '_' + time + ".npz"
                 np.savez(ds_file_name, global_opt_fit=global_opt_fit,
-                         global_opt_pos=opts, orig_opt_pos=orig_opt_positions[func])
+                         global_opt_pos=opts, orig_opt_pos=orig_global_opt_position)
 
 
 def get_global_optimum(gen, global_opt_fit):
@@ -249,7 +255,6 @@ def plot_scatter(points):
     plt.xlabel('1st dimension')
     plt.ylabel('2nd dimension')
     plt.show()
-
 ###############################################################################
 
 
