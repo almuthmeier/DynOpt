@@ -41,7 +41,7 @@ def create_str_problems():
     day, time = get_current_day_time()
     # -------------------------------------------------------------------------
     # TODO parameters to adjust
-    n_changes = 10000
+    n_chg_periods = 10000
     dims = [2, 5, 10, 20, 50, 100]
     functions = [sphere, rosenbrock, rastrigin]
     pos_chng_types = ['pch-linear', 'pch-sine']
@@ -56,9 +56,11 @@ def create_str_problems():
     elif conference == "EvoStar_2018":
         linear_movement_factor = 2
 
+    # path to data set directory to store data sets there
     splitted_path = os.path.abspath(os.pardir).split('/')  # ".../DynOpt/code"
     path_to_dynopt = '/'.join(splitted_path[:-1])
 
+    # create data sets
     for dim in dims:
 
         for func in functions:
@@ -72,7 +74,7 @@ def create_str_problems():
 
             if fit_chng_type == "fch-none":
                 # store global optimum fitness (stays same for all changes
-                global_opt_fit = np.array(n_changes * [0])
+                global_opt_fit = np.array(n_chg_periods * [0])
             else:
                 # TODO implement if desired
                 pass
@@ -85,7 +87,7 @@ def create_str_problems():
                         np_rand_gen = np.random.RandomState(234012)
                         amplitudes = np_rand_gen.randint(5, 50, dim)
                         width_factors = np_rand_gen.rand(dim)
-                        for chg in range(n_changes):
+                        for chg_period in range(n_chg_periods):
                             # compute movement in all dimensions
                             movement = np.zeros(dim)
                             for d in range(dim):
@@ -93,14 +95,14 @@ def create_str_problems():
                                 #new_opt[d] = 30 * np.sin(0.25 * c) + 30 + c
                                 movement[d] = amplitudes[d] * \
                                     np.sin(width_factors[d] *
-                                           chg) + amplitudes[d] + chg
+                                           chg_period) + amplitudes[d] + chg_period
                             # new optimum position
                             new_opt = orig_global_opt_position + movement
                             opts.append(copy.copy(new_opt))
                     elif conference == "EvoStar_2018":
                         opts = []
-                        for chg in range(n_changes):
-                            step = chg * linear_movement_factor
+                        for chg_period in range(n_chg_periods):
+                            step = chg_period * linear_movement_factor
                             x = orig_global_opt_position
                             new_opt = copy.copy(x)
                             # move first dimension
@@ -116,31 +118,34 @@ def create_str_problems():
                 elif pos_chng_type == 'pch-linear':
                     if conference == "GECCO_2018" or conference == "EvoStar_2018":
                         opts = []
-                        for chg in range(n_changes):
+                        for chg_period in range(n_chg_periods):
                             movement = np.array(
-                                dim * [chg * linear_movement_factor])
+                                dim * [chg_period * linear_movement_factor])
                             new_opt = orig_global_opt_position + movement
                             opts.append(copy.copy(new_opt))
                 opts = np.array(opts)
                 # save optimum
                 ds_file_name = folder_path + func_name + "_d-" + \
-                    str(dim) + "_chgs-" + str(n_changes) + "_" + pos_chng_type + "_" + \
+                    str(dim) + "chgperiods-" + str(n_chg_periods) + "_" + pos_chng_type + "_" + \
                     fit_chng_type + "_" + day + '_' + time + ".npz"
-                np.savez(ds_file_name, global_opt_fit_per_chg=global_opt_fit,
-                         global_opt_pos_per_chg=opts, orig_global_opt_pos=orig_global_opt_position)
+                np.savez(ds_file_name, global_opt_fit_per_chgperiod=global_opt_fit,
+                         global_opt_pos_per_chgperiod=opts, orig_global_opt_pos=orig_global_opt_position)
 
 
-def get_global_optimum(gen, global_opt_fit):
-    return global_opt_fit[gen]
+# TODO löschen
+# def get_global_optimum(gen, global_opt_fit):
+# TODO umbenennen in get_global_optimum_fit
+#    return global_opt_fit[gen]
 
 
-def get_global_optimum_position(gen, global_opt_pos):
-    return global_opt_pos[gen]
+# def get_global_optimum_position(gen, global_opt_pos):
+#    return global_opt_pos[gen]
 
 
 def original_fitness(x, problem):
     '''
-    TODO warum ist problem als String übergeben???
+    TODO warum ist problem als String übergeben??? (Funktionen werden in diesem
+    Modul ja eh bereits importiert.
 
     Computes fitness for this individual.
     Assumes that the individual/fitness function is not moved.
@@ -186,25 +191,25 @@ def create_and_plot_different_movements():
     Creates different movements and plots them. Only for testing new movements.
     '''
     dim = 2
-    n_changes = 3000
+    n_chg_periods = 3000
     opts = []
-    for c in range(n_changes):
+    for p in range(n_chg_periods):
         # movement same in all dimensions
         new_opt = np.zeros(dim)
         for d in range(dim):
-            new_opt[d] = 30 * np.sin(0.25 * c) + 30 + c
+            new_opt[d] = 30 * np.sin(0.25 * p) + 30 + p
 
         # different movement for each dimension
         new_opt = np.zeros(dim)
-        new_opt[1] = 30 * np.sin(0.25 * c) + 30 + c
+        new_opt[1] = 30 * np.sin(0.25 * p) + 30 + p
         # sinus linear nach oben
-        new_opt[0] = c
+        new_opt[0] = p
         # sinus als Sättigungskurve nach oben
-        new_opt[0] = c + (0.1 * c**2)
+        new_opt[0] = p + (0.1 * p**2)
         # 8er-Kurve linear nach oben
-        new_opt[0] = 15 * np.sin(0.5 * c) + 15 + c
+        new_opt[0] = 15 * np.sin(0.5 * p) + 15 + p
         # 8er-Kurve als Sättigungskurve nach oben
-        new_opt[0] = 15 * np.sin(0.5 * c) + 15 + (0.1 * c**2)
+        new_opt[0] = 15 * np.sin(0.5 * p) + 15 + (0.1 * p**2)
 
         opts.append(copy.copy(new_opt))
 
@@ -217,15 +222,15 @@ def create_and_plot_random_sine_movement():
     Global optimum is moved with a random sine-function in each dimension. 
     '''
     dim = 2
-    n_changes = 3000  # 100
+    n_chg_periods = 3000  # 100
     opts = []
     aplitudes = np.random.randint(5, 50, dim)
     width_factors = np.random.rand(dim)
-    for c in range(n_changes):
+    for p in range(n_chg_periods):
         new_opt = np.zeros(dim)
         for d in range(dim):
             new_opt[d] = aplitudes[d] * \
-                np.sin(width_factors[d] * c) + aplitudes[d] + c
+                np.sin(width_factors[d] * p) + aplitudes[d] + p
 
         opts.append(copy.copy(new_opt))
 

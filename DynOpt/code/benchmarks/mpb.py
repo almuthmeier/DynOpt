@@ -18,9 +18,8 @@ import copy
 import os
 import warnings
 
-from dynamicopt.utils.utils_ea import gaussian_mutation
-from dynamicopt.utils.utils_print import get_current_day_time
-from mpl_toolkits.mplot3d import Axes3D
+from code.utils.utils_ea import gaussian_mutation
+from code.utils.utils_print import get_current_day_time
 import numpy as np
 
 
@@ -62,7 +61,7 @@ def __create_vector(dimensionality, len_vector, np_random_generator, noise=None)
         #
 
 
-def __create_and_save_mpb_problem__(n_gens, n_dims, n_peaks, len_chg_period, len_movement_vector,
+def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement_vector,
                                     np_random_generator, path_to_file, noise=None):
     '''
     Creates mpb data set for a specific setting.
@@ -86,8 +85,8 @@ def __create_and_save_mpb_problem__(n_gens, n_dims, n_peaks, len_chg_period, len
     # bound for initialization of peak positions
     min_bound = 0
     max_bound = 100
-    for gen in range(n_gens):
-        if gen == 0:  # first generation
+    for chg_period in range(n_chg_periods):
+        if chg_period == 0:  # first change period
             # initialize position etc.
             init_height = 50.0  # as in initial paper by Branke
             init_width = 0.1  # as in initial paper by Branke
@@ -109,13 +108,13 @@ def __create_and_save_mpb_problem__(n_gens, n_dims, n_peaks, len_chg_period, len
                     best_position = init_position
             global_opt_fit.append(-max_fit)  # minimization problem
             global_opt_pos.append(copy.deepcopy(best_position))
-        elif gen % len_chg_period == 0:  # change occured
+        else:
             max_fit = np.finfo(np.float).min  # min. possible float value
             for peak in range(n_peaks):
                 # parameter values of previous change period
-                old_height = heights[peak][gen - 1]
-                old_width = widths[peak][gen - 1]
-                old_position = positions[peak][gen - 1]
+                old_height = heights[peak][chg_period - 1]
+                old_width = widths[peak][chg_period - 1]
+                old_position = positions[peak][chg_period - 1]
 
                 # compute parameter values of current change period
                 position_movement = __create_vector(
@@ -142,14 +141,7 @@ def __create_and_save_mpb_problem__(n_gens, n_dims, n_peaks, len_chg_period, len
                     best_position = curr_position
             global_opt_fit.append(-max_fit)
             global_opt_pos.append(copy.deepcopy(best_position))
-        else:  # no change
-            for peak in range(n_peaks):
-                heights[peak].append(heights[peak][-1])
-                widths[peak].append(widths[peak][-1])
-                positions[peak].append(copy.deepcopy(
-                    positions[peak][-1]))
-            global_opt_fit.append(global_opt_fit[-1])
-            global_opt_pos.append(copy.deepcopy(global_opt_pos[-1]))
+
     # convert lists to numpy arrays
     heights = np.array(heights)
     widths = np.array(widths)
@@ -157,7 +149,8 @@ def __create_and_save_mpb_problem__(n_gens, n_dims, n_peaks, len_chg_period, len
     global_opt_fit = np.array(global_opt_fit)
     global_opt_pos = np.array(global_opt_pos)
     np.savez(path_to_file, heights=heights, widths=widths, positions=positions,
-             global_opt_fit=global_opt_fit, global_opt_pos=global_opt_pos)
+             global_opt_fit_per_chgperiod=global_opt_fit,
+             global_opt_pos_per_chgperiod=global_opt_pos)
 
 
 def start_creating_problem():
@@ -165,54 +158,65 @@ def start_creating_problem():
     Call this function to create and save MPB-functions with different settings
     (generates data for each generation (not only for the changes))
     '''
-    folder = os.path.expanduser(
-        "~/Documents/Promotion/GITs/datasets/Predictorvergleich/GECCO_2018/mpb/")
+    # ==================================
+    # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
+    conference = "EvoStar_2018"
+    func_name = "mpbrand"  # "mpbnoisy" or "mpbrand"
+
+    if func_name == "mpbrand":
+        # settings for experiments "mpbrand"
+        chg_periods = [10000]
+        dims = [2, 5, 10, 20, 50, 100]
+        dims = [2, 50]
+        peaks = [10]
+        noise_strengths = [None]
+        lens_movement_vector = [0.6]
+    elif func_name == "mpbnoisy":
+        # settings for experiments "mpbnoisy"
+        chg_periods = [10000]
+        dims = [2, 5, 10, 20, 50, 100]
+        dims = [2, 50]
+        peaks = [10]
+        noise_strengths = [0.0, 0.1, 1.0, 10.0]
+        noise_strengths = [0.0]
+        lens_movement_vector = [0.6]
+    # ==================================
+
+    # create output folder for data set if not existing
+    splitted_path = os.path.abspath(os.pardir).split('/')  # ".../DynOpt/code"
+    path_to_dynopt = '/'.join(splitted_path[:-1])
+
+    folder_path = path_to_dynopt + "/datasets/" + conference + "/" + func_name
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    folder_path = folder_path + "/"
+
     day, time = get_current_day_time()
 
-    # ==================================
-    # settings for experiments "mpbrand"
-    problem_name = "mpbrand"
-    gens = [6000]
-    dims = [2, 5, 10, 20, 50, 100]
-    peaks = [10]
-    noise_strengths = [None]
-    lens_movement_vector = [0.6]
-    lens_chg_period = [20]
-    # ==================================
-    # settings for experiments "mpbnoisy"
-    #problem_name = "mpbnoisy"
-    #gens = [6000]
-    #dims = [2, 5, 10, 20, 50, 100]
-    #peaks = [10]
-    #noise_strengths = [0.0, 0.1, 1.0, 10.0]
-    #lens_movement_vector = [0.6]
-    #lens_chg_period = [20]
-    # ==================================
-    for n_gens in gens:
+    for n_periods in chg_periods:
         for n_dims in dims:
             for len_movement_vector in lens_movement_vector:
                 for n_peaks in peaks:
                     for noise in noise_strengths:
-                        for len_chg_period in lens_chg_period:
-                            mpb_np_random_generator = np.random.RandomState(
-                                234572)
+                        mpb_np_random_generator = np.random.RandomState(
+                            234572)  # TODO seed ändern?
 
-                            file_name = problem_name + "_d-" + str(n_dims) + "_gen-" + \
-                                str(n_gens) + "_lenchgperiod-" + str(len_chg_period) + \
-                                "_veclen-" + str(len_movement_vector) + "_peaks-" + \
-                                str(n_peaks) + "_noise-" + str(noise) + "_" + day + \
-                                "_" + time + ".npz"
-                            path_to_file = folder + file_name
-                            __create_and_save_mpb_problem__(n_gens, n_dims, n_peaks,
-                                                            len_chg_period, len_movement_vector,
-                                                            mpb_np_random_generator,
-                                                            path_to_file, noise)
+                        file_name = func_name + "_d-" + str(n_dims) + "_chgperiods-" + \
+                            str(n_periods) + "_veclen-" + str(len_movement_vector) + \
+                            "_peaks-" + str(n_peaks) + "_noise-" + str(noise).lower() +\
+                            "_" + day + "_" + time + ".npz"
+                        path_to_file = folder_path + file_name
+                        __create_and_save_mpb_problem__(n_periods, n_dims, n_peaks,
+                                                        len_movement_vector,
+                                                        mpb_np_random_generator,
+                                                        path_to_file, noise)
 
 
 def __compute_mpb_fitness(x, height, width, position):
     '''
     Only for internal use.
-    Compute value for one specific peak. != fitness
+    Compute value for one specific peak. != fitness (must be multiplied by -1 
+    to have a minimization problem instead of a maximization problem)
 
     @param x: individual which fitness should be computed
     @param height,width,position: properties of the specific peak 
@@ -245,19 +249,19 @@ def __compute_mpb_fitness(x, height, width, position):
     peak_result = height / divisor
     return peak_result
 
+# TODO löschen
+# def get_global_mpb_optimum_fitness(gen, global_opt_fit):
+#    '''
+#    For global access.
+#    '''
+#    return global_opt_fit[gen]
 
-def get_global_mpb_optimum_fitness(gen, global_opt_fit):
-    '''
-    For global access.
-    '''
-    return global_opt_fit[gen]
 
-
-def get_global_mpb_optimum_position(gen, global_opt_pos):
-    '''
-    For global access.
-    '''
-    return global_opt_pos[gen]
+# def get_global_mpb_optimum_position(gen, global_opt_pos):
+#    '''
+#    For global access.
+#    '''
+#    return global_opt_pos[gen]
 
 
 def compute_fitness(x, gen, heights, widths, positions):
