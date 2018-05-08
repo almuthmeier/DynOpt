@@ -1,5 +1,5 @@
 '''
-Files for this test have been created by dynbenchmarks.create_str_problems().
+Files for this test have been created by dynposbenchmark.create_str_problems().
 
 Created on Jan 18, 2018
 
@@ -18,9 +18,6 @@ class Test(unittest.TestCase):
     def setUp(self):
         self.path_test_problems = os.path.abspath(
             os.pardir) + "/tests/test_datasets/"
-
-    def tearDown(self):
-        pass
 
     def test_create_str_problems(self):
         '''
@@ -52,7 +49,6 @@ class Test(unittest.TestCase):
         the same seed for each function.
         '''
         # load data
-
         file_name1 = "sphere_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
         file_name2 = "rosenbrock_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
         dim = 50
@@ -71,7 +67,7 @@ class Test(unittest.TestCase):
         f2.close()
 
         # test equality of optimum movement (for that subtraction of original
-        # optimum position necessary
+        # optimum position necessary)
         tolerance = 0.01
         np.testing.assert_array_almost_equal(
             global_opt_pos1 - orig_opt_pos1, global_opt_pos2 - orig_opt_pos2, tolerance)
@@ -104,7 +100,11 @@ class Test(unittest.TestCase):
         self.assertTrue(np.sum((global_opt_pos2 - orig_opt_pos2) % 5) == 0)
 
     def test_compute_fitness(self):
+        '''
+        Tests whether the fitness is computed correctly
+        '''
         ff = rosenbrock
+        f_name = "rosenbrock"
         file_name1 = "rosenbrock_d-2_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
         f1 = np.load(self.path_test_problems +
                      "EvoStar_2018/rosenbrock/" + file_name1)
@@ -127,7 +127,7 @@ class Test(unittest.TestCase):
         exp_fit = ff(moved_ind)
 
         # compare with function
-        act_fit = compute_fitness(ind, gen, "rosenbrock",
+        act_fit = compute_fitness(ind, gen, f_name,
                                   global_opt_pos_per_gen, orig_opt_pos1)
         self.assertEqual(exp_fit, act_fit)
 
