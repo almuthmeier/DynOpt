@@ -158,6 +158,7 @@ def start_creating_problem():
     Call this function to create and save MPB-functions with different settings
     (generates data for each generation (not only for the changes))
     '''
+    np.random.seed(4)
     # ==================================
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "EvoStar_2018"
@@ -199,7 +200,7 @@ def start_creating_problem():
                 for n_peaks in peaks:
                     for noise in noise_strengths:
                         mpb_np_random_generator = np.random.RandomState(
-                            234572)  # TODO seed ändern?
+                            np.random.randint(0, 567567))
 
                         file_name = func_name + "_d-" + str(n_dims) + "_chgperiods-" + \
                             str(n_periods) + "_veclen-" + str(len_movement_vector) + \

@@ -61,9 +61,10 @@ def create_str_problems():
     path_to_dynopt = '/'.join(splitted_path[:-1])
 
     # create data sets
-    for dim in dims:
-
-        for func in functions:
+    for func in functions:
+        # same seed for different functions so that the movement is the same
+        np_rand_gen = np.random.RandomState(234012)  # TODO
+        for dim in dims:
             func_name = func.__name__
             orig_global_opt_position, _ = get_original_global_opt_pos_and_fit(
                 func, dim)
@@ -84,7 +85,10 @@ def create_str_problems():
                 if pos_chng_type == 'pch-sine':
                     if conference == "GECCO_2018":
                         opts = []
-                        np_rand_gen = np.random.RandomState(234012)
+                        # np_rand_gen = np.random.RandomState(234012)  # TODO
+
+                        # initialize sine-parameters randomly (stay unchanged
+                        # during all change periods
                         amplitudes = np_rand_gen.randint(5, 50, dim)
                         width_factors = np_rand_gen.rand(dim)
                         for chg_period in range(n_chg_periods):
@@ -126,7 +130,7 @@ def create_str_problems():
                 opts = np.array(opts)
                 # save optimum
                 ds_file_name = folder_path + func_name + "_d-" + \
-                    str(dim) + "chgperiods-" + str(n_chg_periods) + "_" + pos_chng_type + "_" + \
+                    str(dim) + "_chgperiods-" + str(n_chg_periods) + "_" + pos_chng_type + "_" + \
                     fit_chng_type + "_" + day + '_' + time + ".npz"
                 np.savez(ds_file_name, global_opt_fit_per_chgperiod=global_opt_fit,
                          global_opt_pos_per_chgperiod=opts, orig_global_opt_pos=orig_global_opt_position)
@@ -175,6 +179,7 @@ def compute_fitness(x, gen, problem, global_opt_pos_per_gen, orig_opt_pos):
     # compute optimum movement
     # (since new optimum position was computed by adding the movement to the
     # original one, backwards the movement can be computed by substraction)
+    # TODO should be per CHANGE
     optimum_movement = global_opt_pos_per_gen[gen] - orig_opt_pos
     # move individual, so that its fitness can be computed with the original
     # function

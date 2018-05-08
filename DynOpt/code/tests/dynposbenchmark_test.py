@@ -26,16 +26,16 @@ class Test(unittest.TestCase):
         Plots for each change the first two dimensions of the global optimum.
         '''
 
-        file_name = "rosenbrock_d-2_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
+        file_name = "rosenbrock_d-2_chgperiods-10000_pch-sine_fch-none_2018-05-08_13:45.npz"
         file_path = self.path_test_problems + "EvoStar_2018/rosenbrock/" + file_name
         prob_file = np.load(file_path)
-        global_opt_pos_per_chg = prob_file['global_opt_pos_per_chg']
+        global_opt_pos_per_chgperiod = prob_file['global_opt_pos_per_chgperiod']
         prob_file.close()
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        color = range(len(global_opt_pos_per_chg))
-        ax.scatter(global_opt_pos_per_chg[:, 0], global_opt_pos_per_chg[:, 1],
+        color = range(len(global_opt_pos_per_chgperiod))
+        ax.scatter(global_opt_pos_per_chgperiod[:, 0], global_opt_pos_per_chgperiod[:, 1],
                    marker='x', c=color)
         plt.title('Optimum position during time')
         plt.xlabel('1st dimension')
@@ -47,21 +47,25 @@ class Test(unittest.TestCase):
         Tests whether the movement for different functions is the same.
         It should be the same since dynbposbenchmark.create_str_problems() uses 
         the same seed for each function.
+
+        TODO: soll aber nicht für unterschiedliche Dimensionen einer Funktion gleich sein
         '''
         # load data
-        file_name1 = "sphere_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
-        file_name2 = "rosenbrock_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
+        #file_name1 = "sphere_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
+        #file_name2 = "rosenbrock_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
+        file_name1 = "sphere_d-50_chgperiods-10000_pch-sine_fch-none_2018-05-08_13:45.npz"
+        file_name2 = "rosenbrock_d-50_chgperiods-10000_pch-sine_fch-none_2018-05-08_13:45.npz"
         dim = 50
 
         f1 = np.load(self.path_test_problems +
                      "EvoStar_2018/sphere/" + file_name1)
         f2 = np.load(self.path_test_problems +
                      "EvoStar_2018/rosenbrock/" + file_name2)
-        global_opt_fit1 = f1['global_opt_fit_per_chg']
-        global_opt_pos1 = f1['global_opt_pos_per_chg']
+        global_opt_fit1 = f1['global_opt_fit_per_chgperiod']
+        global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
         orig_opt_pos1 = f1['orig_global_opt_pos']
-        global_opt_fit2 = f2['global_opt_fit_per_chg']
-        global_opt_pos2 = f2['global_opt_pos_per_chg']
+        global_opt_fit2 = f2['global_opt_fit_per_chgperiod']
+        global_opt_pos2 = f2['global_opt_pos_per_chgperiod']
         orig_opt_pos2 = f2['orig_global_opt_pos']
         f1.close()
         f2.close()
@@ -82,15 +86,15 @@ class Test(unittest.TestCase):
         For EvoStar 2018 equality with value 2 has to be tested.
         '''
         # load data
-        file_name1 = "sphere_d-50_chgs-10000_pch-linear_fch-none_2018-05-07_15:53.npz"
-        file_name2 = "rosenbrock_d-50_chgs-10000_pch-linear_fch-none_2018-05-07_15:53.npz"
+        file_name1 = "sphere_d-50_chgperiods-10000_pch-linear_fch-none_2018-05-08_15:07.npz"
+        file_name2 = "rosenbrock_d-50_chgperiods-10000_pch-linear_fch-none_2018-05-08_15:07.npz"
         f1 = np.load(self.path_test_problems +
                      "GECCO_2018/sphere/" + file_name1)
         f2 = np.load(self.path_test_problems +
                      "GECCO_2018/rosenbrock/" + file_name2)
-        global_opt_pos1 = f1['global_opt_pos_per_chg']
+        global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
         orig_opt_pos1 = f1['orig_global_opt_pos']
-        global_opt_pos2 = f2['global_opt_pos_per_chg']
+        global_opt_pos2 = f2['global_opt_pos_per_chgperiod']
         orig_opt_pos2 = f2['orig_global_opt_pos']
         f1.close()
         f2.close()
@@ -105,10 +109,10 @@ class Test(unittest.TestCase):
         '''
         ff = rosenbrock
         f_name = "rosenbrock"
-        file_name1 = "rosenbrock_d-2_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
+        file_name1 = "rosenbrock_d-2_chgperiods-10000_pch-sine_fch-none_2018-05-08_13:45.npz"
         f1 = np.load(self.path_test_problems +
                      "EvoStar_2018/rosenbrock/" + file_name1)
-        global_opt_pos1 = f1['global_opt_pos_per_chg']
+        global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
         orig_opt_pos1 = f1['orig_global_opt_pos']
         f1.close()
 
