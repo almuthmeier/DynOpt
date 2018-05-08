@@ -2,13 +2,15 @@
 Contains the function to create the dynamic optimization problems for the GECCO 
 2018 paper. Afterwards extended to re-create the EvoStar 2018 data (14.3.18).
 
-Only the position of the fitness landscape is is changed but not the fitnesss 
-level.
+Only the position of the fitness landscape is changed but not the fitnesss 
+level. The data set values are stored per change.
 
+Contains functionality to create a data set as well as computing the 
+fitness during the runtime. 
 Additionally, this module contains functions to test and plot new movements.
 
 Note: in predictor_comparison.py are the data modified so that they have one
-entry for each generation.
+entry for each generation. TODO ist das noch so?
 
 Created on Jan 17, 2018
 
@@ -41,15 +43,14 @@ def create_str_problems():
     # TODO parameters to adjust
     n_changes = 10000
     dims = [2, 5, 10, 20, 50, 100]
-    dims = [2, 50]
     functions = [sphere, rosenbrock, rastrigin]
-    functions = [sphere, rosenbrock]
     pos_chng_types = ['pch-linear', 'pch-sine']
     fit_chng_type = 'fch-none'
-    # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory
+    # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "EvoStar_2018"
     # -------------------------------------------------------------------------
 
+    # severity of change (for linear movement)
     if conference == "GECCO_2018":
         linear_movement_factor = 5
     elif conference == "EvoStar_2018":

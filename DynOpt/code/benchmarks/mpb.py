@@ -1,6 +1,14 @@
 '''
-With "start_creating_problem()" the MPB-Benchmark data sets are created.
+The moving peaks benchmark following the description in the paper:
+Branke, J.: Memory enhanced evolutionary algorithms for changing optimization
+problems. In: Congress on Evolutionary Computation (CEC). pp. 1875–1882 (1999)
 
+The data set values are stored per change. TODO anderes anpassen, weil es vorher
+ per GENERATIion war? (8.5.18)
+Contains functionality to create a MPB data set as well as computing the 
+fitness during the runtime.
+
+With "start_creating_problem()" the MPB-Benchmark data sets are created.
 
 Created on Oct 10, 2017
 
@@ -16,8 +24,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
 
-# ==============================================================================
-# code for generating the data set before predictor comparison starts
 def __create_vector(dimensionality, len_vector, np_random_generator, noise=None):
     '''
     Creates a random vector with specified length (i.e. Euclidean norm).
@@ -76,8 +82,12 @@ def __create_and_save_mpb_problem__(n_gens, n_dims, n_peaks, len_chg_period, len
 
     heigth_severity = 7  # as in initial paper by Branke
     width_severity = 0.1  # as in initial paper by Branke
+
+    # bound for initialization of peak positions
+    min_bound = 0
+    max_bound = 100
     for gen in range(n_gens):
-        if gen == 0:
+        if gen == 0:  # first generation
             # initialize position etc.
             init_height = 50.0  # as in initial paper by Branke
             init_width = 0.1  # as in initial paper by Branke
@@ -86,20 +96,20 @@ def __create_and_save_mpb_problem__(n_gens, n_dims, n_peaks, len_chg_period, len
             best_position = None
             for peak in range(n_peaks):
                 init_position = np_random_generator.uniform(
-                    0, 100, n_dims)  # TODO
+                    min_bound, max_bound, n_dims)
                 heights.append([init_height])
                 widths.append([init_width])
                 positions.append([copy.deepcopy(init_position)])
 
-                # try for optimum fitness and position
-                mpb_fit = __compute_mpb_fitness(
+                # test whether this peak is the global optimum
+                curr_fit = __compute_mpb_fitness(
                     init_position, init_height, init_width,  init_position)
-                if mpb_fit > max_fit:
-                    max_fit = mpb_fit
+                if curr_fit > max_fit:
+                    max_fit = curr_fit
                     best_position = init_position
-            global_opt_fit.append(-max_fit)
+            global_opt_fit.append(-max_fit)  # minimization problem
             global_opt_pos.append(copy.deepcopy(best_position))
-        elif gen % len_chg_period == 0:
+        elif gen % len_chg_period == 0:  # change occured
             max_fit = np.finfo(np.float).min  # min. possible float value
             for peak in range(n_peaks):
                 # parameter values of previous change period
@@ -124,16 +134,15 @@ def __create_and_save_mpb_problem__(n_gens, n_dims, n_peaks, len_chg_period, len
                 positions[peak].append(copy.deepcopy(
                     curr_position))
 
-                # try for optimum fitness and position
-                mpb_fit = __compute_mpb_fitness(
+                # test whether this peak is the global optimum
+                curr_fit = __compute_mpb_fitness(
                     curr_position, curr_height, curr_width,  curr_position)
-                if mpb_fit > max_fit:
-                    max_fit = mpb_fit
+                if curr_fit > max_fit:
+                    max_fit = curr_fit
                     best_position = curr_position
             global_opt_fit.append(-max_fit)
             global_opt_pos.append(copy.deepcopy(best_position))
-        else:
-            # no change
+        else:  # no change
             for peak in range(n_peaks):
                 heights[peak].append(heights[peak][-1])
                 widths[peak].append(widths[peak][-1])
@@ -198,8 +207,6 @@ def start_creating_problem():
                                                             len_chg_period, len_movement_vector,
                                                             mpb_np_random_generator,
                                                             path_to_file, noise)
-
-# ==============================================================================
 
 
 def __compute_mpb_fitness(x, height, width, position):
