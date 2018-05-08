@@ -47,8 +47,6 @@ class Test(unittest.TestCase):
         Tests whether the movement for different functions is the same.
         It should be the same since dynbposbenchmark.create_str_problems() uses 
         the same seed for each function.
-
-        TODO: soll aber nicht für unterschiedliche Dimensionen einer Funktion gleich sein
         '''
         # load data
         #file_name1 = "sphere_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"

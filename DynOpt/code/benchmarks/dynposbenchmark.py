@@ -40,7 +40,7 @@ def create_str_problems():
     '''
     day, time = get_current_day_time()
     # -------------------------------------------------------------------------
-    # TODO parameters to adjust
+    # TODO(dev) parameters to adjust
     n_chg_periods = 10000
     dims = [2, 5, 10, 20, 50, 100]
     functions = [sphere, rosenbrock, rastrigin]
@@ -63,7 +63,7 @@ def create_str_problems():
     # create data sets
     for func in functions:
         # same seed for different functions so that the movement is the same
-        np_rand_gen = np.random.RandomState(234012)  # TODO
+        np_rand_gen = np.random.RandomState(234012)  # TODO(ueberdenken?) 8.Mai
         for dim in dims:
             func_name = func.__name__
             orig_global_opt_position, _ = get_original_global_opt_pos_and_fit(
@@ -77,7 +77,7 @@ def create_str_problems():
                 # store global optimum fitness (stays same for all changes
                 global_opt_fit = np.array(n_chg_periods * [0])
             else:
-                # TODO implement if desired
+                # TODO(dev) implement if desired
                 pass
 
             # compute optimum movement
@@ -85,8 +85,6 @@ def create_str_problems():
                 if pos_chng_type == 'pch-sine':
                     if conference == "GECCO_2018":
                         opts = []
-                        # np_rand_gen = np.random.RandomState(234012)  # TODO
-
                         # initialize sine-parameters randomly (stay unchanged
                         # during all change periods
                         amplitudes = np_rand_gen.randint(5, 50, dim)
@@ -136,7 +134,13 @@ def create_str_problems():
                          global_opt_pos_per_chgperiod=opts, orig_global_opt_pos=orig_global_opt_position)
 
 
-# TODO löschen
+# TODO löschen (sollte nicht mehr gebraucht werden, weil man in dynea/dynpso
+# das globale Optimum nicht benötigt. Metriken werden getrennt berechnet,
+# sodass dannn die Datensatzdateien ausgelesen werden können.
+#
+# TODO wird für Erweiterung mit Konfidenzintervall das globale Optimum
+# während der Optimierung benötigt? (sollte eigentlich nicht, denn das Wissen
+# über Umwelt darf nicht bekannt sein.)
 # def get_global_optimum(gen, global_opt_fit):
 # TODO umbenennen in get_global_optimum_fit
 #    return global_opt_fit[gen]
