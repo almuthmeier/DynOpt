@@ -81,14 +81,15 @@ def create_str_problems():
 
             # compute optimum movement
             for pos_chng_type in pos_chng_types:
+                opts = []
+                opts.append(copy.copy(orig_global_opt_position))
                 if pos_chng_type == 'pch-sine':
                     if conference == "GECCO_2018":
-                        opts = []
                         # initialize sine-parameters randomly (stay unchanged
                         # during all change periods
                         amplitudes = np_rand_gen.randint(5, 50, dim)
                         width_factors = np_rand_gen.rand(dim)
-                        for chg_period in range(n_chg_periods):
+                        for chg_period in range(1, n_chg_periods):
                             # compute movement in all dimensions
                             movement = np.zeros(dim)
                             for d in range(dim):
@@ -101,8 +102,7 @@ def create_str_problems():
                             new_opt = orig_global_opt_position + movement
                             opts.append(copy.copy(new_opt))
                     elif conference == "EvoStar_2018":
-                        opts = []
-                        for chg_period in range(n_chg_periods):
+                        for chg_period in range(1, n_chg_periods):
                             step = chg_period * linear_movement_factor
                             x = orig_global_opt_position
                             new_opt = copy.copy(x)
@@ -118,8 +118,7 @@ def create_str_problems():
                             opts.append(copy.copy(new_opt))
                 elif pos_chng_type == 'pch-linear':
                     if conference == "GECCO_2018" or conference == "EvoStar_2018":
-                        opts = []
-                        for chg_period in range(n_chg_periods):
+                        for chg_period in range(1, n_chg_periods):
                             movement = np.array(
                                 dim * [chg_period * linear_movement_factor])
                             new_opt = orig_global_opt_position + movement
