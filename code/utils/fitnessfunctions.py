@@ -74,6 +74,7 @@ def get_original_global_opt_pos_and_fit(function, dimensionality):
     Global optimum position and its fitness for unmoved fitness function.
 
     TODO: what if function has multiple global optima?
+    TODO: extend this function if more fitness functions are desired
     @return: tupel: (position, fitness)
     '''
     function_name = function.__name__

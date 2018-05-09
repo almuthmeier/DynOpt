@@ -1,4 +1,6 @@
 '''
+Tests properties that all data set files have in common.
+
 Created on May 8, 2018
 
 @author: ameier
@@ -19,50 +21,62 @@ class Test(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def testName(self):
-        # zu testen
-        # - Vorhandensein von Variablen mit entsprechenden Namen
-        # - nicht gleiche Werte hintereinander
-
-        # for all subfolders in self.pyth_test_problems and its subfolders do
+    def test_dataset_properites(self):
+        '''
+        Tests whether the data set files certain arrays, the arrays have the 
+        same length and whether the values are stored per change or per generation 
+        '''
+        # for all sub-folders in self.pyth_test_problems and its sub-folders do
         # the following tests
-
         for ppath, subdirs, files in os.walk(self.path_test_problems):
             for name in files:
                 abs_file_path = os.path.join(ppath, name)
-                # if abs_file_path.endswith('.npz'):
-                #    pass
-                # if "mpb" in abs_file_path:
-                #    print("mpb")
-
-                print("hello")
                 file = np.load(abs_file_path)
-                #msg = "global_opt_fit_per_chgperiod"
-                # file['global_opt_fit_per_chgperiod']
+
                 try:
+                    # =========================================================
+                    # test existence of certain variables in the file
+                    # this part throws exceptions if the variables do not exist
                     msg = "global_opt_fit_per_chgperiod"
-                    file['global_opt_fit_per_chgperiod']
+                    global_opt_fit = file['global_opt_fit_per_chgperiod']
 
                     msg = "global_opt_pos_per_chgperiod"
-                    all_positions = file['global_opt_pos_per_chgperiod']
+                    global_opt_pos = file['global_opt_pos_per_chgperiod']
 
                     msg = "orig_global_opt_pos"
                     orig_pos = file['orig_global_opt_pos']
 
+                    # test whether the first global optimum is the same as in
+                    # the array storing the global optimum for each change
                     np.testing.assert_array_almost_equal(
-                        orig_pos, all_positions[0], 4)
+                        orig_pos, global_opt_pos[0], 2)  # accuracy 2
+
+                    # =========================================================
+                    # test array lengths
+                    self.assertEqual(len(global_opt_fit), len(global_opt_pos))
+
+                    # =========================================================
+                    # test whether entries are per change or per generation
+                    # by testing whether same positions appear successively
+
+                    if "sphere" in abs_file_path or "rosenbrock" in abs_file_path \
+                            or "rastrigin" in abs_file_path:
+                        for i in range(1, len(global_opt_pos)):
+                            are_not_equal = np.any(np.not_equal(
+                                global_opt_pos[i - 1], global_opt_pos[i]))
+                            np.testing.assert_equal(are_not_equal, True)
+                    elif "mpb" in abs_file_path:
+                        # For MPB the optimum may remain the same in successive
+                        # change periods and change suddenly after some changes.
+                        # Therefore this benchmark is not testable
+                        pass
                 except AssertionError:
                     print("false " + msg + " field in file " + abs_file_path)
-                    # print(ae)
                     raise
                 except KeyError:
                     print("no " + msg + " field in file " + abs_file_path)
+                    raise
                 file.close()
-
-            #self.assertEqual(1, 6)
-        # pop_file_name = [f for f in listdir(mpb_problems_folder) if (isfile(join(
-        #    mpb_problems_folder, f)) and f.endswith('.npz') and experiment_name in f
-        # and ("_d-" + str(dim) + "_") in f and ("noise-" + str(noise)) in f)]
 
 
 if __name__ == "__main__":
