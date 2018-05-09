@@ -88,6 +88,7 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
     # bound for initialization of peak positions
     min_bound = 0
     max_bound = 100
+    orig_global_opt_position = []
     for chg_period in range(n_chg_periods):
         if chg_period == 0:  # first change period
             # initialize position etc.
@@ -111,6 +112,7 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
                     best_position = init_position
             global_opt_fit.append(-max_fit)  # minimization problem
             global_opt_pos.append(copy.deepcopy(best_position))
+            orig_global_opt_position = copy.deepcopy(best_position)
         else:
             max_fit = np.finfo(np.float).min  # min. possible float value
             for peak in range(n_peaks):
@@ -153,7 +155,8 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
     global_opt_pos = np.array(global_opt_pos)
     np.savez(path_to_file, heights=heights, widths=widths, positions=positions,
              global_opt_fit_per_chgperiod=global_opt_fit,
-             global_opt_pos_per_chgperiod=global_opt_pos)
+             global_opt_pos_per_chgperiod=global_opt_pos,
+             orig_global_opt_pos=orig_global_opt_position)
 
 
 def start_creating_problem():
