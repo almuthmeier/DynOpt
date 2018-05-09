@@ -23,14 +23,13 @@ import os
 import sys
 import warnings
 
-from code.utils.fitnessfunctions import sphere, rosenbrock, rastrigin,\
-    get_original_global_opt_pos_and_fit
-from code.utils.utils_print import get_current_day_time
+sys.path.append(os.path.abspath(os.pardir))
+
 import matplotlib.pyplot as plt
 import numpy as np
-
-
-sys.path.append(os.path.abspath(os.pardir))
+from utils.fitnessfunctions import sphere, rosenbrock, rastrigin,\
+    get_original_global_opt_pos_and_fit
+from utils.utils_print import get_current_day_time
 
 
 def create_str_problems():
@@ -47,7 +46,7 @@ def create_str_problems():
     pos_chng_types = ['pch-linear', 'pch-sine']
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
-    conference = "EvoStar_2018"
+    conference = "GECCO_2018"
     # -------------------------------------------------------------------------
 
     # severity of change (for linear movement)

@@ -5,13 +5,18 @@ Created on Jan 18, 2018
 
 @author: ameier
 '''
+
+
 import os
+import sys
 import unittest
 
-from code.benchmarks.dynposbenchmark import compute_fitness
-from code.utils.fitnessfunctions import rosenbrock
+sys.path.append(os.path.abspath(os.pardir))
+
+from benchmarks.dynposbenchmark import compute_fitness
 import matplotlib.pyplot as plt
 import numpy as np
+from utils.fitnessfunctions import rosenbrock
 
 
 class Test(unittest.TestCase):
@@ -26,7 +31,7 @@ class Test(unittest.TestCase):
         Plots for each change the first two dimensions of the global optimum.
         '''
 
-        file_name = "rosenbrock_d-2_chgperiods-10000_pch-sine_fch-none_2018-05-08_13:45.npz"
+        file_name = "rosenbrock_d-2_chgperiods-10000_pch-sine_fch-none_2018-05-09_10:27.npz"
         file_path = self.path_test_problems + "EvoStar_2018/rosenbrock/" + file_name
         prob_file = np.load(file_path)
         global_opt_pos_per_chgperiod = prob_file['global_opt_pos_per_chgperiod']
@@ -51,8 +56,8 @@ class Test(unittest.TestCase):
         # load data
         #file_name1 = "sphere_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
         #file_name2 = "rosenbrock_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
-        file_name1 = "sphere_d-50_chgperiods-10000_pch-sine_fch-none_2018-05-08_13:45.npz"
-        file_name2 = "rosenbrock_d-50_chgperiods-10000_pch-sine_fch-none_2018-05-08_13:45.npz"
+        file_name1 = "sphere_d-50_chgperiods-10000_pch-sine_fch-none_2018-05-09_10:27.npz"
+        file_name2 = "rosenbrock_d-50_chgperiods-10000_pch-sine_fch-none_2018-05-09_10:27.npz"
         dim = 50
 
         f1 = np.load(self.path_test_problems +
@@ -84,8 +89,8 @@ class Test(unittest.TestCase):
         For EvoStar 2018 equality with value 2 has to be tested.
         '''
         # load data
-        file_name1 = "sphere_d-50_chgperiods-10000_pch-linear_fch-none_2018-05-08_15:07.npz"
-        file_name2 = "rosenbrock_d-50_chgperiods-10000_pch-linear_fch-none_2018-05-08_15:07.npz"
+        file_name1 = "sphere_d-50_chgperiods-10000_pch-linear_fch-none_2018-05-09_10:43.npz"
+        file_name2 = "rosenbrock_d-50_chgperiods-10000_pch-linear_fch-none_2018-05-09_10:43.npz"
         f1 = np.load(self.path_test_problems +
                      "GECCO_2018/sphere/" + file_name1)
         f2 = np.load(self.path_test_problems +
@@ -107,7 +112,7 @@ class Test(unittest.TestCase):
         '''
         ff = rosenbrock
         f_name = "rosenbrock"
-        file_name1 = "rosenbrock_d-2_chgperiods-10000_pch-sine_fch-none_2018-05-08_13:45.npz"
+        file_name1 = "rosenbrock_d-2_chgperiods-10000_pch-sine_fch-none_2018-05-09_10:27.npz"
         f1 = np.load(self.path_test_problems +
                      "EvoStar_2018/rosenbrock/" + file_name1)
         global_opt_pos1 = f1['global_opt_pos_per_chgperiod']

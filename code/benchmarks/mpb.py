@@ -16,11 +16,14 @@ Created on Oct 10, 2017
 '''
 import copy
 import os
+import sys
 import warnings
 
-from code.utils.utils_ea import gaussian_mutation
-from code.utils.utils_print import get_current_day_time
+sys.path.append(os.path.abspath(os.pardir))
+
 import numpy as np
+from utils.utils_ea import gaussian_mutation
+from utils.utils_print import get_current_day_time
 
 
 def __create_vector(dimensionality, len_vector, np_random_generator, noise=None):
@@ -162,7 +165,7 @@ def start_creating_problem():
     # ==================================
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "EvoStar_2018"
-    func_name = "mpbrand"  # "mpbnoisy" or "mpbrand"
+    func_name = "mpbnoisy"  # "mpbnoisy" or "mpbrand"
 
     if func_name == "mpbrand":
         # settings for experiments "mpbrand"
