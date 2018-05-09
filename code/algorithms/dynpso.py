@@ -13,16 +13,24 @@ import sys
 
 from sklearn.preprocessing.data import MinMaxScaler
 
-from dynamicopt.metrics.metrics_dynea import arr, best_error_before_change
-from dynamicopt.utils import utils_dynopt
-from dynamicopt.utils.utils_dynopt import replace_worst_individuals, environment_changed, compute_real_gens_of_chgs, get_global_optimum_pos_and_fit_for_all_generations
-from dynamicopt.utils.utils_plot import plot_diff_pred_and_optimum, plot_fitness,\
-    plot_best_ind_per_gen, plot_points
-from dynamicopt.utils.utils_prediction import build_predictor,\
-    predict_next_optimum_position
 import numpy as np
+from utils import utils_dynopt
+from utils.utils_dynopt import environment_changed, replace_worst_individuals,\
+    get_global_optimum_pos_and_fit_for_all_generations,\
+    compute_real_gens_of_chgs
+from utils.utils_plot import plot_fitness, plot_best_ind_per_gen, plot_points,\
+    plot_diff_pred_and_optimum
+from utils.utils_prediction import build_predictor,\
+    predict_next_optimum_position
 
 
+#from dynamicopt.metrics.metrics_dynea import arr, best_error_before_change
+#from dynamicopt.utils import utils_dynopt
+#from dynamicopt.utils.utils_dynopt import replace_worst_individuals, environment_changed, compute_real_gens_of_chgs, get_global_optimum_pos_and_fit_for_all_generations
+# from dynamicopt.utils.utils_plot import plot_diff_pred_and_optimum, plot_fitness,\
+#    plot_best_ind_per_gen, plot_points
+# from dynamicopt.utils.utils_prediction import build_predictor,\
+#    predict_next_optimum_position
 sys.path.append(os.path.abspath(os.pardir))
 
 
@@ -104,7 +112,7 @@ class DynamicPSO():
         # np.random.rand has values in [0, 1). Therefore multiply with 100 for
         # larger values (one row for each particle)
         self.particles = self.pso_np_rnd_generator.rand(
-            self.n_particles, self.dim) * 100
+            self.n_particles, self.dim) * 100  # TODO
         self.v_vals = self.pso_np_rnd_generator.rand(
             self.n_particles, self.dim)
         # 1d numpy array
@@ -171,6 +179,18 @@ class DynamicPSO():
         self.inertia = max(self.inertia_min, self.inertia)
         self.inertia = min(self.inertia, self.inertia_max)
 
+    def adapt_c3(self):
+        if len(self.pred_optima_pos) > 0 and not self.pred_optima_pos[-1] is None:
+            if self.pred_optima_fit[-1] < 1.05 * self.s_best_fit:
+                # prediction has good fitness -> increase its influence
+                self.c3 *= 2
+                #print("besser", flush=True)
+            elif self.pred_optima_fit[-1] > 1.05 * self.s_best_fit:
+                # prediction has bad fitness -> decrease its influence
+                self.c3 /= 2
+            else:
+                pass
+
     def dynpso(self):
         '''
         @param mu: population size
@@ -187,6 +207,8 @@ class DynamicPSO():
         # ---------------------------------------------------------------------
         train_data = []
         n_features = self.dim
+        # TODO auslagern: dem Optimierer einfach den fertigen Predictor geben?
+        # es gibt nur bei RNN ein richtiges Object
         predictor = build_predictor(
             self.pred_mode, self.n_time_steps, n_features, self.batch_size, self.n_neurons)
         # denotes whether the predictor has been trained or not
@@ -360,16 +382,7 @@ class DynamicPSO():
 
             # adapt c3
             if self.adaptive_c3:
-                if len(self.pred_optima_pos) > 0 and not self.pred_optima_pos[-1] is None:
-                    if self.pred_optima_fit[-1] < 1.05 * self.s_best_fit:
-                        # prediction has good fitness -> increase its influence
-                        self.c3 *= 2
-                        #print("besser", flush=True)
-                    elif self.pred_optima_fit[-1] > 1.05 * self.s_best_fit:
-                        # prediction has bad fitness -> decrease its influence
-                        self.c3 /= 2
-                    else:
-                        pass
+                self.adapt_c3()
         # store things last time
         self.prev_optima_pos.append(
             copy.copy(self.best_particles[self.iterations - 1]))
@@ -435,16 +448,18 @@ def define_settings_and_run(repetition, gpu_ID,
         periods_for_generations, act_n_chngs)
 
     # ==========================================================================
-    # run EA on specified GPU
+    # run PSO on specified GPU
     with tf.device('/gpu:' + str(gpu_ID)):
         pso.dynpso()
         K.clear_session()
     # ==========================================================================
     # compute metrics
-    arr_value = arr(real_gens_of_chgs,
-                    global_opt_fit_of_changes, pso.best_fitness_evals)
-    bebc = best_error_before_change(
-        real_gens_of_chgs, global_opt_fit_of_changes,  pso.best_fitness_evals)
+    # arr_value = arr(real_gens_of_chgs,
+    #                global_opt_fit_of_changes, pso.best_fitness_evals)
+    arr_value = None
+    # bebc = best_error_before_change(
+    #    real_gens_of_chgs, global_opt_fit_of_changes,  pso.best_fitness_evals)
+    bebc = None
 
     # ==========================================================================
     # save results
