@@ -433,7 +433,7 @@ def define_settings_and_run(repetition, gpu_ID,
     from keras import backend as K
 
     #==========================================================================
-    n_particles = 200  # has to be set
+    n_particles = 200  # has to be set # TODO read from input
     # initialize EA object
     pso = DynamicPSO(problem, dim, generations, problem_data, predictor_name,
                      n_particles, pso_np_rnd_generator, pred_np_rnd_generator,

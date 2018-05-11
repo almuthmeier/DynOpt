@@ -56,9 +56,9 @@ def create_str_problems():
         linear_movement_factor = 2
 
     # path to data set directory to store data sets there
-    splitted_path = os.path.abspath(os.pardir).split('/')  # ".../DynOpt/code"
-    path_to_dynopt = '/'.join(splitted_path[:-1])
-
+    splitted_path = os.path.abspath(os.pardir).split(
+        '/')  # ".../DynOptimization/code"
+    path_to_dynopt = '/'.join(splitted_path[:-1])  # ".../DynOptimization"
     # create data sets
     for func in functions:
         # same seed for different functions so that the movement is the same
