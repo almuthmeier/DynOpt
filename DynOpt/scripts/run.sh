@@ -21,8 +21,7 @@ benchmarkfunction=sphere	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (n
 benchmarkfunctionfolder=GECCO2018 # parent directory of the benchmark functions
 								   # and child directory of the datasets folder
 								   # of this project [for the dataset as input]
-outputdirectory=""			# name of output folder
-outputdirectorypath=""		# path to output folder
+outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/myexperiments/ff_sphere_1/"		# path to output folder
 experimentfolder=mpbrand	# str, mpbnoisy, mpbrand, roslenchg, roslenchggen, strneurons
 
 # PSO
@@ -62,7 +61,6 @@ ngpus=1    					#
 -repetitions="$repetitions" \
 -benchmarkfunction="$benchmarkfunction" \
 -benchmarkfunctionfolder="$benchmarkfunctionfolder" \
--outputdirectory="$outputdirectory" \
 -outputdirectorypath="$outputdirectorypath" \
 -c1="$c1" \
 -c2="$c2" \

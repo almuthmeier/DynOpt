@@ -36,3 +36,13 @@ def get_current_day_time():
     time = str(current_date.hour).zfill(2) + ':' + \
         str(current_date.minute).zfill(2)
     return day, time
+
+
+def get_metrics_file_name(metrics_file_path, predictor_name, benchmarkfunction, day, time):
+    return metrics_file_path + predictor_name + "_" + benchmarkfunction + "_" + \
+        day + '_' + time + ".csv"
+
+
+def get_logs_file_name(logs_file_path, predictor_name, benchmarkfunction, day, time):
+    return logs_file_path + predictor_name + "_" + benchmarkfunction + "_" + \
+        day + '_' + time + ".txt"
