@@ -16,20 +16,22 @@
 algorithm="dynpso" 			# dynea or dynpso
 repetitions=1
 chgperiods=10
-lenchgperiod=20
+lenchgperiod=20				# has to be set even if chgperiod==1 (is then number of generations
+							# also in case ischgperiodrandom is True, lenchgperiod is needed, because lenchgperiod*chgperiods is the number of generations!! 
 ischgperiodrandom=False
 benchmarkfunction=sphere	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (neu)
 							# defines the benchmark function, must be located 
 							# in the datasets folder of this project [for the dataset as input]
-benchmarkfunctionfolder=GECCO2018 # parent directory of the benchmark functions
+benchmarkfunctionfolderpath=/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/GECCO_2018/ # parent directory path of the benchmark functions
 								   # and child directory of the datasets folder
 								   # of this project [for the dataset as input]
 outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/myexperiments/ff_sphere_1/"		# path to output folder
 
-# run only some experiments of all for the benchark problem
-poschgtype="linear"
-fitchgtype="none"
-dim=2
+# run only some experiments of all for the benchark problem (the next four
+# parameters are lists
+poschgtype=linear,sine
+fitchgtype=none
+dims=2						# comma-separated integers
 noise=0.0
 
 # PSO
@@ -71,11 +73,11 @@ ngpus=1    					#
 -lenchgperiod="$lenchgperiod" \
 -ischgperiodrandom="$ischgperiodrandom" \
 -benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolder="$benchmarkfunctionfolder" \
+-benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
 -outputdirectorypath="$outputdirectorypath" \
 -poschgtype="$poschgtype" \
 -fitchgtype="$fitchgtype" \
--dim="$dim" \
+-dims="$dims" \
 -noise="$noise" \
 -c1="$c1" \
 -c2="$c2" \

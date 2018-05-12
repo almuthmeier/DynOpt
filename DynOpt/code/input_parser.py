@@ -7,13 +7,10 @@ import os
 import sys
 import warnings
 
-from comparison import PredictorComparator
-from utils.utils_print import get_current_day_time, get_logs_file_name
-
-
 sys.path.append(os.path.abspath(os.pardir))
-# from predictor_comparison import get_logs_file_name,\
-#   run_experiments_for_sphere_rosenbrock_rastrigin, mpb_evaluation
+from comparison import PredictorComparator
+import numpy as np
+from utils.utils_print import get_current_day_time, get_logs_file_name
 
 
 def define_parser_arguments():
@@ -35,16 +32,16 @@ def define_parser_arguments():
     parser.add_argument("-benchmarkfunction", type=str)
     # parent directory of the benchmark functions and child directory of the
     # datasets folder of this project
-    parser.add_argument("-benchmarkfunctionfolder", type=str)
+    parser.add_argument("-benchmarkfunctionfolderpath", type=str)
 
     # path to output folder
     parser.add_argument("-outputdirectorypath", type=str)
 
     # run only some experiments of all for the benchark problem
-    parser.add_argument("-poschgtype", type=str)
-    parser.add_argument("-fitchgtype", type=str)
-    parser.add_argument("-dim", type=int)
-    parser.add_argument("-noise", type=float)
+    parser.add_argument("-poschgtype", type=string_list_type)
+    parser.add_argument("-fitchgtype", type=string_list_type)
+    parser.add_argument("-dims", type=int_list_type)  # list of int
+    parser.add_argument("-noise", type=float_list_type)
 
     # for PSO
     parser.add_argument("-c1", type=float)  # sind Zahlen erlaubt?
@@ -98,7 +95,7 @@ def initialize_comparator(parser, comparator):
 
 def initialize_comparator_manually(comparator):
     # path to ".../DynOptimization"
-    path_to_dynopt = '/'.join(os.path.abspath(os.pardir).split('/')[:])
+    path_to_dynoptim = '/'.join(os.path.abspath(os.pardir).split('/')[:])
 
     # benchmark problem
     comparator.algorithm = "dynpso"
@@ -107,15 +104,16 @@ def initialize_comparator_manually(comparator):
     comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
-    comparator.benchmarkfunctionfolder = "GECCO_2018"
-    comparator.outputdirectorypath = path_to_dynopt + \
+    comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
+        "/DynOpt/datasets/" + "GECCO_2018/"
+    comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "myexperiments/" + "ff_sphere_1/"
 
     # run only some experiments of all for the benchark problem
-    comparator.poschgtype = "linear"
-    comparator.fitchgtype = "none"
-    comparator.dim = 2
-    comparator.noise = 0.0
+    comparator.poschgtype = np.array(["linear", "sine"])
+    comparator.fitchgtype = np.array(["none"])
+    comparator.dims = np.array([2])
+    comparator.noise = np.array([0.0])
 
     # PSO
     if comparator.algorithm == "dynpso":
@@ -153,7 +151,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 24:
+    if n_current_inputs != 31:
         print("false number of inputs")
         exit(0)
 
@@ -164,13 +162,13 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.lenchgperiod = args.lenchgperiod
     comparator.ischgperiodrandom = args.ischgperiodrandom
     comparator.benchmarkfunction = args.benchmarkfunction
-    comparator.benchmarkfunctionfolder = args.benchmarkfunctionfolder
+    comparator.benchmarkfunctionfolderpath = args.benchmarkfunctionfolderpath
     comparator.outputdirectorypath = args.outputdirectorypath
 
     # run only some experiments of all for the benchark problem
     comparator.poschgtype = args.poschgtype
     comparator.fitchgtype = args.fitchgtype
-    comparator.dim = args.dim
+    comparator.dims = args.dims
     comparator.noise = args.noise
 
     # PSO
@@ -202,6 +200,29 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.epochs = args.epochs
         comparator.batchsize = args.batchsize
         comparator.ngpus = args.ngpus
+
+
+def int_list_type(string):
+    '''
+    Input type for argparse.
+    Otherwise is it not possible to read in a list of int.
+    https://www.tuxevara.de/2015/01/pythons-argparse-and-lists/ (12.5.18)
+
+    @param string: a list as string, e.g.: '2,5,7,50'
+    @return the string as numpy array of integers
+    '''
+    strings = string.split(',')
+    return np.array([int(i) for i in strings])
+
+
+def float_list_type(string):
+    strings = string.split(',')
+    return np.array([float(i) for i in strings])
+
+
+def string_list_type(string):
+    strings = string.split(',')
+    return np.array([i for i in strings])
 
 
 def run_parser():

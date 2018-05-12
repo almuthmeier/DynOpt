@@ -6,6 +6,7 @@ Created on May 9, 2018
 import math
 from os.path import isfile, join
 from posix import listdir
+import warnings
 
 import numpy as np
 
@@ -31,7 +32,7 @@ class PredictorComparator(object):
         self.lenchgperiod = None  # int
         self.ischgperiodrandom = None  # bool
         self.benchmarkfunction = None  # string
-        self.benchmarkfunctionfolder = None  # string
+        self.benchmarkfunctionfolderpath = None  # string
         self.outputdirectorypath = None  # string
 
         # run only some experiments of all for the benchark problem
@@ -69,7 +70,7 @@ class PredictorComparator(object):
 
     def extract_data_from_file(self, experiment_file_path):
         exp_file = np.load(experiment_file_path)
-        # global optimum position and fitness per change
+
         global_opt_fit_per_chgperiod = exp_file['global_opt_fit_per_chgperiod']
         global_opt_pos_per_chgperiod = exp_file['global_opt_pos_per_chgperiod']
         orig_global_opt_pos = exp_file['orig_global_opt_pos']
@@ -78,6 +79,7 @@ class PredictorComparator(object):
                            'global_opt_pos_per_chgperiod': global_opt_pos_per_chgperiod,
                            'orig_global_opt_pos': orig_global_opt_pos}
 
+        # additional data for some benchmark functions
         if self.benchmarkfunction == "sphere" or self.benchmarkfunction == \
                 "rastrigin" or self.benchmarkfunction == "rosenbrock":
             pass
@@ -95,7 +97,32 @@ class PredictorComparator(object):
 
     def convert_data_to_per_generation(self, experiment_file_path, experiment_data):
         pass
-        # extract movement properties from file name
+
+    def get_chgperiods_for_gens(self, alg_np_rnd_generator):
+        '''
+        @param max_n_gens: integer: number of generations after that the EA stops
+        @param len_change_period: number of generations per change period (used only
+        when the time points of changes are deterministic)
+        @param n_changes: number of changes (only used if is_change_time_random is True 
+        @param is_change_time_random: true if the time points of changes are random
+        @return: tupel
+                    - 1d numpy array containing for each generation the change 
+                      period number it belongs to
+                    - overall number of changes occurred during all generations 
+        '''
+        if self.chgperiods == 1:  # no changes
+            chgperiods_for_gens = np.zeros(self.lenchgperiod, int)
+        elif not self.ischgperiodrandom:  # equidistant changes
+            chgperiods_for_gens = np.array(
+                [self.lenchgperiod * [i] for i in range(self.chgperiods)]).flatten()
+        elif self.ischgperiodrandom:  # random change time points
+            max_n_gens = self.lenchgperiod * self.chgperiods
+            unsorted_periods_for_gens = alg_np_rnd_generator.randint(
+                0, self.chgperiods, max_n_gens)
+            chgperiods_for_gens = np.sort(unsorted_periods_for_gens)
+        else:
+            warnings.warn("unhandled case")
+        return chgperiods_for_gens
 
     def select_experiment_files(self, all_experiment_files):
         '''
@@ -128,15 +155,18 @@ class PredictorComparator(object):
         # load all files of the benchmark
         # TODO evtl nur die, für die übergebenen Dimensionen/chg-typen/... ???
 
-        benchmark_path = self.benchmarkfunctionfolder + self.benchmarkfunction + "/"
-        all_experiment_files = [f for f in listdir(benchmark_path) if (isfile(join(
-            benchmark_path, f)) and f.endswith('.npz') and self.benchmarkfunction in f)]
+        benchmark_path = self.benchmarkfunctionfolderpath + self.benchmarkfunction + "/"
+        all_experiment_files = [f for f in listdir(benchmark_path) if
+                                (isfile(join(benchmark_path, f)) and
+                                 f.endswith('.npz') and
+                                 self.benchmarkfunction in f)]
         selected_exp_files = self.select_experiment_files(all_experiment_files)
 
         for exp_file_path in selected_exp_files:
             # load data from file
             experiment_data = self.extract_data_from_file(exp_file_path)
             # convert per CHANGE to per GENERATION
+            alg_np_rnd_generator = None  # TODO irgendwo instanziieren
             experiment_data = self.convert_data_to_per_generation(exp_file_path,
                                                                   experiment_data)
 
