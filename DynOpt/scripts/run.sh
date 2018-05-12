@@ -11,10 +11,13 @@
 #------------------------------------------------------------------------------
 # Parameters
 #------------------------------------------------------------------------------
-# for EvoStar
-# for GECCO
+
+# benchmark problem
 algorithm="dynpso" 			# dynea or dynpso
 repetitions=1
+chgperiods=10
+lenchgperiod=20
+ischgperiodrandom=False
 benchmarkfunction=sphere	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (neu)
 							# defines the benchmark function, must be located 
 							# in the datasets folder of this project [for the dataset as input]
@@ -22,7 +25,12 @@ benchmarkfunctionfolder=GECCO2018 # parent directory of the benchmark functions
 								   # and child directory of the datasets folder
 								   # of this project [for the dataset as input]
 outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/myexperiments/ff_sphere_1/"		# path to output folder
-experimentfolder=mpbrand	# str, mpbnoisy, mpbrand, roslenchg, roslenchggen, strneurons
+
+# run only some experiments of all for the benchark problem
+poschgtype="linear"
+fitchgtype="none"
+dim=2
+noise=0.0
 
 # PSO
 c1=1.496180
@@ -59,9 +67,16 @@ ngpus=1    					#
 
 ~/.virtualenvs/promotion/prototype/bin/python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
+-chgperiods="$chgperiods" \
+-lenchgperiod="$lenchgperiod" \
+-ischgperiodrandom="$ischgperiodrandom" \
 -benchmarkfunction="$benchmarkfunction" \
 -benchmarkfunctionfolder="$benchmarkfunctionfolder" \
 -outputdirectorypath="$outputdirectorypath" \
+-poschgtype="$poschgtype" \
+-fitchgtype="$fitchgtype" \
+-dim="$dim" \
+-noise="$noise" \
 -c1="$c1" \
 -c2="$c2" \
 -c3="$c3" \

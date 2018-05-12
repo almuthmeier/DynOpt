@@ -19,10 +19,15 @@ sys.path.append(os.path.abspath(os.pardir))
 def define_parser_arguments():
     import argparse
     parser = argparse.ArgumentParser()
+
+    # benchmark problem
     # "dynea" or "dynpso"
     parser.add_argument("-algorithm", type=str)
-
     parser.add_argument("-repetitions", type=int)
+    parser.add_argument("-chgperiods", type=int)  # n_chgs = chgperiods - 1
+    parser.add_argument("-lenchgperiod", type=int)
+    # true, if changes occur at random time points
+    parser.add_argument("-ischgperiodrandom", type=bool)
     # "mpb" or "sphere-rastrigin-rosenbrock" (alt)
     # sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (neu)
     # defines the benchmark function, must be located in the datasets folder of
@@ -34,6 +39,12 @@ def define_parser_arguments():
 
     # path to output folder
     parser.add_argument("-outputdirectorypath", type=str)
+
+    # run only some experiments of all for the benchark problem
+    parser.add_argument("-poschgtype", type=str)
+    parser.add_argument("-fitchgtype", type=str)
+    parser.add_argument("-dim", type=int)
+    parser.add_argument("-noise", type=float)
 
     # for PSO
     parser.add_argument("-c1", type=float)  # sind Zahlen erlaubt?
@@ -88,14 +99,25 @@ def initialize_comparator(parser, comparator):
 def initialize_comparator_manually(comparator):
     # path to ".../DynOptimization"
     path_to_dynopt = '/'.join(os.path.abspath(os.pardir).split('/')[:])
-    print("pa_to-dynaopt: ", path_to_dynopt)
+
+    # benchmark problem
     comparator.algorithm = "dynpso"
     comparator.repetitions = 1
+    comparator.chgperiods = 10
+    comparator.lenchgperiod = 20
+    comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     comparator.benchmarkfunctionfolder = "GECCO_2018"
     comparator.outputdirectorypath = path_to_dynopt + \
         "/DynOpt/output/" + "myexperiments/" + "ff_sphere_1/"
-    print("bal: ", comparator.outputdirectorypath)
+
+    # run only some experiments of all for the benchark problem
+    comparator.poschgtype = "linear"
+    comparator.fitchgtype = "none"
+    comparator.dim = 2
+    comparator.noise = 0.0
+
+    # PSO
     if comparator.algorithm == "dynpso":
         comparator.c1 = 1.496180
         comparator.c2 = 1.496180
@@ -104,6 +126,7 @@ def initialize_comparator_manually(comparator):
         comparator.adaptivec3 = False
         comparator.nparticles = 200
 
+    # EA
     elif comparator.algorithm == "dynea":
         comparator.mu = 5
         comparator.la = 10
@@ -113,8 +136,11 @@ def initialize_comparator_manually(comparator):
         comparator.trechenberg = 5
         comparator.tau = 0.5
 
+    # for predictor
     comparator.predictor = "no"
     comparator.timesteps = 7
+
+    # for ANN predictor
     if comparator.predictor == "rnn":
         comparator.neuronstype = "fixed20"
         comparator.epochs = 30
@@ -131,12 +157,23 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         print("false number of inputs")
         exit(0)
 
+    # benchmark problem
     comparator.algorithm = args.algorithm
     comparator.repetitions = args.repetitions
+    comparator.chgperiods = args.chgperiods
+    comparator.lenchgperiod = args.lenchgperiod
+    comparator.ischgperiodrandom = args.ischgperiodrandom
     comparator.benchmarkfunction = args.benchmarkfunction
     comparator.benchmarkfunctionfolder = args.benchmarkfunctionfolder
     comparator.outputdirectorypath = args.outputdirectorypath
 
+    # run only some experiments of all for the benchark problem
+    comparator.poschgtype = args.poschgtype
+    comparator.fitchgtype = args.fitchgtype
+    comparator.dim = args.dim
+    comparator.noise = args.noise
+
+    # PSO
     if args.algorithm == "dynpso":
         comparator.c1 = args.c1
         comparator.c2 = args.c2
@@ -145,6 +182,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.adaptivec3 = args.adaptivec3
         comparator.nparticles = args.nparticles
 
+    # EA
     elif args.algorithm == "dynea":
         comparator.mu = args.mu
         comparator.la = args.la
@@ -154,8 +192,11 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.trechenberg = args.trechenberg
         comparator.tau = args.tau
 
+    # predictor
     comparator.predictor = args.predictor
     comparator.timesteps = args.timesteps
+
+    # for ANN predictor
     if args.predictor == "rnn":
         comparator.neuronstype = args.neuronstype
         comparator.epochs = args.epochs
@@ -189,6 +230,7 @@ def run_parser():
     # define parser arguments
     # =======================================================================
     parser = define_parser_arguments()
+
     # =======================================================================
     # read parser inputs
     # =======================================================================
