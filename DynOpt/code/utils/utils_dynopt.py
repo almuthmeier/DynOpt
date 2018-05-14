@@ -32,7 +32,7 @@ def fitness(problem, individual, curr_gen, problem_data):
     elif problem == "sphere" or problem == "rastrigin" or problem == "rosenbrock":
         return dynposbenchmark.compute_fitness(individual, curr_gen, problem,
                                                problem_data['global_opt_pos_per_gen'],
-                                               problem_data['orig_opt_pos'])
+                                               problem_data['orig_global_opt_pos'])
 
 
 def get_global_optimum_pos_and_fit_for_all_generations(problem, problem_data):

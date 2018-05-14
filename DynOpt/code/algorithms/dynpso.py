@@ -40,16 +40,16 @@ class DynamicPSO():
                  n_generations, experiment_data, predictor_name,
                  pso_np_rnd_generator, pred_np_rnd_generator,
                  c1, c2, c3, insert_pred_as_ind,
-                 adaptive_c3, n_particles, timesteps,
-                 n_neurons, epochs, batchsize):
+                 adaptive_c3, n_particles,
+                 timesteps, n_neurons, epochs, batchsize):
         '''
         Initialize a DynamicPSO object.
-        @param benchmarkfunction:
+        @param benchmarkfunction: (string)
         @param dim: (int) dimensionality of objective function, i.e. number of 
         features for each individual
         @param n_generations: (int) number of generations
         @param experiment_data: (dictionary)
-        @param predictor: (string)
+        @param predictor_name: (string)
         @param pso_np_rnd_generator: numpy random generator for the PSO    
         @param pred_np_rnd_generator: numpy random generator for the predictor
         @param c1: (float) influence of particle's best solution
@@ -59,11 +59,11 @@ class DynamicPSO():
         be inserted into the swarm
         @param adaptive_c3: (bool) True if c3 is set with adaptive control
         @param n_particles: (int) swarm size
-        @param n_time_steps: (int) number of time steps the predictions use for the
+        @param time_steps: (int) number of time steps the predictions use for the
         prediction
         @param n_neurons: (int) number of neurons within the first layer of the 
         RNN prediction model
-        @param n_epochs: (int) number of epochs to train the RNN predicton model
+        @param epochs: (int) number of epochs to train the RNN predicton model
         @param batch_size: (int) batch size for the RNN predictor
 
         '''

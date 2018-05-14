@@ -77,8 +77,10 @@ class PredictorComparator(object):
                                      pred_np_rnd_generator):
         dimensionality = len(experiment_data['orig_global_opt_pos'])
         n_generations = self.get_n_generations()
-        n_neurons = self.get_n_neurons(self.neuronstype, dimensionality)
-
+        if self.predictor == "no":
+            n_neurons = None
+        else:
+            n_neurons = self.get_n_neurons(dimensionality)
         if self.algorithm == "dynea":
             alg = DynamicEA(self.benchmarkfunction, dimensionality,
                             n_generations, experiment_data, self.predictor,
@@ -90,8 +92,8 @@ class PredictorComparator(object):
             alg = DynamicPSO(self.benchmarkfunction, dimensionality,
                              n_generations, experiment_data, self.predictor,
                              alg_np_rnd_generator, pred_np_rnd_generator,
-                             self.c1, self.c2, self.c3, self.insert_pred_as_ind,
-                             self.adaptive_c3, self.n_particles, self.timesteps,
+                             self.c1, self.c2, self.c3, self.insertpred,
+                             self.adaptivec3, self.nparticles, self.timesteps,
                              n_neurons, self.epochs, self.batchsize)
         else:
             warnings.warn("unknown optimization algorithm")
@@ -126,29 +128,37 @@ class PredictorComparator(object):
         return experiment_data  # TODO or as class variable??
 
     def convert_data_to_per_generation(self, experiment_data, chgperiods_for_gens):
+        '''
+        Repeat all entries of experiment_data.
+        '''
         n_gens = self.get_n_generations()
         # for all (key-value)-pairs in experiment_data:
         for key, property_per_chg in experiment_data.items():
             if not key == "orig_global_opt_pos":
-                # repeat all entries of the lists and update the dictionary
-                # 'orig_global_opt_pos' is only one vector
+                # pop old data
+                experiment_data.pop(key)
+                # rename key to prevent confusion (if there is something to
+                # rename)
+                key = key.replace("_per_chgperiod", "_per_gen")
+                # convert and store data
                 experiment_data[key] = property_per_chg[chgperiods_for_gens]
                 assert n_gens == len(experiment_data[key])
 
     def get_n_generations(self):
         return self.lenchgperiod * self.chgperiods
 
-    def get_n_neurons(self, n_neurons_type, dim):
+    def get_n_neurons(self, dim):
         '''
         (number of neurons can not directly be specified as input because it is 
         computed in some cases depending on the problem dimensionality)
         '''
-        if n_neurons_type == "fixed20":
+        if self.n_neurons_type == "fixed20":
             n_neurons = 20
-        elif n_neurons_type == "dyn1.3":
+        elif self.n_neurons_type == "dyn1.3":
             n_neurons = math.ceil(dim * 1.3)
         else:
-            msg = "type for neuronstype (number of neurons): " + n_neurons_type
+            msg = "unkwnown type for neuronstype (number of neurons): " + \
+                str(self.n_neurons_type)
             warnings.warn(msg)
         return n_neurons
 

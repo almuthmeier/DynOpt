@@ -12,76 +12,89 @@ import warnings
 
 from sklearn.preprocessing.data import MinMaxScaler
 
-from dynamicopt.metrics.metrics_dynea import arr, best_error_before_change
-from dynamicopt.utils import utils_dynopt
-from dynamicopt.utils.utils_dynopt import environment_changed,\
-    get_global_optimum_pos_and_fit_for_all_generations, compute_real_gens_of_chgs
-from dynamicopt.utils.utils_ea import dominant_recombination, gaussian_mutation,\
-    mu_plus_lambda_selection, adapt_sigma
-from dynamicopt.utils.utils_prediction import build_predictor,\
-    predict_next_optimum_position
 import numpy as np
+from utils import utils_dynopt
+from utils.utils_dynopt import environment_changed,\
+    get_global_optimum_pos_and_fit_for_all_generations,\
+    compute_real_gens_of_chgs
+from utils.utils_ea import dominant_recombination, gaussian_mutation,\
+    mu_plus_lambda_selection, adapt_sigma
+from utils.utils_prediction import build_predictor,\
+    predict_next_optimum_position
 
 
+#from dynamicopt.metrics.metrics_dynea import arr, best_error_before_change
+#from dynamicopt.utils import utils_dynopt
+# from dynamicopt.utils.utils_dynopt import environment_changed,\
+#    get_global_optimum_pos_and_fit_for_all_generations, compute_real_gens_of_chgs
+# from dynamicopt.utils.utils_ea import dominant_recombination, gaussian_mutation,\
+#    mu_plus_lambda_selection, adapt_sigma
+# from dynamicopt.utils.utils_prediction import build_predictor,\
+#    predict_next_optimum_position
 class DynamicEA():
-    def __init__(self, problem, dim, iterations, problem_data, predictor_name,
-                 mu, la, ro, mean, sigma, t_rechenberg, tau,
+    def __init__(self, benchmarkfunction, dim,
+                 n_generations, experiment_data, predictor_name,
                  ea_np_rnd_generator, pred_np_rnd_generator,
-                 n_neurons, n_epochs, batch_size, n_time_steps):
+                 mu, la, ro, mean, sigma, trechenberg, tau,
+                 timesteps, n_neurons, epochs, batchsize):
         '''
         Initialize a DynamicEA object.
-        @param problem:
+        @param benchmarkfunction: (string)
         @param dim: (int) dimensionality of objective function, i.e. number of 
         features for each individual
-        @param iterations: (int) number of generations
-        @param problem_data:
+        @param n_generations: (int) number of generations
+        @param experiment_data: (dictionary)
         @param predictor_name:
+        @param ea_np_rnd_generator: numpy random generator for the EA
+        @param pred_np_rnd_generator: numpy random generator for the predictor
         @param mu: (int) population size
         @param la: (int) lambda, number of offspring individuals
         @param ro: (int) number parents for recombination
         @param mean: (float) mean for the Gaussian mutation of the EA
         @param sigma: (float) mutation strength for EA 
-        @param t_rechenberg: number of mutations after which sigma is adapted
+        @param trechenberg: number of mutations after which sigma is adapted
         @param tau: 0 < tau < 1, factor to adapt sigma (for Rechenberg 1/5 rule)
-        @param ea_np_rnd_generator: numpy random generator for the EA
-        @param pred_np_rnd_generator: numpy random generator for the predictor
+        @param time_steps: (int) number of time steps the predictions use for the
+        prediction
         @param n_neurons: (int) number of neurons within the first layer of the 
         RNN prediction model
-        @param n_epochs: (int) number of epochs to train the RNN predicton model
+        @param epochs: (int) number of epochs to train the RNN predicton model
         @param batch_size: (int) batch size for the RNN predictor
-        @param n_time_steps: (int) number of time steps the predictions use for the
-        prediction
         '''
         # ---------------------------------------------------------------------
         # for the problem
         # ---------------------------------------------------------------------
-        self.problem = problem
+        self.benchmarkfunction = benchmarkfunction
         self.dim = dim
-        self.iterations = iterations
-        self.problem_data = problem_data
-        self.pred_mode = predictor_name
+        self.n_generations = n_generations
+        self.experiment_data = experiment_data
+        self.predictor_name = predictor_name
 
         # ---------------------------------------------------------------------
         # for the predictor
         # ---------------------------------------------------------------------
+        self.n_time_steps = timesteps
         self.n_neurons = n_neurons
-        self.n_epochs = n_epochs
-        self.batch_size = batch_size
-        self.n_time_steps = n_time_steps
+        self.n_epochs = epochs
+        self.batch_size = batchsize
 
         # ---------------------------------------------------------------------
         # for EA (fixed values)
         # ---------------------------------------------------------------------
+        self.ea_np_rnd_generator = ea_np_rnd_generator
+        self.pred_np_rnd_generator = pred_np_rnd_generator
         self.mu = mu
         self.la = la
         self.ro = ro
-        self.ea_np_rnd_generator = ea_np_rnd_generator
-        self.pred_np_rnd_generator = pred_np_rnd_generator
         self.mean = mean
-        self.init_sigma = sigma
         self.sigma = sigma
-        self.t_rechenberg = t_rechenberg
+        self.t_rechenberg = trechenberg
         self.tau = tau
+
+        # ---------------------------------------------------------------------
+        # values that are not passed as parameters to the constructor
+        # ---------------------------------------------------------------------
+        self.init_sigma = self.sigma
 
         # ---------------------------------------------------------------------
         # for EA (variable values)
@@ -91,9 +104,9 @@ class DynamicEA():
         # larger values. And make column vector from row vector.
         self.population = self.ea_np_rnd_generator.rand(
             self.mu, self.dim) * 100
-        self.population_fitness = np.array([utils_dynopt.fitness(self.problem,
+        self.population_fitness = np.array([utils_dynopt.fitness(self.benchmarkfunction,
                                                                  individual, 0,
-                                                                 self.problem_data)
+                                                                 self.experiment_data)
                                             for individual in self.population]).reshape(-1, 1)
 
         # ---------------------------------------------------------------------
@@ -104,9 +117,9 @@ class DynamicEA():
         # for each detected change the corresponding generation numbers
         self.gens_of_detected_chngs = {self.detected_n_changes: []}
         # best found individual for each generation (2d numpy array)
-        self.best_individuals = np.zeros((self.iterations, self.dim))
+        self.best_individuals = np.zeros((self.n_generations, self.dim))
         # fitness of best found individual for each generation (1d numpy array)
-        self.best_fitness_evals = np.zeros(self.iterations)
+        self.best_fitness_evals = np.zeros(self.n_generations)
         # position of found optima (one for each change period)
         self.prev_optima_pos = []
         # fitness of found optima (one for each change period)
@@ -205,7 +218,7 @@ class DynamicEA():
         # build new population
         self.population = np.concatenate((self.population, immigrants))
         # compute fitness of new population
-        self.population_fitness = np.array([utils_dynopt.fitness(self.problem, individual, curr_gen,  self.problem_data)
+        self.population_fitness = np.array([utils_dynopt.fitness(self.benchmarkfunction, individual, curr_gen,  self.experiment_data)
                                             for individual in self.population]).reshape(-1, 1)
 
     def dynea(self):
@@ -215,7 +228,7 @@ class DynamicEA():
         train_data = []
         n_features = self.dim
         predictor = build_predictor(
-            self.pred_mode, self.n_time_steps, n_features, self.batch_size, self.n_neurons)
+            self.predictor_name, self.n_time_steps, n_features, self.batch_size, self.n_neurons)
         # denotes whether the predictor has been trained or not
         trained_first_time = False
         scaler = MinMaxScaler(feature_range=(-1, 1))
@@ -229,10 +242,10 @@ class DynamicEA():
         t_all = 0
 
         # ---------------------------------------------------------------------
-        for i in range(self.iterations):
+        for i in range(self.n_generations):
             # test for environment change
             env_changed = environment_changed(i, self.population, self.population_fitness,
-                                              self.problem, self.problem_data, self.ea_np_rnd_generator)
+                                              self.benchmarkfunction, self.experiment_data, self.ea_np_rnd_generator)
             # test for environment change (but not in first generation)
             if env_changed and i != 0:
                 # reset sigma to initial value
@@ -249,12 +262,12 @@ class DynamicEA():
                 overall_n_train_data = len(self.prev_optima_pos)
 
                 # prevent training with too few train data
-                if overall_n_train_data <= self.n_time_steps or overall_n_train_data < 50 or self.pred_mode == "no":
+                if overall_n_train_data <= self.n_time_steps or overall_n_train_data < 50 or self.predictor_name == "no":
                     my_pred_mode = "no"
                     train_data = None
                     prediction = None
                 else:
-                    my_pred_mode = self.pred_mode
+                    my_pred_mode = self.predictor_name
 
                     # scale data (the data are re-scaled directly after the
                     # prediction in this iteration)
@@ -286,7 +299,7 @@ class DynamicEA():
                                                                scaler, predictor)
                     self.pred_optima_pos.append(copy.copy(prediction))
                     self.pred_optima_fit.append(utils_dynopt.fitness(
-                        self.problem, prediction, i, self.problem_data))
+                        self.benchmarkfunction, prediction, i, self.experiment_data))
 
                 # adapt population to environment change
                 self.adapt_population(i, my_pred_mode)
@@ -314,15 +327,15 @@ class DynamicEA():
                 mutated_offspring = self.mutate(offspring)
                 t_all += 1
                 # evaluate offspring
-                offspring_fitness = utils_dynopt.fitness(self.problem,
-                                                         mutated_offspring, i, self.problem_data)
+                offspring_fitness = utils_dynopt.fitness(self.benchmarkfunction,
+                                                         mutated_offspring, i, self.experiment_data)
 
                 # add offspring to offspring population
                 offspring_population[j] = copy.copy(mutated_offspring)
                 offspring_pop_fitness[j][0] = offspring_fitness
 
                 # mutation successful?
-                if offspring_fitness < utils_dynopt.fitness(self.problem, offspring, i, self.problem_data):
+                if offspring_fitness < utils_dynopt.fitness(self.benchmarkfunction, offspring, i, self.experiment_data):
                     t_s += 1
             # select new population
             self.select(offspring_population, offspring_pop_fitness)
@@ -408,10 +421,12 @@ def define_settings_and_run(repetition, gpu_ID,
         K.clear_session()
     # ==========================================================================
     # compute metrics
-    arr_value = arr(real_gens_of_chgs,
-                    global_opt_fit_of_changes, ea.best_fitness_evals)
-    bebc = best_error_before_change(
-        real_gens_of_chgs, global_opt_fit_of_changes,  ea.best_fitness_evals)
+    arr_value = None
+    bebc = None
+    # arr_value = arr(real_gens_of_chgs,
+    #                global_opt_fit_of_changes, ea.best_fitness_evals)
+    # bebc = best_error_before_change(
+    #    real_gens_of_chgs, global_opt_fit_of_changes,  ea.best_fitness_evals)
 
     # ==========================================================================
     # save results
