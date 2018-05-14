@@ -7,10 +7,8 @@ import os
 import sys
 import warnings
 
-sys.path.append(os.path.abspath(os.pardir))
-from comparison import PredictorComparator
 import numpy as np
-from utils.utils_print import get_current_day_time, get_logs_file_name
+sys.path.append(os.path.abspath(os.pardir))
 
 
 def define_parser_arguments():
@@ -226,8 +224,6 @@ def string_list_type(string):
 
 
 def run_parser():
-    import multiprocessing as mp
-    mp.set_start_method('fork')
 
     import copy
     import itertools
@@ -294,4 +290,12 @@ def run_parser():
 
 
 if __name__ == '__main__':
+
+    # this import has to be done before imports of own packages
+    import multiprocessing as mp
+    mp.set_start_method('fork')
+
+    from comparison import PredictorComparator
+    from utils.utils_print import get_current_day_time, get_logs_file_name
+
     run_parser()
