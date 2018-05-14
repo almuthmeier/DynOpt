@@ -38,10 +38,10 @@ def define_parser_arguments():
     parser.add_argument("-outputdirectorypath", type=str)
 
     # run only some experiments of all for the benchark problem
-    parser.add_argument("-poschgtype", type=string_list_type)
-    parser.add_argument("-fitchgtype", type=string_list_type)
+    parser.add_argument("-poschgtypes", type=string_list_type)
+    parser.add_argument("-fitchgtypes", type=string_list_type)
     parser.add_argument("-dims", type=int_list_type)  # list of int
-    parser.add_argument("-noise", type=float_list_type)
+    parser.add_argument("-noises", type=float_list_type)
 
     # for PSO
     parser.add_argument("-c1", type=float)  # sind Zahlen erlaubt?
@@ -110,10 +110,10 @@ def initialize_comparator_manually(comparator):
         "/DynOpt/output/" + "myexperiments/" + "ff_sphere_1/"
 
     # run only some experiments of all for the benchark problem
-    comparator.poschgtype = np.array(["linear", "sine"])
-    comparator.fitchgtype = np.array(["none"])
+    comparator.poschgtypes = np.array(["linear", "sine"])
+    comparator.fitchgtypes = np.array(["none"])
     comparator.dims = np.array([2])
-    comparator.noise = np.array([0.0])
+    comparator.noises = np.array([0.0])
 
     # PSO
     if comparator.algorithm == "dynpso":
@@ -166,10 +166,10 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.outputdirectorypath = args.outputdirectorypath
 
     # run only some experiments of all for the benchark problem
-    comparator.poschgtype = args.poschgtype
-    comparator.fitchgtype = args.fitchgtype
+    comparator.poschgtypes = args.poschgtypes
+    comparator.fitchgtypes = args.fitchgtypes
     comparator.dims = args.dims
-    comparator.noise = args.noise
+    comparator.noises = args.noises
 
     # PSO
     if args.algorithm == "dynpso":

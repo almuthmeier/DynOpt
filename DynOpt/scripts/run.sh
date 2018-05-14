@@ -27,12 +27,12 @@ benchmarkfunctionfolderpath=/home/ameier/Documents/Promotion/GIT_Lab/DynOptimiza
 								   # of this project [for the dataset as input]
 outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/myexperiments/ff_sphere_1/"		# path to output folder
 
-# run only some experiments of all for the benchark problem (the next four
+# run only some experiments of all for the benchmark problem (the next four
 # parameters are lists
-poschgtype=linear,sine
-fitchgtype=none
+poschgtypes=linear,sine
+fitchgtypes=none
 dims=2						# comma-separated integers
-noise=0.0
+noises=0.0
 
 # PSO
 c1=1.496180
@@ -75,10 +75,10 @@ ngpus=1    					#
 -benchmarkfunction="$benchmarkfunction" \
 -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
 -outputdirectorypath="$outputdirectorypath" \
--poschgtype="$poschgtype" \
--fitchgtype="$fitchgtype" \
+-poschgtypes="$poschgtypes" \
+-fitchgtypes="$fitchgtypes" \
 -dims="$dims" \
--noise="$noise" \
+-noises="$noises" \
 -c1="$c1" \
 -c2="$c2" \
 -c3="$c3" \
