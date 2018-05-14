@@ -8,6 +8,8 @@ from os.path import isfile, join
 from posix import listdir
 import warnings
 
+from algorithms.dynea import DynamicEA
+from algorithms.dynpso import DynamicPSO
 import numpy as np
 from utils.utils_print import get_current_day_time
 
@@ -69,17 +71,32 @@ class PredictorComparator(object):
         self.batchsize = None  # int
         self.ngpus = None  # int
 
-    def instantiate_optimization_alg(self):
+        # data for one concrete benchmark experiment
+
+    def instantiate_optimization_alg(self, experiment_data, alg_np_rnd_generator,
+                                     pred_np_rnd_generator):
+        dimensionality = len(experiment_data['orig_global_opt_pos'])
+        n_generations = self.get_n_generations()
+        n_neurons = self.get_n_neurons(self.neuronstype, dimensionality)
+
         if self.algorithm == "dynea":
-            pass
+            alg = DynamicEA(self.benchmarkfunction, dimensionality,
+                            n_generations, experiment_data, self.predictor,
+                            alg_np_rnd_generator, pred_np_rnd_generator,
+                            self.mu, self.la, self.ro, self.mean, self.sigma,
+                            self.trechenberg, self.tau, self.timesteps,
+                            n_neurons, self.epochs, self.batchsize)
         elif self.algorithm == "dynpso":
-            pass
-            # pso = DynamicPSO(self.benchmarkfunction, self.dim, generations, problem_data, predictor_name,
-            #                 n_particles, pso_np_rnd_generator, pred_np_rnd_generator,
-            #                 c1, c2, c3, insert_pred_as_ind, adaptive_c3,
-            #                 n_neurons, n_epochs, batch_size, n_time_steps)
+            alg = DynamicPSO(self.benchmarkfunction, dimensionality,
+                             n_generations, experiment_data, self.predictor,
+                             alg_np_rnd_generator, pred_np_rnd_generator,
+                             self.c1, self.c2, self.c3, self.insert_pred_as_ind,
+                             self.adaptive_c3, self.n_particles, self.timesteps,
+                             n_neurons, self.epochs, self.batchsize)
         else:
             warnings.warn("unknown optimization algorithm")
+            exit(1)
+        return alg
 
     def extract_data_from_file(self, experiment_file_path):
         exp_file = np.load(experiment_file_path)
@@ -114,11 +131,26 @@ class PredictorComparator(object):
         for key, property_per_chg in experiment_data.items():
             if not key == "orig_global_opt_pos":
                 # repeat all entries of the lists and update the dictionary
+                # 'orig_global_opt_pos' is only one vector
                 experiment_data[key] = property_per_chg[chgperiods_for_gens]
                 assert n_gens == len(experiment_data[key])
 
     def get_n_generations(self):
         return self.lenchgperiod * self.chgperiods
+
+    def get_n_neurons(self, n_neurons_type, dim):
+        '''
+        (number of neurons can not directly be specified as input because it is 
+        computed in some cases depending on the problem dimensionality)
+        '''
+        if n_neurons_type == "fixed20":
+            n_neurons = 20
+        elif n_neurons_type == "dyn1.3":
+            n_neurons = math.ceil(dim * 1.3)
+        else:
+            msg = "type for neuronstype (number of neurons): " + n_neurons_type
+            warnings.warn(msg)
+        return n_neurons
 
     def get_chgperiods_for_gens(self, alg_np_rnd_generator):
         '''
@@ -201,11 +233,9 @@ class PredictorComparator(object):
             # random generator for the optimization algorithm
             #  (e.g. for creation of population, random immigrants)
             alg_np_rnd_generator = np.random.RandomState(29405601)
-            # for predictor related stuff: random generator for
-            # numpy arrays
+            # for predictor related stuff: random generator for  numpy arrays
             pred_np_rnd_generator = np.random.RandomState(23044820)
 
-            #n_neurons = get_n_neurons(n_neurons_type, dim)
             # =================================================================
 
             # load data from file
@@ -216,16 +246,13 @@ class PredictorComparator(object):
             # convert per CHANGE to per GENERATION
             self.convert_data_to_per_generation(
                 experiment_data, chgperiods_for_gens)
-            # test
-            for key, property_per_chg in experiment_data.items():
-                if not key == "orig_global_opt_pos":
-                    assert self.get_n_generations() == len(
-                        experiment_data[key])
 
-            print("fertig")
+            # =================================================================
             # instantiate algorithm
-            # self.instantiate_optimization_alg()
+            alg = self.instantiate_optimization_alg(
+                experiment_data, alg_np_rnd_generator, pred_np_rnd_generator)
 
             # start optimization
+
             # save results
             # (plot results)6

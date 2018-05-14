@@ -36,20 +36,21 @@ sys.path.append(os.path.abspath(os.pardir))
 
 class DynamicPSO():
 
-    def __init__(self, problem, dim, iterations, problem_data, predictor_name,
-                 n_particles, pso_np_rnd_generator, pred_np_rnd_generator,
-                 c1, c2, c3, insert_pred_as_ind, adaptive_c3,
-                 n_neurons, n_epochs, batch_size, n_time_steps):
+    def __init__(self, benchmarkfunction, dim,
+                 n_generations, experiment_data, predictor_name,
+                 pso_np_rnd_generator, pred_np_rnd_generator,
+                 c1, c2, c3, insert_pred_as_ind,
+                 adaptive_c3, n_particles, timesteps,
+                 n_neurons, epochs, batchsize):
         '''
         Initialize a DynamicPSO object.
-        @param problem:
+        @param benchmarkfunction:
         @param dim: (int) dimensionality of objective function, i.e. number of 
         features for each individual
-        @param iterations: (int) number of generations
-        @param problem_data:
-        @param predictor_name:
-        @param n_particles: (int) swarm size
-        @param pso_np_rnd_generator: numpy random generator for the PSO
+        @param n_generations: (int) number of generations
+        @param experiment_data: (dictionary)
+        @param predictor: (string)
+        @param pso_np_rnd_generator: numpy random generator for the PSO    
         @param pred_np_rnd_generator: numpy random generator for the predictor
         @param c1: (float) influence of particle's best solution
         @param c2: (float) influence of swarm's best solution
@@ -57,52 +58,57 @@ class DynamicPSO():
         @param insert_pred_as_ind: (bool) True if the predicted optimum should
         be inserted into the swarm
         @param adaptive_c3: (bool) True if c3 is set with adaptive control
+        @param n_particles: (int) swarm size
+        @param n_time_steps: (int) number of time steps the predictions use for the
+        prediction
         @param n_neurons: (int) number of neurons within the first layer of the 
         RNN prediction model
         @param n_epochs: (int) number of epochs to train the RNN predicton model
         @param batch_size: (int) batch size for the RNN predictor
-        @param n_time_steps: (int) number of time steps the predictions use for the
-        prediction
+
         '''
         # ---------------------------------------------------------------------
         # for the problem
         # ---------------------------------------------------------------------
-        self.problem = problem
+        self.benchmarkfunction = benchmarkfunction
         self.dim = dim
-        self.iterations = iterations
-        self.problem_data = problem_data
-        self.pred_mode = predictor_name
+        self.n_generations = n_generations
+        self.experiment_data = experiment_data
+        self.predictor_name = predictor_name
 
         # ---------------------------------------------------------------------
         # for the predictor
         # ---------------------------------------------------------------------
+        self.n_time_steps = timesteps
         self.n_neurons = n_neurons
-        self.n_epochs = n_epochs
-        self.batch_size = batch_size
-        self.n_time_steps = n_time_steps
+        self.n_epochs = epochs
+        self.batch_size = batchsize
 
         # ---------------------------------------------------------------------
         # for PSO (fixed values)
         # ---------------------------------------------------------------------
-        self.n_particles = n_particles
         self.pso_np_rnd_generator = pso_np_rnd_generator
         self.pred_np_rnd_generator = pred_np_rnd_generator
+        self.c1 = c1
+        self.c2 = c2
+        self.c3 = c3
+        self.insert_pred_as_ind = insert_pred_as_ind
+        self.adaptive_c3 = adaptive_c3
+        self.n_particles = n_particles
 
-        self.init_c1 = c1
-        self.init_c2 = c2
-        self.init_c3 = c3
-        self.c1 = self.init_c1
-        self.c2 = self.init_c2
-        self.c3 = self.init_c3
+        # ---------------------------------------------------------------------
+        # values that are not passed as parameters to the constructor
+        # ---------------------------------------------------------------------
+        self.init_c1 = self.c1
+        self.init_c2 = self.c2
+        self.init_c3 = self.c3
+
         self.init_inertia = 0.7298
         self.inertia = self.init_inertia
         self.vmax = 1000.0  # TODO must not be too small
         self.inertia_adapt_factor = 0.5  # like tau for Rechenberg
         self.inertia_min = 0.1
         self.inertia_max = 0.78540
-
-        self.insert_pred_as_ind = insert_pred_as_ind
-        self.adaptive_c3 = adaptive_c3
 
         # ---------------------------------------------------------------------
         # for PSO (variable values)
@@ -117,7 +123,7 @@ class DynamicPSO():
             self.n_particles, self.dim)
         # 1d numpy array
         self.fitness_vals = np.array(
-            [utils_dynopt.fitness(self.problem, p, 0,  self.problem_data)
+            [utils_dynopt.fitness(self.benchmarkfunction, p, 0,  self.experiment_data)
              for p in self.particles])
         # best history value (position) for each particle
         # (2d numpy array: 1 row for each particle)
@@ -137,8 +143,8 @@ class DynamicPSO():
         # for each detected change the corresponding generation numbers
         self.gens_of_detected_chngs = {self.detected_n_changes: []}
         # storage for best fitness evaluation of each generation
-        self.best_particles = np.zeros((self.iterations, self.dim))
-        self.best_fitness_evals = np.zeros(self.iterations)
+        self.best_particles = np.zeros((self.n_generations, self.dim))
+        self.best_fitness_evals = np.zeros(self.n_generations)
         # position & fitness of found optima (one for each change period)
         self.prev_optima_pos = []
         self.prev_optima_fit = []
@@ -210,7 +216,7 @@ class DynamicPSO():
         # TODO auslagern: dem Optimierer einfach den fertigen Predictor geben?
         # es gibt nur bei RNN ein richtiges Object
         predictor = build_predictor(
-            self.pred_mode, self.n_time_steps, n_features, self.batch_size, self.n_neurons)
+            self.predictor_name, self.n_time_steps, n_features, self.batch_size, self.n_neurons)
         # denotes whether the predictor has been trained or not
         trained_first_time = False
         scaler = MinMaxScaler(feature_range=(-1, 1))
@@ -222,7 +228,7 @@ class DynamicPSO():
         n_succ_particles = 0
 
         # ---------------------------------------------------------------------
-        for i in range(self.iterations):
+        for i in range(self.n_generations):
             # adapt inertia weight
             self.adapt_inertia(n_succ_particles)
             # reset n_succ_particles after inertia adaptation
@@ -230,7 +236,7 @@ class DynamicPSO():
 
             # test for environment change
             env_changed = environment_changed(i, self.particles, self.fitness_vals,
-                                              self.problem, self.problem_data, self.pso_np_rnd_generator)
+                                              self.benchmarkfunction, self.experiment_data, self.pso_np_rnd_generator)
 
             # iteration number in which the last change was detected
             last_it_with_chg = 0
@@ -251,13 +257,13 @@ class DynamicPSO():
                 overall_n_train_data = len(self.prev_optima_pos)
 
                 # prevent training with too few train data
-                if overall_n_train_data <= self.n_time_steps or overall_n_train_data < 50 or self.pred_mode == "no":
+                if overall_n_train_data <= self.n_time_steps or overall_n_train_data < 50 or self.predictor_name == "no":
                     my_pred_mode = "no"
                     # train_data is empty list
                     train_data = None
                     prediction = None
                 else:
-                    my_pred_mode = self.pred_mode
+                    my_pred_mode = self.predictor_name
 
                     # scale data
                     scaler = scaler.fit(self.prev_optima_pos)
@@ -287,11 +293,11 @@ class DynamicPSO():
                                                                scaler, predictor)
                     self.pred_optima_pos.append(copy.copy(prediction))
                     self.pred_optima_fit.append(utils_dynopt.fitness(
-                        self.problem, prediction, i, self.problem_data))
+                        self.benchmarkfunction, prediction, i, self.experiment_data))
 
                 # compute fitness again since fitness function changed
                 self.fitness_vals = np.array(
-                    [utils_dynopt.fitness(self.problem, p, i, self.problem_data)
+                    [utils_dynopt.fitness(self.benchmarkfunction, p, i, self.experiment_data)
                      for p in self.particles])
                 # reset p_best to current position
                 self.p_best_pos = copy.copy(self.particles)
@@ -306,10 +312,10 @@ class DynamicPSO():
                     pred_to_insert = copy.copy(prediction)
                 else:
                     pred_to_insert = None
-                self.particles, self.fitness_vals = replace_worst_individuals(self.pso_np_rnd_generator, self.problem,
+                self.particles, self.fitness_vals = replace_worst_individuals(self.pso_np_rnd_generator, self.benchmarkfunction,
                                                                               i, self.particles, self.fitness_vals,
                                                                               self.n_particles,  n_features,
-                                                                              self.problem_data, pred_to_insert)
+                                                                              self.experiment_data, pred_to_insert)
 
                 if prediction is None:
                     self.p_pred_diff_vals = np.zeros(
@@ -362,7 +368,7 @@ class DynamicPSO():
 
             # compute fitness
             self.fitness_vals = np.array(
-                [utils_dynopt.fitness(self.problem, p, i, self.problem_data) for p in self.particles])
+                [utils_dynopt.fitness(self.benchmarkfunction, p, i, self.experiment_data) for p in self.particles])
 
             # update p_best after saving old
             old_p_best_fit = copy.copy(self.p_best_fit)
@@ -385,9 +391,9 @@ class DynamicPSO():
                 self.adapt_c3()
         # store things last time
         self.prev_optima_pos.append(
-            copy.copy(self.best_particles[self.iterations - 1]))
+            copy.copy(self.best_particles[self.n_generations - 1]))
         self.prev_optima_fit.append(
-            copy.copy(self.best_fitness_evals[self.iterations - 1]))
+            copy.copy(self.best_fitness_evals[self.n_generations - 1]))
 
         # conversion
         self.prev_optima_pos = np.array(self.prev_optima_pos)
