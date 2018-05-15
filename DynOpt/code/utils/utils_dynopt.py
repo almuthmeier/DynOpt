@@ -9,7 +9,6 @@ Created on Nov 23, 2017
 @author: ameier
 '''
 import copy
-import math
 import warnings
 
 from benchmarks import mpb, dynposbenchmark

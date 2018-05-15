@@ -136,7 +136,8 @@ class Test(unittest.TestCase):
         global_opt_fit1 = f1['global_opt_fit_per_chgperiod']
         global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
 
-        n_peaks, n_generations = heights1.shape
+        # format: n_peaks, n_generations
+        _, n_generations = heights1.shape
 
         # compute max height for each column (for each peak one row, while the
         # columns represent generations)

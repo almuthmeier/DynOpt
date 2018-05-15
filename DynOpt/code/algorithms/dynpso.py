@@ -349,8 +349,7 @@ class DynamicPSO():
             self.fitness_vals = np.array(
                 [utils_dynopt.fitness(self.benchmarkfunction, p, i, self.experiment_data) for p in self.particles])
 
-            # update p_best after saving old
-            old_p_best_fit = copy.copy(self.p_best_fit)
+            # update p_best
             particle_better = self.fitness_vals < self.p_best_fit
             n_succ_particles = np.sum(particle_better)
             self.p_best_pos[particle_better] = copy.copy(

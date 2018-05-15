@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
         '''
         # for all sub-folders in self.pyth_test_problems and its sub-folders do
         # the following tests
-        for ppath, subdirs, files in os.walk(self.path_test_problems):
+        for ppath, _, files in os.walk(self.path_test_problems):  # ppath, subdirs
             for name in files:
                 abs_file_path = os.path.join(ppath, name)
                 file = np.load(abs_file_path)
