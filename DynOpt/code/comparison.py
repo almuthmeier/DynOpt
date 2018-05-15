@@ -96,6 +96,7 @@ class PredictorComparator(object):
         # random generator for the optimization algorithm
         #  (e.g. for creation of population, random immigrants)
         alg_np_rnd_generator = np.random.RandomState(29405601)
+        # so?: np.random.RandomState(random.randint(1, 567))
         # for predictor related stuff: random generator for  numpy arrays
         pred_np_rnd_generator = np.random.RandomState(23044820)
 

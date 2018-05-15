@@ -3,7 +3,8 @@ Created on May 15, 2018
 
 @author: ameier
 '''
-import math
+
+
 import os
 import unittest
 
@@ -11,6 +12,7 @@ from matplotlib import cm
 
 from benchmarks.mpb import compute_fitness, __create_and_save_mpb_problem__
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # necessary for "projection='3d'"
 import numpy as np
 from utils.utils_plot import plot_points
 
@@ -21,14 +23,10 @@ class Test(unittest.TestCase):
         self.path_test_problems = os.path.abspath(
             os.pardir) + "/tests/test_datasets/"
 
-        # path to DynOpt
-        path_to_dynopt = '/'.join(os.path.abspath(os.pardir).split('/')[:-1])
-        self.path_test_problems = path_to_dynopt + "/datasets/"
-
         '''
         Create two instances of MPB-Function with same parameters.
         '''
-        self.n_gens = 12
+        self.n_chg_periods = 12
         self.n_dims = 2
         self.n_peaks = 3
         self.len_chg_period = 4
@@ -39,16 +37,19 @@ class Test(unittest.TestCase):
 
         # create first time
         self.np_random_generator = np.random.RandomState(3)
-        __create_and_save_mpb_problem__(self.n_gens, self.n_dims, self.n_peaks, self.len_chg_period, self.len_movement_vector,
-                                        self.np_random_generator, self.f1_name, noise=None)
+        self.np_peaks_random_generator = np.random.RandomState(55)
+        __create_and_save_mpb_problem__(self.n_chg_periods, self.n_dims, self.n_peaks, self.len_movement_vector,
+                                        self.np_random_generator, self.np_peaks_random_generator, self.f1_name, noise=None)
         # create second time
         self.np_random_generator = np.random.RandomState(3)
-        __create_and_save_mpb_problem__(self.n_gens, self.n_dims, self.n_peaks, self.len_chg_period, self.len_movement_vector,
-                                        self.np_random_generator, self.f2_name, noise=None)
+        self.np_peaks_random_generator = np.random.RandomState(55)
+        __create_and_save_mpb_problem__(self.n_chg_periods, self.n_dims, self.n_peaks, self.len_movement_vector,
+                                        self.np_random_generator, self.np_peaks_random_generator, self.f2_name, noise=None)
         # create third time (with noise)
         self.np_random_generator = np.random.RandomState(3)
-        __create_and_save_mpb_problem__(self.n_gens, self.n_dims, self.n_peaks, self.len_chg_period, self.len_movement_vector,
-                                        self.np_random_generator, self.f3_name, noise=0.01)
+        self.np_peaks_random_generator = np.random.RandomState(55)
+        __create_and_save_mpb_problem__(self.n_chg_periods, self.n_dims, self.n_peaks, self.len_movement_vector,
+                                        self.np_random_generator, self.np_peaks_random_generator, self.f3_name, noise=0.1)
 
         self.f1 = np.load(self.f1_name)
         self.f2 = np.load(self.f2_name)
@@ -60,12 +61,12 @@ class Test(unittest.TestCase):
         self.widths2 = self.f2['widths']
         self.positions1 = self.f1['positions']
         self.positions2 = self.f2['positions']
-        self.global_opt_fit1 = self.f1['global_opt_fit']
-        self.global_opt_fit2 = self.f2['global_opt_fit']
-        self.global_opt_fit3 = self.f3['global_opt_fit']
-        self.global_opt_pos1 = self.f1['global_opt_pos']
-        self.global_opt_pos2 = self.f2['global_opt_pos']
-        self.global_opt_pos3 = self.f3['global_opt_pos']
+        self.global_opt_fit1 = self.f1['global_opt_fit_per_chgperiod']
+        self.global_opt_fit2 = self.f2['global_opt_fit_per_chgperiod']
+        self.global_opt_fit3 = self.f3['global_opt_fit_per_chgperiod']
+        self.global_opt_pos1 = self.f1['global_opt_pos_per_chgperiod']
+        self.global_opt_pos2 = self.f2['global_opt_pos_per_chgperiod']
+        self.global_opt_pos3 = self.f3['global_opt_pos_per_chgperiod']
 
     def tearDown(self):
         '''
@@ -90,10 +91,9 @@ class Test(unittest.TestCase):
             self.global_opt_pos1, self.global_opt_pos2)
 
         # changes correctly?
-        self.assertEqual(len(self.global_opt_fit1), self.n_gens)
-        n_change_periods = math.ceil(self.n_gens / self.len_chg_period)
+        self.assertEqual(len(self.global_opt_fit1), self.n_chg_periods)
         self.assertEqual(len(np.unique(self.global_opt_fit1)),
-                         n_change_periods)
+                         self.n_chg_periods)
 
         # correct number peaks?
         self.assertEqual(len(self.positions1), self.n_peaks)
@@ -106,7 +106,7 @@ class Test(unittest.TestCase):
         Tests whether previously computed fitness of global optima is same as
         computed by the normal fitness function
         '''
-        for g in range(self.n_gens):
+        for g in range(self.n_chg_periods):
             x = self.global_opt_pos1[g]
             act = compute_fitness(x, g, self.heights1,
                                   self.widths1, self.positions1)
@@ -129,16 +129,12 @@ class Test(unittest.TestCase):
         Tests whether the stored global optimum (fitness & position) really is
         the global optimum peak.
         '''
-        f1_path = os.path.expanduser(
-            "~/Documents/Promotion/GITs/datasets/Predictorvergleich/EvoStar_2018/mpb/")
-        f1_name = "mpbnoisy_d-2_gen-6000_lenchgperiod-20_veclen-0.6_peaks-10_noise-0.0_2017-11-02_00:00.npz"
-        #f1_name = "mpbnoisy_d-2_gen-2000_lenchgperiod-20_veclen-0.6_peaks-10_noise-0.0_2018-01-19_14:49.npz"
-        f1 = np.load(f1_path + f1_name)
+        f1 = np.load(self.f2_name)
         heights1 = f1['heights']
         widths1 = f1['widths']
         positions1 = f1['positions']
-        global_opt_fit1 = f1['global_opt_fit']
-        global_opt_pos1 = f1['global_opt_pos']
+        global_opt_fit1 = f1['global_opt_fit_per_chgperiod']
+        global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
 
         n_peaks, n_generations = heights1.shape
 
@@ -167,7 +163,7 @@ class Test(unittest.TestCase):
 
         # test whether the fitness of the global optimum really is better than
         # some other solutions
-        my_gen = 23  # test for one arbitrary generation
+        my_gen = 5  # test for one arbitrary generation
         rows, cols = X.shape
         for i in range(rows):
             for j in range(cols):
@@ -183,26 +179,18 @@ class Test(unittest.TestCase):
         '''
         Plots the global optima to visually check the correctness.
         '''
-        f1_path = os.path.expanduser(
-            #"~/Documents/Promotion/GITs/datasets/Predictorvergleich/mpb_ausprobieren/")
-            "~/Documents/Promotion/GITs/datasets/Predictorvergleich/EvoStar_2018/mpb/")
-        f1_name = "mpbnoisy_d-2_gen-2000_lenchgperiod-20_veclen-0.6_peaks-10_noise-0.0_2018-01-19_14:49.npz"
-        f1_name = "mpbnoisy_d-2_gen-6000_lenchgperiod-20_veclen-0.6_peaks-10_noise-0.0_2017-11-02_00:00.npz"
-        f1 = np.load(f1_path + f1_name)
-        global_opt_pos1 = f1['global_opt_pos']
+        f1 = np.load(self.f3_name)
+        global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
         plot_points(global_opt_pos1, 'Real optimum per change')
 
-    def plot_mpb(self):
+    def plot_mpb_test(self):
         '''
         Plots MPB fitness landscape at a choosen generation (loads MPB data set)
         '''
         #==========================
         # MPB parameters
         gen = 10  # arbitrarily chosen
-        f1_path = os.path.expanduser(
-            "~/Documents/Promotion/GITs/datasets/Predictorvergleich/EvoStar_2018/mpb/")
-        f1_name = "mpbnoisy_d-2_gen-6000_lenchgperiod-20_veclen-0.6_peaks-10_noise-0.0_2017-11-02_00:00.npz"
-        f1 = np.load(f1_path + f1_name)
+        f1 = np.load(self.f3_name)
         heights = f1['heights']
         widths = f1['widths']
         positions = f1['positions']
@@ -243,6 +231,7 @@ class Test(unittest.TestCase):
 
         # Anzeigen und Speichern
         plt.show()
+        self.assertTrue(True)
 
         #fig.savefig('mpb.pdf', bbox_inches=0, transparent=True)
 if __name__ == "__main__":

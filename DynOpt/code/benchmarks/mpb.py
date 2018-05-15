@@ -65,7 +65,7 @@ def __create_vector(dimensionality, len_vector, np_random_generator, noise=None)
 
 
 def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement_vector,
-                                    np_random_generator, path_to_file, noise=None):
+                                    np_random_generator, mpb_peaks_np_random_generator, path_to_file, noise=None):
     '''
     Creates mpb data set for a specific setting.
     '''
@@ -126,10 +126,10 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
                     n_dims, len_movement_vector, np_random_generator, noise)
                 min_heigth = 1.0
                 curr_height = max(min_heigth, old_height + heigth_severity *
-                                  np_random_generator.normal(loc=0.0, scale=1.0))
+                                  mpb_peaks_np_random_generator.normal(loc=0.0, scale=1.0))
                 min_width = 1.0  # should not become smaller than 0
                 curr_width = max(min_width, old_width + width_severity *
-                                 np_random_generator.normal(loc=0.0, scale=1.0))
+                                 mpb_peaks_np_random_generator.normal(loc=0.0, scale=1.0))
                 curr_position = old_position + position_movement
 
                 # update problem parameters
@@ -205,8 +205,12 @@ def start_creating_problem():
             for len_movement_vector in lens_movement_vector:
                 for n_peaks in peaks:
                     for noise in noise_strengths:
+                        # TODO not always the same seed? (but then some tests
+                        # will fail)
                         mpb_np_random_generator = np.random.RandomState(
                             np.random.randint(0, 567567))
+                        mpb_peaks_np_random_generator = np.random.RandomState(
+                            np.random.randint(0, 234))
 
                         file_name = func_name + "_d-" + str(n_dims) + "_chgperiods-" + \
                             str(n_periods) + "_veclen-" + str(len_movement_vector) + \
@@ -216,6 +220,7 @@ def start_creating_problem():
                         __create_and_save_mpb_problem__(n_periods, n_dims, n_peaks,
                                                         len_movement_vector,
                                                         mpb_np_random_generator,
+                                                        mpb_peaks_np_random_generator,
                                                         path_to_file, noise)
 
 
