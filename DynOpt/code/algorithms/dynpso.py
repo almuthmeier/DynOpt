@@ -8,30 +8,14 @@ Created on Dec 13, 2017
 '''
 
 import copy
-import os
-import sys
 
 from sklearn.preprocessing.data import MinMaxScaler
 
 import numpy as np
 from utils import utils_dynopt
-from utils.utils_dynopt import environment_changed, replace_worst_individuals,\
-    get_global_optimum_pos_and_fit_for_all_generations,\
-    compute_real_gens_of_chgs
-from utils.utils_plot import plot_fitness, plot_best_ind_per_gen, plot_points,\
-    plot_diff_pred_and_optimum
+from utils.utils_dynopt import environment_changed, replace_worst_individuals
 from utils.utils_prediction import build_predictor,\
     predict_next_optimum_position
-
-
-#from dynamicopt.metrics.metrics_dynea import arr, best_error_before_change
-#from dynamicopt.utils import utils_dynopt
-#from dynamicopt.utils.utils_dynopt import replace_worst_individuals, environment_changed, compute_real_gens_of_chgs, get_global_optimum_pos_and_fit_for_all_generations
-# from dynamicopt.utils.utils_plot import plot_diff_pred_and_optimum, plot_fitness,\
-#    plot_best_ind_per_gen, plot_points
-# from dynamicopt.utils.utils_prediction import build_predictor,\
-#    predict_next_optimum_position
-sys.path.append(os.path.abspath(os.pardir))
 
 
 class DynamicPSO():
@@ -198,7 +182,7 @@ class DynamicPSO():
             else:
                 pass
 
-    def dynpso(self):
+    def optimize(self):
         '''
         @param mu: population size
         @param la: lambda (offspring population size)
@@ -395,147 +379,3 @@ class DynamicPSO():
             self.best_found_pos_per_chgperiod)
         self.pred_opt_pos_per_chgperiod = np.array(
             self.pred_opt_pos_per_chgperiod)
-
-    def optimize(self):
-        self.dynpso()
-
-    def save_results(self, arrays_file_name, periods_for_generations, act_n_chngs,
-                     global_opt_pos_of_changes,
-                     global_opt_fit_of_changes):
-        np.savez(arrays_file_name,
-                 # data from the PSO
-                 best_found_fit_per_gen=self.best_found_fit_per_gen,
-                 best_found_pos_per_gen=self.best_found_pos_per_gen,
-                 best_found_fit_per_chgperiod=self.best_found_fit_per_chgperiod,
-                 best_found_pos_per_chgperiod=self.best_found_pos_per_chgperiod,
-                 pred_opt_fit_per_chgperiod=self.pred_opt_fit_per_chgperiod,
-                 pred_opt_pos_per_chgperiod=self.pred_opt_pos_per_chgperiod,
-                 detected_n_changes=self.detected_n_changes,
-                 detected_chgperiods_for_gens=self.detected_chgperiods_for_gens,
-                 # data about the problem
-                 periods_for_generations=periods_for_generations,
-                 act_n_chngs=act_n_chngs,
-                 global_opt_pos_of_changes=global_opt_pos_of_changes,
-                 global_opt_fit_of_changes=global_opt_fit_of_changes)
-
-
-def define_settings_and_run(repetition, gpu_ID,
-                            predictor_name, problem, experiment_name, dim, generations, len_chg_period, pos_chng_type,
-                            fit_chng_type, problem_data, n_peaks, arrays_file_path, day, time, noise,
-                            pso_np_rnd_generator, pred_np_rnd_generator, periods_for_generations, act_n_chngs,
-                            c1, c2, c3, insert_pred_as_ind, adaptive_c3,
-                            n_neurons, n_epochs, batch_size, n_time_steps):
-    '''
-    repetition has to be the first argument, because predictor_comparison.run_runs_parallel() assumes that.
-    '''
-    print("Started repetition with ID ", repetition, flush=True)
-    #==========================================================================
-    # make tensorflow deterministic
-    import tensorflow as tf
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True  # prevent using whole GPU
-    session = tf.Session(config=config)
-    tf.set_random_seed(1234)
-    from keras import backend as K
-
-    #==========================================================================
-    n_particles = 200  # has to be set # TODO read from input
-    # initialize EA object
-    pso = DynamicPSO(problem, dim, generations, problem_data, predictor_name,
-                     n_particles, pso_np_rnd_generator, pred_np_rnd_generator,
-                     c1, c2, c3, insert_pred_as_ind, adaptive_c3,
-                     n_neurons, n_epochs, batch_size, n_time_steps)
-
-    # TODO sind opt. pos/fit per GENERATION (not per change) !!!!!
-    # ist daher auch in den gespeicherten array-files verkehrt!!
-    global_opt_pos_of_changes, global_opt_fit_of_changes = get_global_optimum_pos_and_fit_for_all_generations(
-        problem, problem_data)
-    real_gens_of_chgs = compute_real_gens_of_chgs(
-        periods_for_generations, act_n_chngs)
-
-    # ==========================================================================
-    # run PSO on specified GPU
-    with tf.device('/gpu:' + str(gpu_ID)):
-        pso.dynpso()
-        K.clear_session()
-    # ==========================================================================
-    # compute metrics
-    # arr_value = arr(real_gens_of_chgs,
-    #                global_opt_fit_of_changes, pso.best_found_fit_per_gen)
-    arr_value = None
-    # bebc = best_error_before_change(
-    # real_gens_of_chgs, global_opt_fit_of_changes,
-    # pso.best_found_fit_per_gen)
-    bebc = None
-
-    # ==========================================================================
-    # save results
-    arrays_file_name = arrays_file_path + predictor_name + "_" + problem + "_" + experiment_name + "_" + \
-        str(dim) + "_" + pos_chng_type + "_" + \
-        fit_chng_type + "_lenchgperiod-" + str(len_chg_period) + "_noise-" + str(noise) + "_" + day + '_' + \
-        time + "_" + str(repetition) + ".npz"
-    pso.save_results(arrays_file_name,
-                     periods_for_generations, act_n_chngs,
-                     global_opt_pos_of_changes,
-                     global_opt_fit_of_changes)
-
-    # ==========================================================================
-    plots_allowed = False
-    if plots_allowed == True:
-        plot_results(pso, act_n_chngs, arr_value, bebc, global_opt_pos_of_changes,
-                     global_opt_fit_of_changes)
-
-    # do not change order of return values!!! (otherwise change it in
-    # predictor_comparison.py as well
-    return pso.best_found_fit_per_gen, arr_value, bebc
-
-
-def plot_results(pso, act_n_chngs, arr_value, bebc, global_opt_pos_of_changes,
-                 global_opt_fit_of_changes):
-    print("detected ", pso.detected_n_changes, " of ", act_n_chngs, " changes")
-    print("best fitness: " + str(min(pso.best_found_fit_per_gen)))
-    print("Best-fitness-before-change: ",
-          np.average(pso.best_found_fit_per_chgperiod))
-    print("ARR: ", arr_value)
-    print("Best-error-before-change: ", bebc)
-
-    plot_fitness(pso.best_found_fit_per_gen)
-    plot_best_ind_per_gen(pso.best_found_pos_per_gen)
-    plot_points(pso.pred_opt_pos_per_chgperiod,
-                'Predicted optimum position per change period')
-    plot_points(pso.best_found_pos_per_chgperiod,
-                'Found optimum position per change period')
-    # ==========================================================================
-    # compute and plot Eucl. difference between predicted and real optimum
-    if pso.detected_n_changes == act_n_chngs:
-        n_change_periods = act_n_chngs + 1
-        plot_points(global_opt_pos_of_changes, 'Real optimum per change')
-
-        n_predicted_opt = len(pso.pred_opt_pos_per_chgperiod)
-        tmp1 = (pso.pred_opt_pos_per_chgperiod -
-                global_opt_pos_of_changes[-n_predicted_opt:])**2
-        tmp2 = np.sum(tmp1, axis=1)  # compute row sums
-        diff_pred_and_opt = np.sqrt(tmp2)
-
-        # Eucl. norm: real optimum - found optimum
-        tmp1 = (pso.best_found_pos_per_chgperiod[-n_predicted_opt:] -
-                global_opt_pos_of_changes[-n_predicted_opt:])**2
-        tmp2 = np.sum(tmp1, axis=1)  # compute row sums
-        diff_found_and_opt = np.sqrt(tmp2)
-
-        plot_diff_pred_and_optimum(
-            diff_pred_and_opt,  "position", diff_found_and_opt)
-
-        #----------------------------------
-        # plot fitness differences
-        opt_array = np.array(
-            [global_opt_fit_of_changes[k] for k in range(n_change_periods)])
-        fit_diff_found_and_opt = abs(
-            pso.best_found_fit_per_chgperiod - opt_array)
-        fit_diff_pred_and_opt = abs(
-            pso.pred_opt_fit_per_chgperiod - opt_array[-n_predicted_opt:])
-        plot_diff_pred_and_optimum(
-            fit_diff_pred_and_opt, "fitness", fit_diff_found_and_opt[-n_predicted_opt:])
-    else:
-        print("len_found: ", len(pso.pred_opt_pos_per_chgperiod),
-              ", real: ", len(global_opt_pos_of_changes))
