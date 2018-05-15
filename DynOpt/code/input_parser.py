@@ -77,6 +77,13 @@ def define_parser_arguments():
     return parser
 
 
+def create_dir_if_not_existing(directory_path):
+    if not os.path.exists(directory_path):
+        warnings.warn("Warning: the directory " + directory_path +
+                      "did not exist and is therefore created")
+        os.makedirs(directory_path)
+
+
 def initialize_comparator(parser, comparator):
     if not len(sys.argv) > 1:
         # no input values existing
@@ -92,6 +99,7 @@ def initialize_comparator(parser, comparator):
     comparator.time = time
     comparator.arrays_file_path = comparator.outputdirectorypath + "arrays/"
     comparator.metrics_file_path = comparator.outputdirectorypath + "metrics/"
+    comparator.logs_file_path = comparator.outputdirectorypath + "logs/"
 
 
 def initialize_comparator_manually(comparator):
@@ -264,14 +272,17 @@ def run_parser():
     initialize_comparator(parser, comparator)
 
     # =======================================================================
-    # configure log file
+    # configure output
     # =======================================================================
+    # create output directories
+    arrays_file_path = comparator.outputdirectorypath + "arrays/"
+    metrics_file_path = comparator.outputdirectorypath + "metrics/"
     logs_file_path = comparator.outputdirectorypath + "logs/"
-    if not os.path.exists(logs_file_path):
-        warnings.warn("Warning: the directory " + logs_file_path +
-                      "did not exist and is therefore created")
-        os.makedirs(logs_file_path)
+    create_dir_if_not_existing(arrays_file_path)
+    create_dir_if_not_existing(metrics_file_path)
+    create_dir_if_not_existing(logs_file_path)
 
+    # set log file
     log_file_name = get_logs_file_name(logs_file_path, comparator.predictor,
                                        comparator.benchmarkfunction,
                                        comparator.day, comparator.time)

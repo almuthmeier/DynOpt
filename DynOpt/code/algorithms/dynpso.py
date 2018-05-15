@@ -140,17 +140,18 @@ class DynamicPSO():
 
         # number of changed detected by the PSO
         self.detected_n_changes = 0
-        # for each detected change the corresponding generation numbers
-        self.gens_of_detected_chngs = {self.detected_n_changes: []}
+        # 1d numpy array containing for each generation the number of the
+        # detected change period it belongs to
+        self.detected_chgperiods_for_gens = []
         # storage for best fitness evaluation of each generation
-        self.best_particles = np.zeros((self.n_generations, self.dim))
-        self.best_fitness_evals = np.zeros(self.n_generations)
+        self.best_found_pos_per_gen = np.zeros((self.n_generations, self.dim))
+        self.best_found_fit_per_gen = np.zeros(self.n_generations)
         # position & fitness of found optima (one for each change period)
-        self.prev_optima_pos = []
-        self.prev_optima_fit = []
+        self.best_found_pos_per_chgperiod = []
+        self.best_found_fit_per_chgperiod = []
         # position & fitness of predicted optima (one for each change period)
-        self.pred_optima_pos = []
-        self.pred_optima_fit = []
+        self.pred_opt_pos_per_chgperiod = []
+        self.pred_opt_fit_per_chgperiod = []
 
     def reset_factors(self):
         '''
@@ -186,12 +187,12 @@ class DynamicPSO():
         self.inertia = min(self.inertia, self.inertia_max)
 
     def adapt_c3(self):
-        if len(self.pred_optima_pos) > 0 and not self.pred_optima_pos[-1] is None:
-            if self.pred_optima_fit[-1] < 1.05 * self.s_best_fit:
+        if len(self.pred_opt_pos_per_chgperiod) > 0 and not self.pred_opt_pos_per_chgperiod[-1] is None:
+            if self.pred_opt_fit_per_chgperiod[-1] < 1.05 * self.s_best_fit:
                 # prediction has good fitness -> increase its influence
                 self.c3 *= 2
                 #print("besser", flush=True)
-            elif self.pred_optima_fit[-1] > 1.05 * self.s_best_fit:
+            elif self.pred_opt_fit_per_chgperiod[-1] > 1.05 * self.s_best_fit:
                 # prediction has bad fitness -> decrease its influence
                 self.c3 /= 2
             else:
@@ -250,11 +251,11 @@ class DynamicPSO():
 
                 # store best found solution during change period as training data for predictor
                 # TODO works only for plus-selection (not for comma-selection)
-                self.prev_optima_pos.append(
-                    copy.copy(self.best_particles[i - 1]))
-                self.prev_optima_fit.append(
-                    copy.copy(self.best_fitness_evals[i - 1]))
-                overall_n_train_data = len(self.prev_optima_pos)
+                self.best_found_pos_per_chgperiod.append(
+                    copy.copy(self.best_found_pos_per_gen[i - 1]))
+                self.best_found_fit_per_chgperiod.append(
+                    copy.copy(self.best_found_fit_per_gen[i - 1]))
+                overall_n_train_data = len(self.best_found_pos_per_chgperiod)
 
                 # prevent training with too few train data
                 if overall_n_train_data <= self.n_time_steps or overall_n_train_data < 50 or self.predictor_name == "no":
@@ -266,16 +267,16 @@ class DynamicPSO():
                     my_pred_mode = self.predictor_name
 
                     # scale data
-                    scaler = scaler.fit(self.prev_optima_pos)
-                    transf_prev_optima_positions = scaler.transform(
-                        copy.copy(self.prev_optima_pos))
+                    scaler = scaler.fit(self.best_found_pos_per_chgperiod)
+                    transf_best_found_pos_per_chgperiod = scaler.transform(
+                        copy.copy(self.best_found_pos_per_chgperiod))
 
                     # choose training data
                     if not trained_first_time:
                         # first time, has not been trained before, therefore use all
                         # found optimum positions
                         trained_first_time = True
-                        train_data = transf_prev_optima_positions
+                        train_data = transf_best_found_pos_per_chgperiod
                     else:
                         # append the last new train data (one) and in addition
                         # n_time_steps already evaluated data in order to create a
@@ -284,15 +285,16 @@ class DynamicPSO():
                         train_data = []
                         for step_idx in range(self.n_time_steps + 1, 0, -1):
                             train_data.append(
-                                transf_prev_optima_positions[-step_idx])
+                                transf_best_found_pos_per_chgperiod[-step_idx])
                         train_data = np.array(train_data)
                     # predict next optimum position
                     prediction = predict_next_optimum_position(my_pred_mode, train_data,
                                                                self.n_epochs, self.batch_size,
                                                                self.n_time_steps, n_features,
                                                                scaler, predictor)
-                    self.pred_optima_pos.append(copy.copy(prediction))
-                    self.pred_optima_fit.append(utils_dynopt.fitness(
+                    self.pred_opt_pos_per_chgperiod.append(
+                        copy.copy(prediction))
+                    self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
                         self.benchmarkfunction, prediction, i, self.experiment_data))
 
                 # compute fitness again since fitness function changed
@@ -325,14 +327,7 @@ class DynamicPSO():
             else:
                 self.p_pred_diff_vals = np.zeros((self.n_particles, self.dim))
 
-            # end: if_changed
-            try:
-                self.gens_of_detected_chngs[self.detected_n_changes].append(i)
-            except KeyError:
-                # occurs first time after a change occurred
-                self.gens_of_detected_chngs[self.detected_n_changes] = []
-                self.gens_of_detected_chngs[self.detected_n_changes].append(i)
-
+            self.detected_chgperiods_for_gens.append(i)
             # random values
             r1_vals = self.pso_np_rnd_generator.rand(
                 self.n_particles, self.dim)
@@ -383,21 +378,23 @@ class DynamicPSO():
             self.s_best_fit = np.min(self.p_best_fit)
 
             # determine best particles/fitness (for evaluation/statistic)
-            self.best_fitness_evals[i] = copy.copy(self.s_best_fit)
-            self.best_particles[i] = copy.copy(self.s_best_pos)
+            self.best_found_fit_per_gen[i] = copy.copy(self.s_best_fit)
+            self.best_found_pos_per_gen[i] = copy.copy(self.s_best_pos)
 
             # adapt c3
             if self.adaptive_c3:
                 self.adapt_c3()
         # store things last time
-        self.prev_optima_pos.append(
-            copy.copy(self.best_particles[self.n_generations - 1]))
-        self.prev_optima_fit.append(
-            copy.copy(self.best_fitness_evals[self.n_generations - 1]))
+        self.best_found_pos_per_chgperiod.append(
+            copy.copy(self.best_found_pos_per_gen[self.n_generations - 1]))
+        self.best_found_fit_per_chgperiod.append(
+            copy.copy(self.best_found_fit_per_gen[self.n_generations - 1]))
 
         # conversion
-        self.prev_optima_pos = np.array(self.prev_optima_pos)
-        self.pred_optima_pos = np.array(self.pred_optima_pos)
+        self.best_found_pos_per_chgperiod = np.array(
+            self.best_found_pos_per_chgperiod)
+        self.pred_opt_pos_per_chgperiod = np.array(
+            self.pred_opt_pos_per_chgperiod)
 
     def optimize(self):
         self.dynpso()
@@ -407,14 +404,14 @@ class DynamicPSO():
                      global_opt_fit_of_changes):
         np.savez(arrays_file_name,
                  # data from the PSO
-                 best_fitness_evals=self.best_fitness_evals,
-                 best_individuals=self.best_particles,
-                 prev_optima_fit=self.prev_optima_fit,
-                 prev_optima_pos=self.prev_optima_pos,
-                 pred_optima_fit=self.pred_optima_fit,
-                 pred_optima_pos=self.pred_optima_pos,
+                 best_found_fit_per_gen=self.best_found_fit_per_gen,
+                 best_found_pos_per_gen=self.best_found_pos_per_gen,
+                 best_found_fit_per_chgperiod=self.best_found_fit_per_chgperiod,
+                 best_found_pos_per_chgperiod=self.best_found_pos_per_chgperiod,
+                 pred_opt_fit_per_chgperiod=self.pred_opt_fit_per_chgperiod,
+                 pred_opt_pos_per_chgperiod=self.pred_opt_pos_per_chgperiod,
                  detected_n_changes=self.detected_n_changes,
-                 gens_of_detected_chngs=self.gens_of_detected_chngs,
+                 detected_chgperiods_for_gens=self.detected_chgperiods_for_gens,
                  # data about the problem
                  periods_for_generations=periods_for_generations,
                  act_n_chngs=act_n_chngs,
@@ -464,10 +461,11 @@ def define_settings_and_run(repetition, gpu_ID,
     # ==========================================================================
     # compute metrics
     # arr_value = arr(real_gens_of_chgs,
-    #                global_opt_fit_of_changes, pso.best_fitness_evals)
+    #                global_opt_fit_of_changes, pso.best_found_fit_per_gen)
     arr_value = None
     # bebc = best_error_before_change(
-    #    real_gens_of_chgs, global_opt_fit_of_changes,  pso.best_fitness_evals)
+    # real_gens_of_chgs, global_opt_fit_of_changes,
+    # pso.best_found_fit_per_gen)
     bebc = None
 
     # ==========================================================================
@@ -489,35 +487,38 @@ def define_settings_and_run(repetition, gpu_ID,
 
     # do not change order of return values!!! (otherwise change it in
     # predictor_comparison.py as well
-    return pso.best_fitness_evals, arr_value, bebc
+    return pso.best_found_fit_per_gen, arr_value, bebc
 
 
 def plot_results(pso, act_n_chngs, arr_value, bebc, global_opt_pos_of_changes,
                  global_opt_fit_of_changes):
     print("detected ", pso.detected_n_changes, " of ", act_n_chngs, " changes")
-    print("best fitness: " + str(min(pso.best_fitness_evals)))
-    print("Best-fitness-before-change: ", np.average(pso.prev_optima_fit))
+    print("best fitness: " + str(min(pso.best_found_fit_per_gen)))
+    print("Best-fitness-before-change: ",
+          np.average(pso.best_found_fit_per_chgperiod))
     print("ARR: ", arr_value)
     print("Best-error-before-change: ", bebc)
 
-    plot_fitness(pso.best_fitness_evals)
-    plot_best_ind_per_gen(pso.best_particles)
-    plot_points(pso.pred_optima_pos, 'Predicted optimum position per change')
-    plot_points(pso.prev_optima_pos, 'Found optimum position per change')
+    plot_fitness(pso.best_found_fit_per_gen)
+    plot_best_ind_per_gen(pso.best_found_pos_per_gen)
+    plot_points(pso.pred_opt_pos_per_chgperiod,
+                'Predicted optimum position per change period')
+    plot_points(pso.best_found_pos_per_chgperiod,
+                'Found optimum position per change period')
     # ==========================================================================
     # compute and plot Eucl. difference between predicted and real optimum
     if pso.detected_n_changes == act_n_chngs:
         n_change_periods = act_n_chngs + 1
         plot_points(global_opt_pos_of_changes, 'Real optimum per change')
 
-        n_predicted_opt = len(pso.pred_optima_pos)
-        tmp1 = (pso.pred_optima_pos -
+        n_predicted_opt = len(pso.pred_opt_pos_per_chgperiod)
+        tmp1 = (pso.pred_opt_pos_per_chgperiod -
                 global_opt_pos_of_changes[-n_predicted_opt:])**2
         tmp2 = np.sum(tmp1, axis=1)  # compute row sums
         diff_pred_and_opt = np.sqrt(tmp2)
 
         # Eucl. norm: real optimum - found optimum
-        tmp1 = (pso.prev_optima_pos[-n_predicted_opt:] -
+        tmp1 = (pso.best_found_pos_per_chgperiod[-n_predicted_opt:] -
                 global_opt_pos_of_changes[-n_predicted_opt:])**2
         tmp2 = np.sum(tmp1, axis=1)  # compute row sums
         diff_found_and_opt = np.sqrt(tmp2)
@@ -530,11 +531,11 @@ def plot_results(pso, act_n_chngs, arr_value, bebc, global_opt_pos_of_changes,
         opt_array = np.array(
             [global_opt_fit_of_changes[k] for k in range(n_change_periods)])
         fit_diff_found_and_opt = abs(
-            pso.prev_optima_fit - opt_array)
+            pso.best_found_fit_per_chgperiod - opt_array)
         fit_diff_pred_and_opt = abs(
-            pso.pred_optima_fit - opt_array[-n_predicted_opt:])
+            pso.pred_opt_fit_per_chgperiod - opt_array[-n_predicted_opt:])
         plot_diff_pred_and_optimum(
             fit_diff_pred_and_opt, "fitness", fit_diff_found_and_opt[-n_predicted_opt:])
     else:
-        print("len_found: ", len(pso.pred_optima_pos),
+        print("len_found: ", len(pso.pred_opt_pos_per_chgperiod),
               ", real: ", len(global_opt_pos_of_changes))

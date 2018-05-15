@@ -8,6 +8,7 @@ import itertools
 import math
 from os.path import isfile, join
 from posix import listdir
+import re
 import warnings
 
 from algorithms.dynea import DynamicEA
@@ -76,7 +77,19 @@ class PredictorComparator(object):
         # runtime
         self.ncpus = None  # int
 
-    def instantiate_optimization_alg(self, experiment_data):
+        # set in this class (in method run_experiment())
+        self.exp_file_name = None
+        self.experiment_data = None
+        self.chgperiods_for_gens = None
+
+        # set in input parser
+        self.day = None
+        self.time = None
+        self.arrays_file_path = None
+        self.metrics_file_path = None
+        self.logs_file_path = None
+
+    def instantiate_optimization_alg(self):
         # random number generators
 
         # TODO seeds nicht gleich lassen
@@ -86,7 +99,7 @@ class PredictorComparator(object):
         # for predictor related stuff: random generator for  numpy arrays
         pred_np_rnd_generator = np.random.RandomState(23044820)
 
-        dimensionality = len(experiment_data['orig_global_opt_pos'])
+        dimensionality = len(self.experiment_data['orig_global_opt_pos'])
         n_generations = self.get_n_generations()
         if self.predictor == "no":
             n_neurons = None
@@ -94,14 +107,14 @@ class PredictorComparator(object):
             n_neurons = self.get_n_neurons(dimensionality)
         if self.algorithm == "dynea":
             alg = DynamicEA(self.benchmarkfunction, dimensionality,
-                            n_generations, experiment_data, self.predictor,
+                            n_generations, self.experiment_data, self.predictor,
                             alg_np_rnd_generator, pred_np_rnd_generator,
                             self.mu, self.la, self.ro, self.mean, self.sigma,
                             self.trechenberg, self.tau, self.timesteps,
                             n_neurons, self.epochs, self.batchsize)
         elif self.algorithm == "dynpso":
             alg = DynamicPSO(self.benchmarkfunction, dimensionality,
-                             n_generations, experiment_data, self.predictor,
+                             n_generations, self.experiment_data, self.predictor,
                              alg_np_rnd_generator, pred_np_rnd_generator,
                              self.c1, self.c2, self.c3, self.insertpred,
                              self.adaptivec3, self.nparticles, self.timesteps,
@@ -111,14 +124,14 @@ class PredictorComparator(object):
             exit(1)
         return alg
 
-    def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, experiment_data):
+    def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, ):
         '''
         @param gpu_ID: is None if no GPU is required.
         '''
         print("run: ", repetition_ID, flush=True)
         # =====================================================================
         # instantiate algorithm
-        alg = self.instantiate_optimization_alg(experiment_data)
+        alg = self.instantiate_optimization_alg()
 
         # =====================================================================
         # run algorithm
@@ -141,7 +154,39 @@ class PredictorComparator(object):
         # =====================================================================
         # save results
 
-    def run_runs_parallel(self, experiment_data):
+        # generate array file name from the exeriment file name with some
+        # replacements:
+        # append predictor name at the beginning
+        arrays_file_name = self.predictor + "_" + self.exp_file_name
+        # replace date and time with start date and time
+        arrays_file_name = arrays_file_name.replace(
+            "_.*_.*\.npz", "_" + self.day + "_" + self.time + ".npz")
+        # append the repetition number at the end before the file ending
+        arrays_file_name = arrays_file_name.replace(
+            ".npz", "_" + str(repetition_ID) + ".npz")
+        # insert the correct number of change periods
+        # https://stackoverflow.com/questions/16720541/python-string-replace-regular-expression
+        # (15.5.18)
+        arrays_file_name = re.sub(
+            "_chgperiods-[0-9]+_", "_chgperiods-" + str(self.chgperiods) + "_", arrays_file_name)
+
+        # TODO what if an algorithm doesn't provide one of the variables? (e.g.
+        # because it doesn't have change detection?)
+        # TODO will perhaps be extended, e.g for computing prediction quality
+        np.savez(self.arrays_file_path + arrays_file_name,
+                 best_found_fit_per_gen=alg.best_found_fit_per_gen,
+                 best_found_pos_per_gen=alg.best_found_pos_per_gen,
+                 best_found_fit_per_chgperiod=alg.best_found_fit_per_chgperiod,
+                 best_found_pos_per_chgperiod=alg.best_found_pos_per_chgperiod,
+                 pred_opt_fit_per_chgperiod=alg.pred_opt_fit_per_chgperiod,
+                 pred_opt_pos_per_chgperiod=alg.pred_opt_pos_per_chgperiod,
+                 # gens_of_detected_chngs=alg.gens_of_detected_chngs,
+                 detected_chgperiods_for_gens=alg.detected_chgperiods_for_gens,
+                 # information about the real changes (is not in benchmark file
+                 # because it is a general file for 10000 change periods)
+                 real_chgperiods_for_gens=self.chgperiods_for_gens)
+
+    def run_runs_parallel(self):
         '''
         Starts all runs of the experiment
         '''
@@ -160,28 +205,19 @@ class PredictorComparator(object):
                 np.arange(self.repetitions) / max_runs_per_gpu).astype(int)
 
         # copy arguments for each run
-        arguments = [None, None, experiment_data]
+        arguments = [None, None]
         # create list of arguments for the repetitions:
         argument_list = []
         for i in range(self.repetitions):
-            argument_list.append(copy.copy(arguments))
+            argument_list.append(copy.deepcopy(arguments))
             # set repetition IDs  to identify the output files
             argument_list[-1][0] = i
             # set gpu ID
             argument_list[-1][1] = gpus_for_runs[i]
-        # execute experiment with repetitions
-        not_parallel = False
-        if not_parallel:
-            result = list(itertools.starmap(
-                self.instantiate_and_run_algorithm, argument_list))
-        else:
-            n_kernels = self.ncpus
-            with Pool(n_kernels) as pool:
-                # TODO is that parallel though it is called on same object
-                # (self)?
-                result = list(pool.starmap(
-                    self.instantiate_and_run_algorithm, argument_list))
-        # TODO use results
+        # execute repetitions of the experiments on different CPUs
+        n_kernels = self.ncpus
+        with Pool(n_kernels) as pool:
+            list(pool.starmap(self.instantiate_and_run_algorithm, argument_list))
 
     def extract_data_from_file(self, experiment_file_path):
         exp_file = np.load(experiment_file_path)
@@ -208,24 +244,24 @@ class PredictorComparator(object):
             experiment_data['positions'] = positions
 
         exp_file.close()
-        return experiment_data  # TODO or as class variable??
+        return experiment_data
 
-    def convert_data_to_per_generation(self, experiment_data, chgperiods_for_gens):
+    def convert_data_to_per_generation(self):
         '''
         Repeat all entries of experiment_data.
         '''
         n_gens = self.get_n_generations()
         # for all (key-value)-pairs in experiment_data:
-        for key, property_per_chg in experiment_data.items():
+        for key, property_per_chg in self.experiment_data.items():
             if not key == "orig_global_opt_pos":
                 # pop old data
-                experiment_data.pop(key)
+                self.experiment_data.pop(key)
                 # rename key to prevent confusion (if there is something to
                 # rename)
                 key = key.replace("_per_chgperiod", "_per_gen")
                 # convert and store data
-                experiment_data[key] = property_per_chg[chgperiods_for_gens]
-                assert n_gens == len(experiment_data[key])
+                self.experiment_data[key] = property_per_chg[self.chgperiods_for_gens]
+                assert n_gens == len(self.experiment_data[key])
 
     def get_n_generations(self):
         return self.lenchgperiod * self.chgperiods
@@ -252,10 +288,8 @@ class PredictorComparator(object):
         when the time points of changes are deterministic)
         @param n_changes: number of changes (only used if is_change_time_random is True 
         @param is_change_time_random: true if the time points of changes are random
-        @return: tupel
-                    - 1d numpy array containing for each generation the change 
-                      period number it belongs to
-                    - overall number of changes occurred during all generations 
+        @return: 1d numpy array containing for each generation the change
+         period number it belongs to 
         '''
         if self.chgperiods == 1:  # no changes
             chgperiods_for_gens = np.zeros(self.get_n_generations(), int)
@@ -299,12 +333,6 @@ class PredictorComparator(object):
                                       ("_noise-" + str(noise) + "_") in f for noise in self.noises))]
         return selected_exp_files
 
-    def save_results(self):
-        pass
-        # TODO to be stored
-        #     - chgperiods_for_gens (because otherwise it is unknown where the
-        #       changes happened (especially in random change frequencies)
-
     def run_experiments(self):
         print("run experiments")
 
@@ -316,8 +344,9 @@ class PredictorComparator(object):
         # only for logging
         n_experiments = len(selected_exp_files)
         exp_counter = 1
-        for exp_file_name in selected_exp_files:
-            exp_file_path = benchmark_path + exp_file_name
+        for file_name in selected_exp_files:
+            self.exp_file_name = file_name
+            exp_file_path = benchmark_path + self.exp_file_name
             # =================================================================
             # logging
             curr_day, curr_time = get_current_day_time()
@@ -327,17 +356,16 @@ class PredictorComparator(object):
 
             # =================================================================
             # load data from file
-            experiment_data = self.extract_data_from_file(exp_file_path)
+            self.experiment_data = self.extract_data_from_file(exp_file_path)
             # generator change periods for generations
-            chgperiods_for_gens = self.get_chgperiods_for_gens()
+            self.chgperiods_for_gens = self.get_chgperiods_for_gens()
             # convert per CHANGE to per GENERATION
-            self.convert_data_to_per_generation(
-                experiment_data, chgperiods_for_gens)
+            self.convert_data_to_per_generation()
 
             # =================================================================
             # instantiate algorithm
 
             # start optimization
-            self.run_runs_parallel(experiment_data)
+            self.run_runs_parallel()
             # save results
             # (plot results)6
