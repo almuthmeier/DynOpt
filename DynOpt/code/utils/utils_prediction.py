@@ -9,6 +9,7 @@ Created on Jan 18, 2018
 @author: ameier
 '''
 
+import math
 import warnings
 
 import numpy as np
@@ -200,3 +201,19 @@ def predict_next_optimum_position(mode, new_train_data, n_epochs, batch_size,
             raise
     elif mode == "no":
         return None
+
+
+def get_n_neurons(n_neurons_type, dim):
+    '''
+    (number of neurons can not directly be specified as input because it is 
+    computed in some cases depending on the problem dimensionality)
+    '''
+    if n_neurons_type == "fixed20":
+        n_neurons = 20
+    elif n_neurons_type == "dyn1.3":
+        n_neurons = math.ceil(dim * 1.3)
+    else:
+        msg = "unkwnown type for neuronstype (number of neurons): " + \
+            str(n_neurons_type)
+        warnings.warn(msg)
+    return n_neurons
