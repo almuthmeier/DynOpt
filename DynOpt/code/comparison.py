@@ -124,36 +124,11 @@ class PredictorComparator(object):
             exit(1)
         return alg
 
-    def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, ):
+    def save_results(self, repetition_ID, alg):
         '''
-        @param gpu_ID: is None if no GPU is required.
+        @param alg: the algorithm object that did the optimization and contains
+        the data to be stored
         '''
-        print("run: ", repetition_ID, flush=True)
-        # =====================================================================
-        # instantiate algorithm
-        alg = self.instantiate_optimization_alg()
-
-        # =====================================================================
-        # run algorithm
-        if gpu_ID is None:
-            alg.optimize()
-        else:
-            # make tensorflow deterministic
-            import tensorflow as tf
-            config = tf.ConfigProto()
-            config.gpu_options.allow_growth = True  # prevent using whole GPU
-            session = tf.Session(config=config)
-            tf.set_random_seed(1234)
-            from keras import backend as K
-
-            # run algorithm on specified GPU
-            with tf.device('/gpu:' + str(gpu_ID)):
-                alg.optimize()
-                K.clear_session()
-
-        # =====================================================================
-        # save results
-
         # generate array file name from the exeriment file name with some
         # replacements:
         # append predictor name at the beginning
@@ -185,6 +160,37 @@ class PredictorComparator(object):
                  # information about the real changes (is not in benchmark file
                  # because it is a general file for 10000 change periods)
                  real_chgperiods_for_gens=self.chgperiods_for_gens)
+
+    def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, ):
+        '''
+        @param gpu_ID: is None if no GPU is required.
+        '''
+        print("run: ", repetition_ID, flush=True)
+        # =====================================================================
+        # instantiate algorithm
+        alg = self.instantiate_optimization_alg()
+
+        # =====================================================================
+        # run algorithm
+        if gpu_ID is None:
+            alg.optimize()
+        else:
+            # make tensorflow deterministic
+            import tensorflow as tf
+            config = tf.ConfigProto()
+            config.gpu_options.allow_growth = True  # prevent using whole GPU
+            session = tf.Session(config=config)
+            tf.set_random_seed(1234)
+            from keras import backend as K
+
+            # run algorithm on specified GPU
+            with tf.device('/gpu:' + str(gpu_ID)):
+                alg.optimize()
+                K.clear_session()
+
+        # =====================================================================
+        # save results
+        self.save_results(repetition_ID)
 
     def run_runs_parallel(self):
         '''
