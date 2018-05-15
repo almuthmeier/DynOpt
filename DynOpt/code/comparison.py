@@ -1,4 +1,6 @@
 '''
+Is called by the module input_parser.py.
+
 Created on May 9, 2018
 
 @author: ameier

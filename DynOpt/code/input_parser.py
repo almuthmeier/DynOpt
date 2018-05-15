@@ -1,9 +1,12 @@
 '''
+Main class to execute all the experiments.
+
 Created on May 9, 2018
 
 @author: ameier
 '''
 import os
+import random
 import sys
 import warnings
 
@@ -108,7 +111,7 @@ def initialize_comparator_manually(comparator):
 
     # benchmark problem
     comparator.algorithm = "dynpso"
-    comparator.repetitions = 1
+    comparator.repetitions = 4
     comparator.chgperiods = 10
     comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = False
@@ -144,7 +147,7 @@ def initialize_comparator_manually(comparator):
         comparator.tau = 0.5
 
     # for predictor
-    comparator.predictor = "no"
+    comparator.predictor = "rnn"  # "no"
     comparator.timesteps = 7
 
     # for ANN predictor
@@ -155,7 +158,7 @@ def initialize_comparator_manually(comparator):
         comparator.ngpus = 1
 
     # runtime
-    comparator.ncpus = 1
+    comparator.ncpus = 2
 
 
 def initialize_comparator_with_read_inputs(parser, comparator):
@@ -242,23 +245,11 @@ def string_list_type(string):
 
 def run_parser():
 
-    import copy
-    import itertools
-
-    from os import listdir
-    from os.path import isfile, join
-    import random
-
-    import numpy as np
-
-    from multiprocessing import Pool
     # tf.reset_default_graph()
 
     # https://keras.io/getting-started/faq/#how-can-i-obtain-reproducible-results-using-keras-during-development
     # (17.8.17)
     #os.environ['PYTHONHASHSEED'] = '0'
-    np.random.seed(7)
-    random.seed(98)
 
     # =======================================================================
     # define parser arguments
@@ -310,6 +301,9 @@ def run_parser():
 
 
 if __name__ == '__main__':
+
+    np.random.seed(7)
+    random.seed(98)
 
     # this import has to be done before imports of own packages
     import multiprocessing as mp
