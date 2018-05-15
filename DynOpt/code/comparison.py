@@ -4,7 +4,6 @@ Created on May 9, 2018
 @author: ameier
 '''
 import copy
-import itertools
 import math
 from os.path import isfile, join
 from posix import listdir
@@ -14,6 +13,7 @@ import warnings
 from algorithms.dynea import DynamicEA
 from algorithms.dynpso import DynamicPSO
 import numpy as np
+from utils.utils_prediction import get_n_neurons
 from utils.utils_print import get_current_day_time
 
 
@@ -104,7 +104,7 @@ class PredictorComparator(object):
         if self.predictor == "no":
             n_neurons = None
         else:
-            n_neurons = self.get_n_neurons(dimensionality)
+            n_neurons = get_n_neurons(self.neuronstype, dimensionality)
         if self.algorithm == "dynea":
             alg = DynamicEA(self.benchmarkfunction, dimensionality,
                             n_generations, self.experiment_data, self.predictor,
@@ -179,7 +179,7 @@ class PredictorComparator(object):
             import tensorflow as tf
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True  # prevent using whole GPU
-            session = tf.Session(config=config)
+            tf.Session(config=config)
             tf.set_random_seed(1234)
             from keras import backend as K
 
@@ -190,7 +190,7 @@ class PredictorComparator(object):
 
         # =====================================================================
         # save results
-        self.save_results(repetition_ID)
+        self.save_results(repetition_ID, alg)
 
     def run_runs_parallel(self):
         '''
@@ -225,6 +225,47 @@ class PredictorComparator(object):
         with Pool(n_kernels) as pool:
             list(pool.starmap(self.instantiate_and_run_algorithm, argument_list))
 
+    def convert_data_to_per_generation(self):
+        '''
+        Repeat all entries of experiment_data.
+        '''
+        n_gens = self.get_n_generations()
+        # for all (key-value)-pairs in experiment_data:
+        for key, property_per_chg in self.experiment_data.items():
+            if not key == "orig_global_opt_pos":
+                # pop old data
+                self.experiment_data.pop(key)
+                # rename key to prevent confusion (if there is something to
+                # rename)
+                key = key.replace("_per_chgperiod", "_per_gen")
+                # convert and store data
+                self.experiment_data[key] = property_per_chg[self.chgperiods_for_gens]
+                assert n_gens == len(self.experiment_data[key])
+
+    def get_chgperiods_for_gens(self):
+        '''
+        @param max_n_gens: integer: number of generations after that the EA stops
+        @param len_change_period: number of generations per change period (used only
+        when the time points of changes are deterministic)
+        @param n_changes: number of changes (only used if is_change_time_random is True 
+        @param is_change_time_random: true if the time points of changes are random
+        @return: 1d numpy array containing for each generation the change
+         period number it belongs to 
+        '''
+        if self.chgperiods == 1:  # no changes
+            chgperiods_for_gens = np.zeros(self.get_n_generations(), int)
+        elif not self.ischgperiodrandom:  # equidistant changes
+            chgperiods_for_gens = np.array(
+                [self.lenchgperiod * [i] for i in range(self.chgperiods)]).flatten()
+        elif self.ischgperiodrandom:  # random change time points
+            max_n_gens = self.get_n_generations()
+            unsorted_periods_for_gens = np.random.randint(
+                0, self.chgperiods, max_n_gens)
+            chgperiods_for_gens = np.sort(unsorted_periods_for_gens)
+        else:
+            warnings.warn("unhandled case")
+        return chgperiods_for_gens
+
     def extract_data_from_file(self, experiment_file_path):
         exp_file = np.load(experiment_file_path)
 
@@ -251,65 +292,6 @@ class PredictorComparator(object):
 
         exp_file.close()
         return experiment_data
-
-    def convert_data_to_per_generation(self):
-        '''
-        Repeat all entries of experiment_data.
-        '''
-        n_gens = self.get_n_generations()
-        # for all (key-value)-pairs in experiment_data:
-        for key, property_per_chg in self.experiment_data.items():
-            if not key == "orig_global_opt_pos":
-                # pop old data
-                self.experiment_data.pop(key)
-                # rename key to prevent confusion (if there is something to
-                # rename)
-                key = key.replace("_per_chgperiod", "_per_gen")
-                # convert and store data
-                self.experiment_data[key] = property_per_chg[self.chgperiods_for_gens]
-                assert n_gens == len(self.experiment_data[key])
-
-    def get_n_generations(self):
-        return self.lenchgperiod * self.chgperiods
-
-    def get_n_neurons(self, dim):
-        '''
-        (number of neurons can not directly be specified as input because it is 
-        computed in some cases depending on the problem dimensionality)
-        '''
-        if self.n_neurons_type == "fixed20":
-            n_neurons = 20
-        elif self.n_neurons_type == "dyn1.3":
-            n_neurons = math.ceil(dim * 1.3)
-        else:
-            msg = "unkwnown type for neuronstype (number of neurons): " + \
-                str(self.n_neurons_type)
-            warnings.warn(msg)
-        return n_neurons
-
-    def get_chgperiods_for_gens(self):
-        '''
-        @param max_n_gens: integer: number of generations after that the EA stops
-        @param len_change_period: number of generations per change period (used only
-        when the time points of changes are deterministic)
-        @param n_changes: number of changes (only used if is_change_time_random is True 
-        @param is_change_time_random: true if the time points of changes are random
-        @return: 1d numpy array containing for each generation the change
-         period number it belongs to 
-        '''
-        if self.chgperiods == 1:  # no changes
-            chgperiods_for_gens = np.zeros(self.get_n_generations(), int)
-        elif not self.ischgperiodrandom:  # equidistant changes
-            chgperiods_for_gens = np.array(
-                [self.lenchgperiod * [i] for i in range(self.chgperiods)]).flatten()
-        elif self.ischgperiodrandom:  # random change time points
-            max_n_gens = self.get_n_generations()
-            unsorted_periods_for_gens = np.random.randint(
-                0, self.chgperiods, max_n_gens)
-            chgperiods_for_gens = np.sort(unsorted_periods_for_gens)
-        else:
-            warnings.warn("unhandled case")
-        return chgperiods_for_gens
 
     def select_experiment_files(self, benchmark_path):
         '''
@@ -338,6 +320,9 @@ class PredictorComparator(object):
                                   any(("_d-" + str(dim) + "_" in f for dim in self.dims) and
                                       ("_noise-" + str(noise) + "_") in f for noise in self.noises))]
         return selected_exp_files
+
+    def get_n_generations(self):
+        return self.lenchgperiod * self.chgperiods
 
     def run_experiments(self):
         print("run experiments")
