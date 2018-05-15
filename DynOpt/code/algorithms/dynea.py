@@ -14,23 +14,13 @@ from sklearn.preprocessing.data import MinMaxScaler
 
 import numpy as np
 from utils import utils_dynopt
-from utils.utils_dynopt import environment_changed,\
-    get_global_optimum_pos_and_fit_for_all_generations,\
-    compute_real_gens_of_chgs
+from utils.utils_dynopt import environment_changed
 from utils.utils_ea import dominant_recombination, gaussian_mutation,\
     mu_plus_lambda_selection, adapt_sigma
 from utils.utils_prediction import build_predictor,\
     predict_next_optimum_position
 
 
-#from dynamicopt.metrics.metrics_dynea import arr, best_error_before_change
-#from dynamicopt.utils import utils_dynopt
-# from dynamicopt.utils.utils_dynopt import environment_changed,\
-#    get_global_optimum_pos_and_fit_for_all_generations, compute_real_gens_of_chgs
-# from dynamicopt.utils.utils_ea import dominant_recombination, gaussian_mutation,\
-#    mu_plus_lambda_selection, adapt_sigma
-# from dynamicopt.utils.utils_prediction import build_predictor,\
-#    predict_next_optimum_position
 class DynamicEA():
     def __init__(self, benchmarkfunction, dim,
                  n_generations, experiment_data, predictor_name,
@@ -115,18 +105,18 @@ class DynamicEA():
         # number of changes detected by the EA
         self.detected_n_changes = 0
         # for each detected change the corresponding generation numbers
-        self.gens_of_detected_chngs = {self.detected_n_changes: []}
+        self.detected_chgperiods_for_gens = []
         # best found individual for each generation (2d numpy array)
-        self.best_individuals = np.zeros((self.n_generations, self.dim))
+        self.best_found_pos_per_gen = np.zeros((self.n_generations, self.dim))
         # fitness of best found individual for each generation (1d numpy array)
-        self.best_fitness_evals = np.zeros(self.n_generations)
+        self.best_found_fit_per_gen = np.zeros(self.n_generations)
         # position of found optima (one for each change period)
-        self.prev_optima_pos = []
+        self.best_found_pos_per_chgperiod = []
         # fitness of found optima (one for each change period)
-        self.prev_optima_fit = []
+        self.best_found_fit_per_chgperiod = []
         # position & fitness of predicted optima (one for each change period)
-        self.pred_optima_pos = []
-        self.pred_optima_fit = []
+        self.pred_opt_pos_per_chgperiod = []
+        self.pred_opt_fit_per_chgperiod = []
 
 # =============================================================================
 # for (static) EA
@@ -171,7 +161,7 @@ class DynamicEA():
 
         elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive":
             # last predicted optimum
-            pred_optimum_position = self.pred_optima_pos[-1]
+            pred_optimum_position = self.pred_opt_pos_per_chgperiod[-1]
             # insert predicted optimum into immigrants
             immigrants = np.array([pred_optimum_position])
             n_remaining_immigrants = n_immigrants - len(immigrants)
@@ -221,7 +211,7 @@ class DynamicEA():
         self.population_fitness = np.array([utils_dynopt.fitness(self.benchmarkfunction, individual, curr_gen,  self.experiment_data)
                                             for individual in self.population]).reshape(-1, 1)
 
-    def dynea(self):
+    def optimize(self):
         # ---------------------------------------------------------------------
         # local variables for predictor
         # ---------------------------------------------------------------------
@@ -255,11 +245,11 @@ class DynamicEA():
 
                 # store best found solution during change period as training data for predictor
                 # TODO works only for plus-selection (not for comma-selection)
-                self.prev_optima_pos.append(
-                    copy.copy(self.best_individuals[i - 1]))
-                self.prev_optima_fit.append(
-                    copy.copy(self.best_fitness_evals[i - 1]))
-                overall_n_train_data = len(self.prev_optima_pos)
+                self.best_found_pos_per_chgperiod.append(
+                    copy.copy(self.best_found_pos_per_gen[i - 1]))
+                self.best_found_fit_per_chgperiod.append(
+                    copy.copy(self.best_found_fit_per_gen[i - 1]))
+                overall_n_train_data = len(self.best_found_pos_per_chgperiod)
 
                 # prevent training with too few train data
                 if overall_n_train_data <= self.n_time_steps or overall_n_train_data < 50 or self.predictor_name == "no":
@@ -271,16 +261,16 @@ class DynamicEA():
 
                     # scale data (the data are re-scaled directly after the
                     # prediction in this iteration)
-                    scaler = scaler.fit(self.prev_optima_pos)
-                    transf_prev_optima_positions = scaler.transform(
-                        copy.copy(self.prev_optima_pos))
+                    scaler = scaler.fit(self.best_found_pos_per_chgperiod)
+                    transf_best_found_pos_per_chgperiod = scaler.transform(
+                        copy.copy(self.best_found_pos_per_chgperiod))
 
                     # choose training data
                     if not trained_first_time:
                         # first time, has not been trained before, therefore use all
                         # found optimum positions
                         trained_first_time = True
-                        train_data = transf_prev_optima_positions
+                        train_data = transf_best_found_pos_per_chgperiod
                     else:
                         # append the last new train data (one) and in addition
                         # n_time_steps already evaluated data in order to create a
@@ -290,25 +280,22 @@ class DynamicEA():
                         train_data = []
                         for step_idx in range(self.n_time_steps + 1, 0, -1):
                             train_data.append(
-                                transf_prev_optima_positions[-step_idx])
+                                transf_best_found_pos_per_chgperiod[-step_idx])
                         train_data = np.array(train_data)
                     # predict next optimum position
                     prediction = predict_next_optimum_position(my_pred_mode, train_data,
                                                                self.n_epochs, self.batch_size,
                                                                self.n_time_steps, n_features,
                                                                scaler, predictor)
-                    self.pred_optima_pos.append(copy.copy(prediction))
-                    self.pred_optima_fit.append(utils_dynopt.fitness(
+                    self.pred_opt_pos_per_chgperiod.append(
+                        copy.copy(prediction))
+                    self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
                         self.benchmarkfunction, prediction, i, self.experiment_data))
 
                 # adapt population to environment change
                 self.adapt_population(i, my_pred_mode)
-            try:
-                self.gens_of_detected_chngs[self.detected_n_changes].append(i)
-            except KeyError:
-                # occurs first time after a change occurred
-                self.gens_of_detected_chngs[self.detected_n_changes] = []
-                self.gens_of_detected_chngs[self.detected_n_changes].append(i)
+
+            self.detected_chgperiods_for_gens.append(i)
 
             # create la offsprings
             offspring_population = np.zeros((self.la, self.dim))
@@ -340,103 +327,7 @@ class DynamicEA():
             # select new population
             self.select(offspring_population, offspring_pop_fitness)
             min_fitness_index = np.argmin(self.population_fitness)
-            self.best_fitness_evals[i] = copy.copy(
+            self.best_found_fit_per_gen[i] = copy.copy(
                 self.population_fitness[min_fitness_index])
-            self.best_individuals[i] = copy.copy(
+            self.best_found_pos_per_gen[i] = copy.copy(
                 self.population[min_fitness_index])
-
-# =============================================================================
-    def save_results(self, arrays_file_name, periods_for_generations, act_n_chngs,
-                     global_opt_pos_of_changes,
-                     global_opt_fit_of_changes):
-        np.savez(arrays_file_name,
-                 # data from the EA
-                 best_fitness_evals=self.best_fitness_evals,
-                 best_individuals=self.best_individuals,
-                 prev_optima_fit=self.prev_optima_fit,
-                 prev_optima_pos=self.prev_optima_pos,
-                 pred_optima_fit=self.pred_optima_fit,
-                 pred_optima_pos=self.pred_optima_pos,
-                 detected_n_changes=self.detected_n_changes,
-                 gens_of_detected_chngs=self.gens_of_detected_chngs,
-                 # data about the problem
-                 periods_for_generations=periods_for_generations,
-                 act_n_chngs=act_n_chngs,
-                 global_opt_pos_of_changes=global_opt_pos_of_changes,
-                 global_opt_fit_of_changes=global_opt_fit_of_changes)
-
-# =============================================================================
-# settings for the EA
-
-
-def define_settings_and_run(repetition, gpu_ID,
-                            predictor_name, problem, experiment_name, dim, generations, len_chg_period, pos_chng_type,
-                            fit_chng_type, problem_data, n_peaks, arrays_file_path, day, time, noise,
-                            ea_np_rnd_generator, pred_np_rnd_generator, periods_for_generations, act_n_chngs,
-                            c1, c2, c3, insert_pred_as_ind, adaptive_c3,
-                            n_neurons, n_epochs, batch_size, n_time_steps):
-    '''
-    repetition has to be the first argument, because predictor_comparison.run_runs_parallel() assumes that.
-    '''
-    print("Started repetition with ID ", repetition, flush=True)
-    #==========================================================================
-    # make tensorflow deterministic
-    import tensorflow as tf
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True  # prevent using whole GPU
-    session = tf.Session(config=config)
-    tf.set_random_seed(1234)
-    from keras import backend as K
-
-    #==========================================================================
-    # must be an even number so that half of mu is an integer number
-    # (necessary for number of random_immigrants
-    # TODO read the following from input
-    mu = 5  # TODO hat to be set
-    la = 10  # TODO hat to be set
-    ro = 2
-    mean = 0.0
-    sigma = 1.0
-    # adapt sigma after 5 mutations
-    t_rechenberg = 5
-    tau = 0.5  # 0 < tau < 1, for Rechenberg
-
-    # initialize EA object
-    ea = DynamicEA(problem, dim, generations, problem_data, predictor_name,
-                   mu, la, ro, mean, sigma, t_rechenberg, tau,
-                   ea_np_rnd_generator, pred_np_rnd_generator,
-                   n_neurons, n_epochs, batch_size, n_time_steps)
-
-    # TODO sind opt. pos/fit per GENERATION (not per change) !!!!!
-    # ist daher auch in den gespeicherten array-files verkehrt!!
-    global_opt_pos_of_changes, global_opt_fit_of_changes = get_global_optimum_pos_and_fit_for_all_generations(
-        problem, problem_data)
-    real_gens_of_chgs = compute_real_gens_of_chgs(
-        periods_for_generations, act_n_chngs)
-
-    # ==========================================================================
-    # run EA on specified GPU
-    with tf.device('/gpu:' + str(gpu_ID)):
-        ea.dynea()
-        K.clear_session()
-    # ==========================================================================
-    # compute metrics
-    arr_value = None
-    bebc = None
-    # arr_value = arr(real_gens_of_chgs,
-    #                global_opt_fit_of_changes, ea.best_fitness_evals)
-    # bebc = best_error_before_change(
-    #    real_gens_of_chgs, global_opt_fit_of_changes,  ea.best_fitness_evals)
-
-    # ==========================================================================
-    # save results
-    arrays_file_name = arrays_file_path + predictor_name + "_" + problem + "_" + experiment_name + "_" + \
-        str(dim) + "_" + pos_chng_type + "_" + \
-        fit_chng_type + "_lenchgperiod-" + str(len_chg_period) + "_noise-" + str(noise) + "_" + day + '_' + \
-        time + "_" + str(repetition) + ".npz"
-    ea.save_results(arrays_file_name,
-                    periods_for_generations, act_n_chngs,
-                    global_opt_pos_of_changes,
-                    global_opt_fit_of_changes)
-
-    return ea.best_fitness_evals, arr_value, bebc

@@ -155,7 +155,6 @@ class PredictorComparator(object):
                  best_found_pos_per_chgperiod=alg.best_found_pos_per_chgperiod,
                  pred_opt_fit_per_chgperiod=alg.pred_opt_fit_per_chgperiod,
                  pred_opt_pos_per_chgperiod=alg.pred_opt_pos_per_chgperiod,
-                 # gens_of_detected_chngs=alg.gens_of_detected_chngs,
                  detected_chgperiods_for_gens=alg.detected_chgperiods_for_gens,
                  # information about the real changes (is not in benchmark file
                  # because it is a general file for 10000 change periods)
