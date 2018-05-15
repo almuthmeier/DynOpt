@@ -71,6 +71,9 @@ def define_parser_arguments():
     # machine dependent
     parser.add_argument("-ngpus", type=int)
 
+    # runtime
+    parser.add_argument("-ncpus", type=int)
+
     return parser
 
 
@@ -143,13 +146,16 @@ def initialize_comparator_manually(comparator):
         comparator.batchsize = 1
         comparator.ngpus = 1
 
+    # runtime
+    comparator.ncpus = 1
+
 
 def initialize_comparator_with_read_inputs(parser, comparator):
     args = parser.parse_args()
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 31:
+    if n_current_inputs != 32:
         print("false number of inputs")
         exit(0)
 
@@ -198,6 +204,9 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.epochs = args.epochs
         comparator.batchsize = args.batchsize
         comparator.ngpus = args.ngpus
+
+    # runtime
+    comparator.ncpus = args.ncpus
 
 
 def int_list_type(string):

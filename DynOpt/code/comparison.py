@@ -3,6 +3,8 @@ Created on May 9, 2018
 
 @author: ameier
 '''
+import copy
+import itertools
 import math
 from os.path import isfile, join
 from posix import listdir
@@ -71,10 +73,19 @@ class PredictorComparator(object):
         self.batchsize = None  # int
         self.ngpus = None  # int
 
-        # data for one concrete benchmark experiment
+        # runtime
+        self.ncpus = None  # int
 
-    def instantiate_optimization_alg(self, experiment_data, alg_np_rnd_generator,
-                                     pred_np_rnd_generator):
+    def instantiate_optimization_alg(self, experiment_data):
+        # random number generators
+
+        # TODO seeds nicht gleich lassen
+        # random generator for the optimization algorithm
+        #  (e.g. for creation of population, random immigrants)
+        alg_np_rnd_generator = np.random.RandomState(29405601)
+        # for predictor related stuff: random generator for  numpy arrays
+        pred_np_rnd_generator = np.random.RandomState(23044820)
+
         dimensionality = len(experiment_data['orig_global_opt_pos'])
         n_generations = self.get_n_generations()
         if self.predictor == "no":
@@ -99,6 +110,78 @@ class PredictorComparator(object):
             warnings.warn("unknown optimization algorithm")
             exit(1)
         return alg
+
+    def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, experiment_data):
+        '''
+        @param gpu_ID: is None if no GPU is required.
+        '''
+        print("run: ", repetition_ID, flush=True)
+        # =====================================================================
+        # instantiate algorithm
+        alg = self.instantiate_optimization_alg(experiment_data)
+
+        # =====================================================================
+        # run algorithm
+        if gpu_ID is None:
+            alg.optimize()
+        else:
+            # make tensorflow deterministic
+            import tensorflow as tf
+            config = tf.ConfigProto()
+            config.gpu_options.allow_growth = True  # prevent using whole GPU
+            session = tf.Session(config=config)
+            tf.set_random_seed(1234)
+            from keras import backend as K
+
+            # run algorithm on specified GPU
+            with tf.device('/gpu:' + str(gpu_ID)):
+                alg.optimize()
+                K.clear_session()
+
+        # =====================================================================
+        # save results
+
+    def run_runs_parallel(self, experiment_data):
+        '''
+        Starts all runs of the experiment
+        '''
+        from multiprocessing import Pool
+        # do parallel: instantiate and run algorithm (separate instance for
+        # each run)
+
+        # distribute runs on different GPUs so that each GPU has the same number of
+        # processes
+        if self.ngpus is None or self.ngpus is 0 or self.predictor == "no" or self.predictor == "arr":
+            # no gpus required
+            gpus_for_runs = np.array(self.repetitions * [None])
+        else:
+            max_runs_per_gpu = math.ceil(self.repetitions / self.ngpus)
+            gpus_for_runs = np.floor(
+                np.arange(self.repetitions) / max_runs_per_gpu).astype(int)
+
+        # copy arguments for each run
+        arguments = [None, None, experiment_data]
+        # create list of arguments for the repetitions:
+        argument_list = []
+        for i in range(self.repetitions):
+            argument_list.append(copy.copy(arguments))
+            # set repetition IDs  to identify the output files
+            argument_list[-1][0] = i
+            # set gpu ID
+            argument_list[-1][1] = gpus_for_runs[i]
+        # execute experiment with repetitions
+        not_parallel = False
+        if not_parallel:
+            result = list(itertools.starmap(
+                self.instantiate_and_run_algorithm, argument_list))
+        else:
+            n_kernels = self.ncpus
+            with Pool(n_kernels) as pool:
+                # TODO is that parallel though it is called on same object
+                # (self)?
+                result = list(pool.starmap(
+                    self.instantiate_and_run_algorithm, argument_list))
+        # TODO use results
 
     def extract_data_from_file(self, experiment_file_path):
         exp_file = np.load(experiment_file_path)
@@ -162,7 +245,7 @@ class PredictorComparator(object):
             warnings.warn(msg)
         return n_neurons
 
-    def get_chgperiods_for_gens(self, alg_np_rnd_generator):
+    def get_chgperiods_for_gens(self):
         '''
         @param max_n_gens: integer: number of generations after that the EA stops
         @param len_change_period: number of generations per change period (used only
@@ -181,7 +264,7 @@ class PredictorComparator(object):
                 [self.lenchgperiod * [i] for i in range(self.chgperiods)]).flatten()
         elif self.ischgperiodrandom:  # random change time points
             max_n_gens = self.get_n_generations()
-            unsorted_periods_for_gens = alg_np_rnd_generator.randint(
+            unsorted_periods_for_gens = np.random.randint(
                 0, self.chgperiods, max_n_gens)
             chgperiods_for_gens = np.sort(unsorted_periods_for_gens)
         else:
@@ -216,6 +299,12 @@ class PredictorComparator(object):
                                       ("_noise-" + str(noise) + "_") in f for noise in self.noises))]
         return selected_exp_files
 
+    def save_results(self):
+        pass
+        # TODO to be stored
+        #     - chgperiods_for_gens (because otherwise it is unknown where the
+        #       changes happened (especially in random change frequencies)
+
     def run_experiments(self):
         print("run experiments")
 
@@ -237,32 +326,18 @@ class PredictorComparator(object):
             exp_counter += 1
 
             # =================================================================
-            # random number generators
-
-            # TODO seeds nicht gleich lassen
-            # random generator for the optimization algorithm
-            #  (e.g. for creation of population, random immigrants)
-            alg_np_rnd_generator = np.random.RandomState(29405601)
-            # for predictor related stuff: random generator for  numpy arrays
-            pred_np_rnd_generator = np.random.RandomState(23044820)
-
-            # =================================================================
-
             # load data from file
             experiment_data = self.extract_data_from_file(exp_file_path)
             # generator change periods for generations
-            chgperiods_for_gens = self.get_chgperiods_for_gens(
-                alg_np_rnd_generator)
+            chgperiods_for_gens = self.get_chgperiods_for_gens()
             # convert per CHANGE to per GENERATION
             self.convert_data_to_per_generation(
                 experiment_data, chgperiods_for_gens)
 
             # =================================================================
             # instantiate algorithm
-            alg = self.instantiate_optimization_alg(
-                experiment_data, alg_np_rnd_generator, pred_np_rnd_generator)
 
             # start optimization
-
+            self.run_runs_parallel(experiment_data)
             # save results
             # (plot results)6

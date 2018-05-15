@@ -399,6 +399,9 @@ class DynamicPSO():
         self.prev_optima_pos = np.array(self.prev_optima_pos)
         self.pred_optima_pos = np.array(self.pred_optima_pos)
 
+    def optimize(self):
+        self.dynpso()
+
     def save_results(self, arrays_file_name, periods_for_generations, act_n_chngs,
                      global_opt_pos_of_changes,
                      global_opt_fit_of_changes):

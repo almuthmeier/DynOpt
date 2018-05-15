@@ -61,6 +61,9 @@ epochs=30
 batchsize=1					# ist 1, weil man ja immer nur ein neues Trainingselement hat (aber beim 1. Mal könnte man ja mit größerer batch size trainineren!?!)
 ngpus=1    					#
 
+# runtime
+ncpus=1						# e.g. =n_repetitions 
+
 
 #------------------------------------------------------------------------------
 # Command
@@ -98,3 +101,4 @@ ngpus=1    					#
 -epochs="$epochs" \
 -batchsize="$batchsize" \
 -ngpus="$ngpus" \
+-ncpus="$ncpus" \
