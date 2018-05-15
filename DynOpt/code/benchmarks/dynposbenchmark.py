@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from utils.fitnessfunctions import sphere, rosenbrock, rastrigin,\
     get_original_global_opt_pos_and_fit
-from utils.utils_print import get_current_day_time
+from utils.utils_files import get_current_day_time
 
 
 def create_str_problems():

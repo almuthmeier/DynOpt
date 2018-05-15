@@ -310,6 +310,6 @@ if __name__ == '__main__':
     mp.set_start_method('fork')
 
     from comparison import PredictorComparator
-    from utils.utils_print import get_current_day_time, get_logs_file_name
+    from utils.utils_files import get_current_day_time, get_logs_file_name
 
     run_parser()

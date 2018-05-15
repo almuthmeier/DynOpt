@@ -23,7 +23,7 @@ sys.path.append(os.path.abspath(os.pardir))
 
 import numpy as np
 from utils.utils_ea import gaussian_mutation
-from utils.utils_print import get_current_day_time
+from utils.utils_files import get_current_day_time
 
 
 def __create_vector(dimensionality, len_vector, np_random_generator, noise=None):

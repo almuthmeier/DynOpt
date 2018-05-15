@@ -15,8 +15,8 @@ import warnings
 from algorithms.dynea import DynamicEA
 from algorithms.dynpso import DynamicPSO
 import numpy as np
+from utils.utils_files import get_current_day_time
 from utils.utils_prediction import get_n_neurons
-from utils.utils_print import get_current_day_time
 
 
 class PredictorComparator(object):
