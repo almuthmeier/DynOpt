@@ -7,7 +7,7 @@ import os
 from os.path import isdir, join
 from posix import listdir
 
-from metrics.metrics_dynea import best_error_before_change
+from metrics.metrics_dynea import best_error_before_change, arr
 import numpy as np
 from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
 from utils.utils_files import select_experiment_files,\
@@ -43,10 +43,17 @@ class MetricCalculator():
 
         gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
             real_chgperiods_for_gens)
-        # best_error_before_change
+
+        # bebc
         bebc = best_error_before_change(
             gens_of_chgperiods, global_opt_fit_per_chgperiod,  best_found_fit_per_gen)
         print("bebc: ", bebc)
+
+        # arr
+        arr_value = arr(gens_of_chgperiods,
+                        global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+        print("arr: ", arr_value)
+        # TODO metric values of different runs are same!?! (-> seeds?)
 
     def compute_and_save_all_metrics(self):
         pass

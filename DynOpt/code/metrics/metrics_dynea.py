@@ -7,7 +7,7 @@ import sys
 import numpy as np
 
 
-def arr(generations_of_changes, optima_of_changes, best_fitness_evals):
+def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen):
     '''
     TODO umbenennen optima_of_changes muss optima_of_generations heißen.
     Nein!?!? soll pro CHANGE (so wie Programmcode aussieht), aber bekommt pro
@@ -16,22 +16,33 @@ def arr(generations_of_changes, optima_of_changes, best_fitness_evals):
     ARR (absolute recovery rate) from the paper "Evolutionary dynamic 
     optimization: A survey of the state of the art", Trung Thanh Nguyen et al. 2012.
 
-    @param generations_of_changes:  dictionary containing for each change (the 
-    real ones, not only those the EA has detected) a list with the generation 
-    numbers
-    @param optima_of_changes: 1d numpy array: for each generation the global 
-    optimum fitness
-    @param best_fitness_evals: best fitness evaluation of each generation
-    @return ARR value
+    @param generations_of_chgperiods:  dictionary containing for each change 
+    period (the real ones, not only those the EA has detected) a list with the 
+    generation numbers
+    @param global_opt_fit_per_chgperiod: 1d numpy array: for each change period
+    the global global optimum fitness (for all changes stored in the dataset 
+    file, not only for those used in the experiments, i.e. 
+    len(global_opt_fit_per_chgperiod) may be larger than len(generations_of_chgperiods)
+    @param best_found_fit_per_gen: 1d numpy array: best found fitness for each
+    generation
+    @return scalar: ARR
     '''
-    n_changes = len(np.unique(generations_of_changes))  # TODO
-    assert n_changes == len(optima_of_changes), "inconsistency: n_changes: " + str(
-        n_changes) + " but len(optima_of_changes): " + str(len(optima_of_changes))
+    # =========================================================================
+    # for test purposes TODO delete this?
+    n_gens = 0
+    for _, generations in generations_of_chgperiods.items():
+        n_gens += len(generations)
+    assert n_gens == len(best_found_fit_per_gen), "inconsistency: n_gens: " + str(
+        n_gens) + " but len(best_found_fit_per_gen): " + str(len(best_found_fit_per_gen))
+
+    # =========================================================================
+
+    n_chgperiods = len(generations_of_chgperiods)
 
     sum_over_changes = 0
-    for i in range(n_changes):
-        first_fitness = best_fitness_evals[generations_of_changes[i][0]]
-        optimum_fitness = optima_of_changes[i]
+    for i in range(n_chgperiods):
+        first_fitness = best_found_fit_per_gen[generations_of_chgperiods[i][0]]
+        optimum_fitness = global_opt_fit_per_chgperiod[i]
 
         if first_fitness == optimum_fitness:
             # best case
@@ -40,16 +51,16 @@ def arr(generations_of_changes, optima_of_changes, best_fitness_evals):
             sum_over_generations = 0
             diff_optimum_first = abs(optimum_fitness - first_fitness)
             # number of generations during this change period
-            n_generations_of_change = len(generations_of_changes[i])
+            n_generations_of_change = len(generations_of_chgperiods[i])
             for j in range(n_generations_of_change):
-                until_now_best_fitness = best_fitness_evals[generations_of_changes[i][j]]
+                until_now_best_fitness = best_found_fit_per_gen[generations_of_chgperiods[i][j]]
                 diff_now_first = abs(until_now_best_fitness - first_fitness)
                 sum_over_generations += diff_now_first
 
             divisor = n_generations_of_change * diff_optimum_first
             summand = sum_over_generations / divisor
             sum_over_changes = sum_over_changes + summand
-    sum_over_changes = sum_over_changes / n_changes
+    sum_over_changes = sum_over_changes / n_chgperiods
 
     return sum_over_changes
 
@@ -167,7 +178,7 @@ def best_error_before_change(generations_of_chgperiods, global_opt_fit_per_chgpe
     # =========================================================================
     # for test purposes TODO delete this?
     n_gens = 0
-    for chgperiod, generations in generations_of_chgperiods.items():
+    for _, generations in generations_of_chgperiods.items():
         n_gens += len(generations)
     assert n_gens == len(best_found_fit_per_gen), "inconsistency: n_gens: " + str(
         n_gens) + " but len(best_found_fit_per_gen): " + str(len(best_found_fit_per_gen))
