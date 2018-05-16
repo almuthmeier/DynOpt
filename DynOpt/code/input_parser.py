@@ -35,6 +35,7 @@ def define_parser_arguments():
     # datasets folder of this project
     parser.add_argument("-benchmarkfunctionfolderpath", type=str)
 
+    parser.add_argument("-outputdirectory", type=str)
     # path to output folder
     parser.add_argument("-outputdirectorypath", type=str)
 
@@ -100,9 +101,18 @@ def initialize_comparator(parser, comparator):
     day, time = get_current_day_time()
     comparator.day = day
     comparator.time = time
-    comparator.arrays_file_path = comparator.outputdirectorypath + "arrays/"
-    comparator.metrics_file_path = comparator.outputdirectorypath + "metrics/"
-    comparator.logs_file_path = comparator.outputdirectorypath + "logs/"
+
+    full_output_path = comparator.outputdirectorypath + comparator.outputdirectory
+    arrays_file_path = full_output_path + "arrays/"
+    metrics_file_path = full_output_path + "metrics/"
+    logs_file_path = full_output_path + "logs/"
+    create_dir_if_not_existing(arrays_file_path)
+    create_dir_if_not_existing(metrics_file_path)
+    create_dir_if_not_existing(logs_file_path)
+
+    comparator.arrays_file_path = arrays_file_path
+    comparator.metrics_file_path = metrics_file_path
+    comparator.logs_file_path = logs_file_path
 
 
 def initialize_comparator_manually(comparator):
@@ -118,8 +128,9 @@ def initialize_comparator_manually(comparator):
     comparator.benchmarkfunction = "sphere"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "GECCO_2018/"
+    comparator.outputdirectory = "c1c2c3_1.49/pso_no/"
     comparator.outputdirectorypath = path_to_dynoptim + \
-        "/DynOpt/output/" + "myexperiments/" + "ff_sphere_1/"
+        "/DynOpt/output/" + "myexperiments/" + "sphere/"
 
     # run only some experiments of all for the benchark problem
     comparator.poschgtypes = np.array(["linear", "sine"])
@@ -178,6 +189,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.ischgperiodrandom = args.ischgperiodrandom
     comparator.benchmarkfunction = args.benchmarkfunction
     comparator.benchmarkfunctionfolderpath = args.benchmarkfunctionfolderpath
+    comparator.outputdirectory = args.outputdirectory
     comparator.outputdirectorypath = args.outputdirectorypath
 
     # run only some experiments of all for the benchark problem
@@ -266,15 +278,10 @@ def run_parser():
     # configure output
     # =======================================================================
     # create output directories
-    arrays_file_path = comparator.outputdirectorypath + "arrays/"
-    metrics_file_path = comparator.outputdirectorypath + "metrics/"
-    logs_file_path = comparator.outputdirectorypath + "logs/"
-    create_dir_if_not_existing(arrays_file_path)
-    create_dir_if_not_existing(metrics_file_path)
-    create_dir_if_not_existing(logs_file_path)
 
     # set log file
-    log_file_name = get_logs_file_name(logs_file_path, comparator.predictor,
+    log_file_name = get_logs_file_name(comparator.logs_file_path,
+                                       comparator.predictor,
                                        comparator.benchmarkfunction,
                                        comparator.day, comparator.time)
     print(log_file_name)

@@ -7,15 +7,13 @@ Created on May 9, 2018
 '''
 import copy
 import math
-from os.path import isfile, join
-from posix import listdir
-import re
 import warnings
 
 from algorithms.dynea import DynamicEA
 from algorithms.dynpso import DynamicPSO
 import numpy as np
-from utils.utils_files import get_current_day_time
+from utils.utils_files import get_current_day_time, select_experiment_files, \
+    convert_exp_to_arrays_file_name
 from utils.utils_prediction import get_n_neurons
 
 
@@ -41,6 +39,7 @@ class PredictorComparator(object):
         self.ischgperiodrandom = None  # bool
         self.benchmarkfunction = None  # string
         self.benchmarkfunctionfolderpath = None  # string
+        self.outputdirectory = None  # string
         self.outputdirectorypath = None  # string
 
         # run only some experiments of all for the benchark problem
@@ -132,22 +131,9 @@ class PredictorComparator(object):
         @param alg: the algorithm object that did the optimization and contains
         the data to be stored
         '''
-        # generate array file name from the exeriment file name with some
-        # replacements:
-        # append predictor name at the beginning
-        arrays_file_name = self.predictor + "_" + self.exp_file_name
-        # replace date and time with start date and time
-        arrays_file_name = arrays_file_name.replace(
-            "_.*_.*\.npz", "_" + self.day + "_" + self.time + ".npz")
-        # append the repetition number at the end before the file ending
-        arrays_file_name = arrays_file_name.replace(
-            ".npz", "_" + str(repetition_ID) + ".npz")
-        # insert the correct number of change periods
-        # https://stackoverflow.com/questions/16720541/python-string-replace-regular-expression
-        # (15.5.18)
-        arrays_file_name = re.sub(
-            "_chgperiods-[0-9]+_", "_chgperiods-" + str(self.chgperiods) + "_", arrays_file_name)
-
+        arrays_file_name = convert_exp_to_arrays_file_name(
+            self.predictor, self.exp_file_name, self.day, self.time,
+            repetition_ID, self.chgperiods)
         # TODO what if an algorithm doesn't provide one of the variables? (e.g.
         # because it doesn't have change detection?)
         # TODO will perhaps be extended, e.g for computing prediction quality
@@ -295,7 +281,7 @@ class PredictorComparator(object):
         exp_file.close()
         return experiment_data
 
-    def select_experiment_files(self, benchmark_path):
+    def select_exp_files(self, benchmark_path):
         '''
         Selects some experiment files for a benchmark function to run only these experiments.
 
@@ -303,25 +289,9 @@ class PredictorComparator(object):
         being in the benchmark function directory
         '''
 
-        all_experiment_files = [f for f in listdir(benchmark_path) if
-                                (isfile(join(benchmark_path, f)) and
-                                 f.endswith('.npz') and
-                                 self.benchmarkfunction in f)]
-        # TODO(dev) add further benchmarks
-        selected_exp_files = None
-        if self.benchmarkfunction == "sphere" or \
-                self.benchmarkfunction == "rastrigin" or \
-                self.benchmarkfunction == "rosenbrock":
-            selected_exp_files = [f for f in all_experiment_files if (
-                                  any(("_d-" + str(dim) + "_") in f for dim in self.dims) and
-                                  any(("_pch-" + poschgtype) + "_" in f for poschgtype in self.poschgtypes) and
-                                  any(("_fch-" + fitchgtype) + "_" in f for fitchgtype in self.fitchgtypes))]
-        elif self.benchmarkfunction == "mpbnoisy" or \
-                self.benchmarkfunction == "mpbrandom":
-            selected_exp_files = [f for f in all_experiment_files if (
-                                  any(("_d-" + str(dim) + "_" in f for dim in self.dims) and
-                                      ("_noise-" + str(noise) + "_") in f for noise in self.noises))]
-        return selected_exp_files
+        return select_experiment_files(benchmark_path, self.benchmarkfunction,
+                                       self.poschgtypes, self.fitchgtypes,
+                                       self.dims, self.noises)
 
     def get_n_generations(self):
         return self.lenchgperiod * self.chgperiods
@@ -332,7 +302,7 @@ class PredictorComparator(object):
         # load the files of the benchmark that correspond to the specified
         # dimensionality, position/fitness change type ...
         benchmark_path = self.benchmarkfunctionfolderpath + self.benchmarkfunction + "/"
-        selected_exp_files = self.select_experiment_files(benchmark_path)
+        selected_exp_files = self.select_exp_files(benchmark_path)
         print("selected_exp_files: ", selected_exp_files)
         # only for logging
         n_experiments = len(selected_exp_files)

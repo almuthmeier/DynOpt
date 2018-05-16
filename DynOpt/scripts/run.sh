@@ -23,9 +23,10 @@ benchmarkfunction=sphere	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (n
 							# defines the benchmark function, must be located 
 							# in the datasets folder of this project [for the dataset as input]
 benchmarkfunctionfolderpath=/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/GECCO_2018/ # parent directory path of the benchmark functions
-								   # and child directory of the datasets folder
-								   # of this project [for the dataset as input]
-outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/myexperiments/ff_sphere_1/"		# path to output folder
+								   																				 # and child directory of the datasets folder
+								   																				 # of this project [for the dataset as input]
+outputdirectory="c1c2c3_1.49/pso_no/"	   # name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/myexperiments/sphere/"		# path to output folder
 
 # run only some experiments of all for the benchmark problem (the next four
 # parameters are lists
@@ -77,6 +78,7 @@ ncpus=1						# e.g. =n_repetitions
 -ischgperiodrandom="$ischgperiodrandom" \
 -benchmarkfunction="$benchmarkfunction" \
 -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
+-outputdirectory="$outputdirectory" \
 -outputdirectorypath="$outputdirectorypath" \
 -poschgtypes="$poschgtypes" \
 -fitchgtypes="$fitchgtypes" \

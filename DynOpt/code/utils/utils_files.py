@@ -2,6 +2,9 @@
 Functionality to print the result files.
 '''
 import datetime
+from os.path import isfile, join
+from posix import listdir
+import re
 
 
 def print_to_file(file_name, values):
@@ -46,3 +49,52 @@ def get_metrics_file_name(metrics_file_path, predictor_name, benchmarkfunction, 
 def get_logs_file_name(logs_file_path, predictor_name, benchmarkfunction, day, time):
     return logs_file_path + predictor_name + "_" + benchmarkfunction + "_" + \
         day + '_' + time + ".txt"
+
+
+def convert_exp_to_arrays_file_name(predictor, exp_file_name, day, time, repetition_ID, chgperiods):
+    # generate array file name from the exeriment file name with some
+    # replacements:
+    # append predictor name at the beginning
+    arrays_file_name = predictor + "_" + exp_file_name
+    # replace date and time with start date and time
+    arrays_file_name = arrays_file_name.replace(
+        "_.*_.*\.npz", "_" + day + "_" + time + ".npz")
+    # append the repetition number at the end before the file ending
+    arrays_file_name = arrays_file_name.replace(
+        ".npz", "_" + str(repetition_ID) + ".npz")
+    # insert the correct number of change periods
+    # https://stackoverflow.com/questions/16720541/python-string-replace-regular-expression
+    # (15.5.18)
+    arrays_file_name = re.sub(
+        "_chgperiods-[0-9]+_", "_chgperiods-" + str(chgperiods) + "_", arrays_file_name)
+    return arrays_file_name
+
+
+def select_experiment_files(benchmark_path, benchmarkfunction, poschgtypes,
+                            fitchgtypes, dims, noises):
+    '''
+    Selects some experiment files for a benchmark function to run only these experiments.
+
+    @param all_experiment_files: list of all filenames (absolute paths) 
+    being in the benchmark function directory
+    '''
+
+    all_experiment_files = [f for f in listdir(benchmark_path) if
+                            (isfile(join(benchmark_path, f)) and
+                             f.endswith('.npz') and
+                             benchmarkfunction in f)]
+    # TODO(dev) add further benchmarks
+    selected_exp_files = None
+    if benchmarkfunction == "sphere" or \
+            benchmarkfunction == "rastrigin" or \
+            benchmarkfunction == "rosenbrock":
+        selected_exp_files = [f for f in all_experiment_files if (
+                              any(("_d-" + str(dim) + "_") in f for dim in dims) and
+                              any(("_pch-" + poschgtype) + "_" in f for poschgtype in poschgtypes) and
+                              any(("_fch-" + fitchgtype) + "_" in f for fitchgtype in fitchgtypes))]
+    elif benchmarkfunction == "mpbnoisy" or \
+            benchmarkfunction == "mpbrandom":
+        selected_exp_files = [f for f in all_experiment_files if (
+                              any(("_d-" + str(dim) + "_" in f for dim in dims) and
+                                  ("_noise-" + str(noise) + "_") in f for noise in noises))]
+    return selected_exp_files
