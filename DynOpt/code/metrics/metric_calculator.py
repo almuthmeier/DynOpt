@@ -7,7 +7,8 @@ import os
 from os.path import isdir, join
 from posix import listdir
 
-from metrics.metrics_dynea import best_error_before_change, arr
+from metrics.metrics_dynea import best_error_before_change, arr,\
+    avg_best_of_generation
 import numpy as np
 from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
 from utils.utils_files import select_experiment_files,\
@@ -26,20 +27,11 @@ class MetricCalculator():
         self.dims = None
         self.noises = None
 
-    def compute_metrics(self, arrays_path, array_file_name,
+    def compute_metrics(self, best_found_fit_per_gen,
+                        real_chgperiods_for_gens,
                         global_opt_fit_per_chgperiod,
                         global_opt_pos_per_chgperiod,
                         orig_global_opt_pos):
-        file = np.load(arrays_path + array_file_name)
-        best_found_fit_per_gen = file['best_found_fit_per_gen']
-        best_found_pos_per_gen = file['best_found_pos_per_gen']
-        best_found_fit_per_chgperiod = file['best_found_fit_per_chgperiod']
-        best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
-        pred_opt_fit_per_chgperiod = file['pred_opt_fit_per_chgperiod']
-        pred_opt_pos_per_chgperiod = file['pred_opt_pos_per_chgperiod']
-        detected_chgperiods_for_gens = file['detected_chgperiods_for_gens']
-        real_chgperiods_for_gens = file['real_chgperiods_for_gens']
-        file.close()
 
         gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
             real_chgperiods_for_gens)
@@ -98,15 +90,33 @@ class MetricCalculator():
                         print("    arraypath: ", arrays_path)
                         array_names = get_array_file_names_for_experiment_file_name(exp_file_name,
                                                                                     arrays_path)
+                        # collect data per run (for BOG)
+                        best_of_generation_per_run = []
                         for array_file_name in array_names:
                             print(array_file_name)
-                            self.compute_metrics(arrays_path, array_file_name,
+                            file = np.load(arrays_path + array_file_name)
+                            best_found_fit_per_gen = file['best_found_fit_per_gen']
+                            best_found_pos_per_gen = file['best_found_pos_per_gen']
+                            best_found_fit_per_chgperiod = file['best_found_fit_per_chgperiod']
+                            best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
+                            pred_opt_fit_per_chgperiod = file['pred_opt_fit_per_chgperiod']
+                            pred_opt_pos_per_chgperiod = file['pred_opt_pos_per_chgperiod']
+                            detected_chgperiods_for_gens = file['detected_chgperiods_for_gens']
+                            real_chgperiods_for_gens = file['real_chgperiods_for_gens']
+                            file.close()
+                            # arr, bebc
+                            self.compute_metrics(best_found_fit_per_gen,
+                                                 real_chgperiods_for_gens,
                                                  global_opt_fit_per_chgperiod,
                                                  global_opt_pos_per_chgperiod,
                                                  orig_global_opt_pos)
-
+                            # store data for bog
+                            best_of_generation_per_run.append(
+                                best_found_fit_per_gen)
                             # TODO save result in same array file???
-
+                        bog_avg, bog_dev = avg_best_of_generation(
+                            best_of_generation_per_run)
+                        print("bog: ", bog_avg)
         # for each experiment (in benchmarkfolder):
         #    - load benchmark files to get information about real global optimum
         #
