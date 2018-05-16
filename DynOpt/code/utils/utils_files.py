@@ -56,9 +56,11 @@ def convert_exp_to_arrays_file_name(predictor, exp_file_name, day, time, repetit
     # replacements:
     # append predictor name at the beginning
     arrays_file_name = predictor + "_" + exp_file_name
-    # replace date and time with start date and time
-    arrays_file_name = arrays_file_name.replace(
-        "_.*_.*\.npz", "_" + day + "_" + time + ".npz")
+    # replace date and time with start date and time;
+    # \d is the same as [0-9]
+    # {2} means that the previous regular expression must occour exactly 2 times
+    arrays_file_name = re.sub(
+        "_\d{4}-\d{2}-\d{2}_\d{2}:\d{2}.npz", "_" + day + "_" + time + ".npz", arrays_file_name)
     # append the repetition number at the end before the file ending
     arrays_file_name = arrays_file_name.replace(
         ".npz", "_" + str(repetition_ID) + ".npz")
