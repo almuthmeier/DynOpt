@@ -399,17 +399,18 @@ class Test(unittest.TestCase):
         #======================================================================
         # test case 0 (one change)
         generations_of_chgperiods = {0: [0, 1, 2, 3]}
-        global_opt_fit_per_chgperiod = {0: 3}
+        global_opt_fit_per_chgperiod = [3]
         best_found_fit_per_gen = np.array([5, 9, 4, 4])
 
         act = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen)
         exp = 1
         self.assertEqual(act, exp)
+
         #======================================================================
         # test case 1 (3 changes)
         generations_of_chgperiods = {0: [0, 1, 2, 3], 1: [4], 2: [5, 6, 7]}
-        global_opt_fit_per_chgperiod = {0: 3, 1: 1, 2: 0}
+        global_opt_fit_per_chgperiod = [3, 1, 0]
         best_found_fit_per_gen = np.array([5, 9, 4, 4,
                                            3,
                                            9, 0, 9])
@@ -418,10 +419,11 @@ class Test(unittest.TestCase):
             generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen)
         exp = (1 + 2 + 0) / 3
         self.assertEqual(act, exp)
+
         #======================================================================
         # test case 2 (3 changes, negative fitness values)
         generations_of_chgperiods = {0: [0, 1, 2, 3], 1: [4], 2: [5, 6, 7]}
-        global_opt_fit_per_chgperiod = {0: -3, 1: 1, 2: 0}
+        global_opt_fit_per_chgperiod = [-3, 1, 0]
         best_found_fit_per_gen = np.array([5, 9, -1, -2,
                                            3,
                                            9, 0, 9])
