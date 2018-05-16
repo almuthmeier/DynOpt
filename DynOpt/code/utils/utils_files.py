@@ -5,6 +5,7 @@ import datetime
 from os.path import isfile, join
 from posix import listdir
 import re
+import warnings
 
 
 def print_to_file(file_name, values):
@@ -70,6 +71,37 @@ def convert_exp_to_arrays_file_name(predictor, exp_file_name, day, time, repetit
     arrays_file_name = re.sub(
         "_chgperiods-[0-9]+_", "_chgperiods-" + str(chgperiods) + "_", arrays_file_name)
     return arrays_file_name
+
+
+def get_array_file_names_for_experiment_file_name(exp_file_name, arrays_path):
+    '''
+    Get all file names in the arrays_path and select only those corresponding 
+    to the exp_file_name.
+    '''
+    # abhängig, ob mpb oder sphere
+    splitted_benchmark_file_name = exp_file_name.split('_')
+    function = splitted_benchmark_file_name[0]
+    dim = splitted_benchmark_file_name[1].split('-')[1]
+    #chgperiods = splitted_benchmark_file_name[2].split('-')[1]
+
+    if function == "sphere" or function == "rastrigin" or function == "rosenbrock":
+        pch = splitted_benchmark_file_name[3].split('-')[1]
+        fch = splitted_benchmark_file_name[4].split('-')[1]
+        selected_files = [f for f in listdir(arrays_path) if (isfile(join(
+            arrays_path, f)) and f.endswith('.npz') and function in f
+            and ("_d-" + str(dim) + "_") in f and ("_pch-" + pch + "_")in f
+            and ("_fch-" + fch + "_") in f)]
+    elif function == "mpbnoisy" or function == "mpbrandom":
+        veclen = splitted_benchmark_file_name[3].split('-')[1]
+        peaks = splitted_benchmark_file_name[4].split('-')[1]
+        noise = splitted_benchmark_file_name[5].split('-')[1]
+        selected_files = [f for f in listdir(arrays_path) if (isfile(join(
+            arrays_path, f)) and f.endswith('.npz') and function in f
+            and ("_d-" + str(dim) + "_") in f and ("_veclen-" + str(veclen) + "_")in f
+            and ("_peaks-" + peaks + "_") in f and ("_noise-" + str(noise) + "_") in f)]
+    else:
+        warnings.warn("unknown benchmark function")
+    return selected_files
 
 
 def select_experiment_files(benchmark_path, benchmarkfunction, poschgtypes,

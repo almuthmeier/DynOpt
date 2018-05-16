@@ -24,7 +24,7 @@ def arr(generations_of_changes, optima_of_changes, best_fitness_evals):
     @param best_fitness_evals: best fitness evaluation of each generation
     @return ARR value
     '''
-    n_changes = len(generations_of_changes)
+    n_changes = len(np.unique(generations_of_changes))  # TODO
     assert n_changes == len(optima_of_changes), "inconsistency: n_changes: " + str(
         n_changes) + " but len(optima_of_changes): " + str(len(optima_of_changes))
 
@@ -143,35 +143,43 @@ def normalized_bog(avg_bog_per_alg_and_problem):
     return norm_bog_per_alg
 
 
-def best_error_before_change(generations_of_changes, optima_of_changes,  best_fitness_evals):
+def best_error_before_change(generations_of_chgperiods, global_opt_fit_per_chgperiod,
+                             best_found_fit_per_gen):
     '''
     Best-error-before-change according to description in the paper 
     "Evolutionary dynamic optimization: A survey of the state of the art"
     by Trung Thanh Nguyen et al. 2012.
 
-    Computes for each change the difference between the best fitness achieved 
-    during that change period and the actual optimal fitness. Afterwards these
-    differences are averaged.
+    Computes for each change period the difference between the best fitness
+    achieved during that change period and the actual optimal fitness. 
+    Afterwards these differences are averaged.
     The smaller the better, 0 is best.
 
-    @param generations_of_changes:  dictionary containing for each change (the 
-    real ones, not only those the EA has detected) a list with the generation 
-    numbers
-    TODO was wird hier erwartet? pro CHANGE oder pro GENERATION
-    @param optima_of_changes: 1d numpy array: for each generation the global 
-    optimum fitness
-    @param best_fitness_evals: best fitness evaluation of each generation
-    @return scalar
+    @param generations_of_chgperiods:  dictionary containing for each change 
+    period (the real ones, not only those the EA has detected) a list with the 
+    generation numbers
+    @param global_opt_fit_per_chgperiod: 1d numpy array: for each change period
+    the global optimum fitness
+    @param best_found_fit_per_gen: 1d numpy array: best found fitness for each
+    generation
+    @return scalar: bebc
     '''
-    n_changes = len(generations_of_changes)
-    # TODO schlägt bei GECCO (Ausführung von statistical_tests.py) fehl!!!
-    assert n_changes == len(optima_of_changes), "inconsistency: n_changes: " + str(
-        n_changes) + " but len(optima_of_changes): " + str(len(optima_of_changes))
+    # =========================================================================
+    # for test purposes TODO delete this?
+    n_gens = 0
+    for chgperiod, generations in generations_of_chgperiods.items():
+        n_gens += len(generations)
+    assert n_gens == len(best_found_fit_per_gen), "inconsistency: n_gens: " + str(
+        n_gens) + " but len(best_found_fit_per_gen): " + str(len(best_found_fit_per_gen))
+
+    # =========================================================================
+    n_chgperiods = len(generations_of_chgperiods)
     sum_of_errors = 0
-    for change, generations in generations_of_changes.items():
-        best_fit = np.min(best_fitness_evals[generations])
-        sum_of_errors += abs((best_fit) - (optima_of_changes[change]))
-    return sum_of_errors / n_changes
+    for chgperiod, generations in generations_of_chgperiods.items():
+        best_found_fit = np.min(best_found_fit_per_gen[generations])
+        sum_of_errors += abs((best_found_fit) -
+                             (global_opt_fit_per_chgperiod[chgperiod]))
+    return sum_of_errors / n_chgperiods
 
 
 def conv_speed(gens_of_chgs, optima_of_changes, best_fit_evals_per_alg):
