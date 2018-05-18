@@ -26,7 +26,7 @@ def fitness(problem, individual, curr_gen, problem_data):
     '''
 
     # TODO(dev)
-    if problem == "mpb" or problem == "mpbnoisy" or problem == "mpbrandom":
+    if problem == "mpb" or problem == "mpbnoisy" or problem == "mpbrand":
         return mpb.compute_fitness(individual, curr_gen, problem_data['heights'],
                                    problem_data['widths'], problem_data['positions'])
     elif problem == "sphere" or problem == "rastrigin" or problem == "rosenbrock":
@@ -46,7 +46,7 @@ def get_global_optimum_pos_and_fit_for_all_generations(problem, problem_data):
                    [1]: 1d numpy array: for each generation the global optimum 
                         fitness
     '''
-    if problem == "mpb" or problem == "mpbnoisy" or problem == "mpbrandom":  # TODO(dev)
+    if problem == "mpb" or problem == "mpbnoisy" or problem == "mpbrand":  # TODO(dev)
         global_optimum_fit = problem_data['global_opt_fit']
         global_optimum_pos = problem_data['global_opt_pos']
     elif problem == "sphere" or problem == "rastrigin" or problem == "rosenbrock":
@@ -90,7 +90,6 @@ def environment_changed(curr_gen, individuals_from_last_gen, fitness_from_last_g
     fit_to_reevaluate = fitness_from_last_gen[idx_to_reevaluate]
     curr_fit = np.array([fitness(problem, ind, curr_gen, problem_data)
                          for ind in indv_to_reevaluate])
-
     if not np.array_equal(fit_to_reevaluate, curr_fit):
         return True
 
