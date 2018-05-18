@@ -122,7 +122,7 @@ class DynamicPSO():
         # for PSO (prediction and evaluation)
         # ---------------------------------------------------------------------
 
-        # number of changed detected by the PSO
+        # number of change period detected by the PSO
         self.detected_n_changes = 0
         # 1d numpy array containing for each generation the number of the
         # detected change period it belongs to
@@ -214,6 +214,7 @@ class DynamicPSO():
 
         # ---------------------------------------------------------------------
         for i in range(self.n_generations):
+            print("generation: ", i)
             # adapt inertia weight
             self.adapt_inertia(n_succ_particles)
             # reset n_succ_particles after inertia adaptation
@@ -226,6 +227,7 @@ class DynamicPSO():
             # iteration number in which the last change was detected
             last_it_with_chg = 0
             if env_changed and i != 0:
+                print("changed")
                 # set c1, c2, c3 and inertia to their initial values
                 self.reset_factors()
 
@@ -311,7 +313,8 @@ class DynamicPSO():
             else:
                 self.p_pred_diff_vals = np.zeros((self.n_particles, self.dim))
 
-            self.detected_chgperiods_for_gens.append(i)
+            # store which change period the current generation belongs to
+            self.detected_chgperiods_for_gens.append(self.detected_n_changes)
             # random values
             r1_vals = self.pso_np_rnd_generator.rand(
                 self.n_particles, self.dim)
