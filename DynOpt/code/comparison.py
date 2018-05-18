@@ -218,10 +218,20 @@ class PredictorComparator(object):
         Repeat all entries of experiment_data.
         '''
         n_gens = self.get_n_generations()
-        # for all (key-value)-pairs in experiment_data:
+        # for all (key-value)-pairs in experiment_data: TODO(dev) insert new
         for key, property_per_chg in self.experiment_data.items():
-            if not key == "orig_global_opt_pos":
-                # pop old data
+            if key == "heights" or key == "widths" or key == "positions":
+                # pop old key and data
+                self.experiment_data.pop(key)
+                # convert and store data: each peak has an own list with as
+                # many entries as change periods
+                new_values = []
+                for peak in range(len(property_per_chg)):
+                    new_values.append(
+                        property_per_chg[peak][self.chgperiods_for_gens])
+                self.experiment_data[key] = new_values
+            elif key == "global_opt_fit_per_chgperiod" or key == "global_opt_pos_per_chgperiod":
+                # pop old key and data
                 self.experiment_data.pop(key)
                 # rename key to prevent confusion (if there is something to
                 # rename)
@@ -229,6 +239,10 @@ class PredictorComparator(object):
                 # convert and store data
                 self.experiment_data[key] = property_per_chg[self.chgperiods_for_gens]
                 assert n_gens == len(self.experiment_data[key])
+            elif key == "orig_global_opt_pos":
+                pass
+            else:
+                warnings.warn("unknown property")
 
     def get_chgperiods_for_gens(self):
         '''
@@ -270,7 +284,7 @@ class PredictorComparator(object):
                 "rastrigin" or self.benchmarkfunction == "rosenbrock":
             pass
         if self.benchmarkfunction == "mpbnoisy" or \
-                self.benchmarkfunction == "mpbrandom":
+                self.benchmarkfunction == "mpbrand":
             heights = exp_file['heights']
             widths = exp_file['widths']
             positions = exp_file['positions']
