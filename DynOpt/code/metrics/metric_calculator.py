@@ -8,7 +8,7 @@ from os.path import isdir, join
 from posix import listdir
 
 from metrics.metrics_dynea import best_error_before_change, arr,\
-    avg_best_of_generation
+    avg_best_of_generation, conv_speed
 import numpy as np
 from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
 from utils.utils_files import select_experiment_files,\
@@ -31,10 +31,8 @@ class MetricCalculator():
                         real_chgperiods_for_gens,
                         global_opt_fit_per_chgperiod,
                         global_opt_pos_per_chgperiod,
+                        gens_of_chgperiods,
                         orig_global_opt_pos):
-
-        gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
-            real_chgperiods_for_gens)
 
         # bebc
         bebc = best_error_before_change(
@@ -48,7 +46,6 @@ class MetricCalculator():
         # TODO metric values of different runs are same!?! (-> seeds?)
 
     def compute_and_save_all_metrics(self):
-        pass
 
         for benchmarkfunction in self.benchmarkfunctions:
             print()
@@ -74,15 +71,19 @@ class MetricCalculator():
                 # get output
                 output_dir_for_benchmark_funct = self.output_dir_path + benchmarkfunction + "/"
                 print(output_dir_for_benchmark_funct)
-                # different alg settingss
+                # different alg settings
                 direct_cild_dirs = [d for d in listdir(output_dir_for_benchmark_funct) if (
                     isdir(join(output_dir_for_benchmark_funct, d)))]
                 print(direct_cild_dirs)
+
                 for subdir in direct_cild_dirs:
                     subdir_path = output_dir_for_benchmark_funct + subdir + "/"
                     # different alg types/predictors
                     alg_types = [d for d in listdir(subdir_path) if (
                         isdir(join(subdir_path, d)))]
+
+                    best_found_fit_per_gen_and_run_and_alg = {
+                        key: [] for key in alg_types}
                     for alg in alg_types:
                         # read all array files for repetitions of this
                         # experiment
@@ -90,8 +91,9 @@ class MetricCalculator():
                         print("    arraypath: ", arrays_path)
                         array_names = get_array_file_names_for_experiment_file_name(exp_file_name,
                                                                                     arrays_path)
+
                         # collect data per run (for BOG)
-                        best_of_generation_per_run = []
+                        #best_of_generation_per_run = []
                         for array_file_name in array_names:
                             print(array_file_name)
                             file = np.load(arrays_path + array_file_name)
@@ -104,19 +106,36 @@ class MetricCalculator():
                             detected_chgperiods_for_gens = file['detected_chgperiods_for_gens']
                             real_chgperiods_for_gens = file['real_chgperiods_for_gens']
                             file.close()
+                            gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
+                                real_chgperiods_for_gens)
+
                             # arr, bebc
                             self.compute_metrics(best_found_fit_per_gen,
                                                  real_chgperiods_for_gens,
                                                  global_opt_fit_per_chgperiod,
                                                  global_opt_pos_per_chgperiod,
+                                                 gens_of_chgperiods,
                                                  orig_global_opt_pos)
                             # store data for bog
-                            best_of_generation_per_run.append(
+                            best_found_fit_per_gen_and_run_and_alg[alg].append(
                                 best_found_fit_per_gen)
                             # TODO save result in same array file???
+                        # bog
                         bog_avg, bog_dev = avg_best_of_generation(
-                            best_of_generation_per_run)
+                            best_found_fit_per_gen_and_run_and_alg[alg])
                         print("bog: ", bog_avg)
+                        # rcs
+                    keys = list(best_found_fit_per_gen_and_run_and_alg.keys())
+                    runs = len(best_found_fit_per_gen_and_run_and_alg[keys[0]])
+                    for run in range(runs):
+                        new_dict = {}
+                        for alg in keys:
+                            new_dict[alg] = best_found_fit_per_gen_and_run_and_alg[alg][run]
+                        best_found_fit_per_gen_and_run_and_alg
+                        rcs_per_alg = conv_speed(
+                            gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict)
+                        print("rcs_per_alg ", rcs_per_alg)
+
         # for each experiment (in benchmarkfolder):
         #    - load benchmark files to get information about real global optimum
         #
@@ -144,12 +163,12 @@ def init_metric_calculator():
     path_to_output = '/'.join(path_to_code.split('/')[:-1]) + "/output/"
 
     calculator.algorithms = []
-    calculator.benchmarkfunctions = ["mpbnoisy", "sphere"]
+    calculator.benchmarkfunctions = ["mpbnoisy"]  # sphere, rosenbrock
     calculator.benchmark_folder_path = path_to_datasets + "EvoStar_2018/"
     calculator.output_dir_path = path_to_output + "EvoStar_2018/"
     calculator.poschgtypes = ["linear", "sine"]
     calculator.fitchgtypes = ["none"]
-    calculator.dims = [2, 50]
+    calculator.dims = [50]
     calculator.noises = [0.0]
     return calculator
 
@@ -157,3 +176,6 @@ def init_metric_calculator():
 if __name__ == '__main__':
     calculator = init_metric_calculator()
     calculator.compute_and_save_all_metrics()
+
+# BOG has values for generations
+# other metrics have values for runs
