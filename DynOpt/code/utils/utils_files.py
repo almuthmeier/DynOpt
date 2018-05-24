@@ -82,6 +82,12 @@ def convert_exp_to_arrays_file_name(predictor, exp_file_name, day, time,
     return arrays_file_name
 
 
+def get_run_number_from_array_file_name(array_file_name):
+    run = re.search("_\d+.npz", array_file_name).group()
+    run = run.replace("_", "")
+    run = int(run.replace(".npz", ""))
+
+
 def get_info_from_array_file_name(array_file_name):
     '''
     Extracts information from an output array file name and converts it to its actual 
@@ -104,22 +110,37 @@ def get_info_from_array_file_name(array_file_name):
     ischgperiodrandom_string = re.search(
         'ischgperiodrandom-[False|True]+', array_file_name).group().split('-')[1]
     ischgperiodrandom = ischgperiodrandom_string == 'True'
-    veclen = float(re.search('veclen-[0-9]+\.[0-9]+',
-                             array_file_name).group().split('-')[1])
-    peaks = int(re.search('peaks-[0-9]+',
-                          array_file_name).group().split('-')[1])
-    noise = float(re.search('noise-[0-9]+\.[0-9]+',
-                            array_file_name).group().split('-')[1])
-    poschg = re.search('pch-[a-z]+', array_file_name).group().split('-')[1]
-    fitchg = re.search('fch-[a-z]+', array_file_name).group().split('-')[1]
+    try:
+        veclen = float(re.search('veclen-[0-9]+\.[0-9]+',
+                                 array_file_name).group().split('-')[1])
+    except AttributeError:
+        # AttributeError: 'NoneType' object has no attribute 'group'
+        veclen = None
+    try:
+        peaks = int(re.search('peaks-[0-9]+',
+                              array_file_name).group().split('-')[1])
+    except AttributeError:
+        peaks = None
+    try:
+        noise = float(re.search('noise-[0-9]+\.[0-9]+',
+                                array_file_name).group().split('-')[1])
+    except AttributeError:
+        noise = None
+    try:
+        poschg = re.search('pch-[a-z]+', array_file_name).group().split('-')[1]
+    except AttributeError:
+        poschg = None
+    try:
+        fitchg = re.search('fch-[a-z]+', array_file_name).group().split('-')[1]
+    except AttributeError:
+        fitchg = None
+
     # get further info (without keys): predictor, benchmark, date, time, run
     # TODO(dev) here the order of the info in the file name is important
     predictor, benchmark = array_file_name.split('_')[0:2]
     date = re.search("\d{4}-\d{2}-\d{2}", array_file_name).group()
     time = re.search("_\d{2}:\d{2}_", array_file_name).group()
-    run = int(re.search("_\d+.npz", array_file_name).group())
-    run = run.replace("_", "")
-    run = run.replace(".npz", "")
+    run = get_run_number_from_array_file_name(array_file_name)
 
     return (predictor, benchmark, dim, chgperiods, lenchgperiod,
             ischgperiodrandom, veclen, peaks, noise, poschg, fitchg, date, time, run)

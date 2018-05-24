@@ -14,7 +14,8 @@ import numpy as np
 import pandas as pd
 from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
 from utils.utils_files import select_experiment_files,\
-    get_array_file_names_for_experiment_file_name, get_info_from_array_file_name
+    get_array_file_names_for_experiment_file_name, get_info_from_array_file_name,\
+    get_run_number_from_array_file_name
 
 
 class MetricCalculator():
@@ -50,9 +51,10 @@ class MetricCalculator():
 
     def compute_and_save_all_metrics(self):
         # order of columns should be meaningless!!!
-        column_names = ['function', 'algparams', 'alg',
-                        'dim', 'periods', 'lenperiods', 'periodsrandom', 'poschg', 'fitchg', 'noise',
-                        'run', 'bog', 'bebc', 'rcs', 'arr']
+        column_names = ['expfilename', 'arrayfilename', 'function', 'predictor',
+                        'algparams', 'alg', 'dim', 'chgperiods', 'len_c_p',
+                        'ischgperiodrandom', 'veclen', 'peaks', 'noise',
+                        'poschg', 'fitchg', 'run', 'bog', 'bebc', 'rcs', 'arr']
 
         df = pd.DataFrame(columns=column_names)
 
@@ -99,7 +101,8 @@ class MetricCalculator():
                     # (for each run the array of best found fitness values)
                     best_found_fit_per_gen_and_run_and_alg = {
                         key: [] for key in alg_types}
-
+                    array_file_names_per_run_and_alg = {
+                        key: [] for key in alg_types}
                     # algorithms with predictor types, e.g. "ea_no"
                     for alg in alg_types:
                         # data structure for metrics (for writing into files)
@@ -124,10 +127,8 @@ class MetricCalculator():
                             str(dim) + " and d: " + str(d)
 
                         for array_file_name in array_names:
-                            run = int(
-                                re.search("_\d+.npz", array_file_name).group())
-                            run = run.replace("_", "")
-                            run = run.replace(".npz", "")
+                            run = get_run_number_from_array_file_name(
+                                array_file_name)
 
                             file = np.load(arrays_path + array_file_name)
                             best_found_fit_per_gen = file['best_found_fit_per_gen']
@@ -149,9 +150,9 @@ class MetricCalculator():
                                                                    global_opt_pos_per_chgperiod,
                                                                    gens_of_chgperiods,
                                                                    orig_global_opt_pos)
-                            # todo: auch dim, len_chg, ... im Datensatz speichern, sodass man es nicht aus dem Dateinamen auslesen muss??? (23.5.18)
-                            # unabhängig von Spaltenanordnung
-                            data = {'function': benchmarkfunction, 'predictor': predictor,
+                            data = {'expfilename': exp_file_name,
+                                    'arrayfilename': array_file_name,
+                                    'function': benchmarkfunction, 'predictor': predictor,
                                     'algparams': subdir, 'alg': alg, 'dim': dim,
                                     'chgperiods': chgperiods, 'len_c_p': lenchgperiod,
                                     'ischgperiodrandom': ischgperiodrandom,
@@ -159,10 +160,14 @@ class MetricCalculator():
                                     'poschg': poschg, 'fitchg': fitchg, 'run': run,
                                     'bog': None, 'bebc': bebc, 'rcs': None, 'arr': arr_value}
                             df.at[len(df)] = data
-                            # TODO wie kann man jetzt DAten für BOG, RCS nachträglich hier hineinpacken???
+                            print("len: ", len(df))
+                            print(df.columns)
+                            # TODO wie kann man jetzt Daten für BOG, RCS nachträglich hier hineinpacken???
                             # store data for bog
                             best_found_fit_per_gen_and_run_and_alg[alg].append(
                                 best_found_fit_per_gen)
+                            array_file_names_per_run_and_alg[alg].append(
+                                array_file_name)
                         # bog
                         bog_avg, bog_dev = avg_best_of_generation(
                             best_found_fit_per_gen_and_run_and_alg[alg])
@@ -184,6 +189,16 @@ class MetricCalculator():
                             gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict)
                         print("rcs_per_alg ", rcs_per_alg)
 
+                        # store RCS data
+                        for alg in keys:
+                            df.loc[(df['arrayfilename'] == array_file_names_per_run_and_alg[alg][run]),  # &
+                                   #(df['expfilename'] == exp_file_name) &
+                                   #(df['predictor'] == predictor) &
+                                   #(df['algparams'] == subdir) &
+                                   #(df['alg'] == alg) &
+                                   #(df['run'] == run),
+                                   ['rcs']] = rcs_per_alg[alg]
+
                     # write into files
                     # TODO
         # for each experiment (in benchmarkfolder):
@@ -197,6 +212,9 @@ class MetricCalculator():
         #         - compute RCS
         #     - average metrics, do other statistical stuff, like box plots (no statistical tests here)
         # compute normBOG here?
+
+        print(df)
+        df.to_csv("metric_db.csv")
 
 
 def init_metric_calculator():
