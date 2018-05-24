@@ -295,7 +295,7 @@ class DynamicEA():
                 # adapt population to environment change
                 self.adapt_population(i, my_pred_mode)
 
-            self.detected_chgperiods_for_gens.append(i)
+            self.detected_chgperiods_for_gens.append(self.detected_n_changes)
 
             # create la offsprings
             offspring_population = np.zeros((self.la, self.dim))
