@@ -133,7 +133,8 @@ class PredictorComparator(object):
         '''
         arrays_file_name = convert_exp_to_arrays_file_name(
             self.predictor, self.exp_file_name, self.day, self.time,
-            repetition_ID, self.chgperiods)
+            repetition_ID, self.chgperiods, self.lenchgperiod,
+            self.ischgperiodrandom)
         # TODO what if an algorithm doesn't provide one of the variables? (e.g.
         # because it doesn't have change detection?)
         # TODO will perhaps be extended, e.g for computing prediction quality
@@ -147,8 +148,11 @@ class PredictorComparator(object):
                  detected_chgperiods_for_gens=alg.detected_chgperiods_for_gens,
                  # information about the real changes (is not in benchmark file
                  # because it is a general file for 10000 change periods)
-                 real_chgperiods_for_gens=self.chgperiods_for_gens)
+                 real_chgperiods_for_gens=self.chgperiods_for_gens
+                 # TODO more data from the comparator self (info about problem
+                 )
 
+    # TODO fehlt hier ein Parameter???
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, ):
         '''
         @param gpu_ID: is None if no GPU is required.

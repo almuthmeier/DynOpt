@@ -52,9 +52,13 @@ def get_logs_file_name(logs_file_path, predictor_name, benchmarkfunction, day, t
         day + '_' + time + ".txt"
 
 
-def convert_exp_to_arrays_file_name(predictor, exp_file_name, day, time, repetition_ID, chgperiods):
-    # generate array file name from the exeriment file name with some
-    # replacements:
+def convert_exp_to_arrays_file_name(predictor, exp_file_name, day, time,
+                                    repetition_ID, chgperiods, lenchgperiod,
+                                    ischgperiodrandom):
+    '''
+        generate array file name from the experiment file name with some
+        replacements
+    '''
     # append predictor name at the beginning
     arrays_file_name = predictor + "_" + exp_file_name
     # replace date and time with start date and time;
@@ -64,13 +68,61 @@ def convert_exp_to_arrays_file_name(predictor, exp_file_name, day, time, repetit
         "_\d{4}-\d{2}-\d{2}_\d{2}:\d{2}.npz", "_" + day + "_" + time + ".npz", arrays_file_name)
     # append the repetition number at the end before the file ending
     arrays_file_name = arrays_file_name.replace(
-        ".npz", "_" + str(repetition_ID) + ".npz")
-    # insert the correct number of change periods
+        ".npz", "_" + str(repetition_ID).zfill(2) + ".npz")
+    # substitute the number of change periods by the correct number, insert
+    # after that the period length and whether the changes are random
     # https://stackoverflow.com/questions/16720541/python-string-replace-regular-expression
     # (15.5.18)
+    n_periods = "_chgperiods-" + str(chgperiods)
+    len_periods = "_lenchgperiod-" + str(lenchgperiod)
+    israndom = "_ischgperiodrandom-" + str(ischgperiodrandom)
     arrays_file_name = re.sub(
-        "_chgperiods-[0-9]+_", "_chgperiods-" + str(chgperiods) + "_", arrays_file_name)
+        "_chgperiods-[0-9]+_", n_periods + len_periods + israndom + "_", arrays_file_name)
+
     return arrays_file_name
+
+
+def get_info_from_array_file_name(array_file_name):
+    '''
+    Extracts information from an output array file name and converts it to its actual 
+    data type.
+
+    Example file names:
+    rnn_mpbnoisy_d-2_chgperiods-10_lenchgperiod-20_ischgperiodrandom-False_veclen-0.6_peaks-10_noise-0.0_2018-05-24_10:22_00.npz
+    rnn_rosenbrock_d-2_chgperiods-10_lenchgperiod-20_ischgperiodrandom-False_pch-linear_fch-none_2018-05-24_10:27_00.npz
+
+    @return tupel, the extracted information
+    '''
+
+    #
+
+    dim = int(re.search('d-[0-9]+', array_file_name).group().split('-')[1])
+    chgperiods = int(re.search('chgperiods-[0-9]+',
+                               array_file_name).group().split('-')[1])
+    lenchgperiod = int(
+        re.search('lenchgperiod-[0-9]+', array_file_name).group().split('-')[1])
+    ischgperiodrandom_string = re.search(
+        'ischgperiodrandom-[False|True]+', array_file_name).group().split('-')[1]
+    ischgperiodrandom = ischgperiodrandom_string == 'True'
+    veclen = float(re.search('veclen-[0-9]+\.[0-9]+',
+                             array_file_name).group().split('-')[1])
+    peaks = int(re.search('peaks-[0-9]+',
+                          array_file_name).group().split('-')[1])
+    noise = float(re.search('noise-[0-9]+\.[0-9]+',
+                            array_file_name).group().split('-')[1])
+    poschg = re.search('pch-[a-z]+', array_file_name).group().split('-')[1]
+    fitchg = re.search('fch-[a-z]+', array_file_name).group().split('-')[1]
+    # get further info (without keys): predictor, benchmark, date, time, run
+    # TODO(dev) here the order of the info in the file name is important
+    predictor, benchmark = array_file_name.split('_')[0:2]
+    date = re.search("\d{4}-\d{2}-\d{2}", array_file_name).group()
+    time = re.search("_\d{2}:\d{2}_", array_file_name).group()
+    run = int(re.search("_\d+.npz", array_file_name).group())
+    run = run.replace("_", "")
+    run = run.replace(".npz", "")
+
+    return (predictor, benchmark, dim, chgperiods, lenchgperiod,
+            ischgperiodrandom, veclen, peaks, noise, poschg, fitchg, date, time, run)
 
 
 def get_array_file_names_for_experiment_file_name(exp_file_name, arrays_path):
