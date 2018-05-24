@@ -143,7 +143,7 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
                     curr_position, curr_height, curr_width,  curr_position)
                 if curr_fit > max_fit:
                     max_fit = curr_fit
-                    best_position = curr_position
+                    best_position = copy.deepcopy(curr_position)
             global_opt_fit.append(-max_fit)
             global_opt_pos.append(copy.deepcopy(best_position))
 

@@ -17,7 +17,7 @@ algorithm="dynpso" 			# dynea or dynpso
 repetitions=1
 chgperiods=10
 lenchgperiod=20				# has to be set even if chgperiod==1 (is then number of generations
-							# also in case ischgperiodrandom is True, lenchgperiod is needed, because lenchgperiod*chgperiods is the number of generations!! 
+							# also in case ischgperiodrandom is True, lenchgperiod is required, because lenchgperiod*chgperiods is the number of generations!! 
 ischgperiodrandom=False
 benchmarkfunction=sphere	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (neu)
 							# defines the benchmark function, must be located 
