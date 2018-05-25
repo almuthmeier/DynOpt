@@ -50,10 +50,11 @@ class MetricCalculator():
 
     def compute_and_save_all_metrics(self):
         # order of columns should be meaningless!!!
-        column_names = ['expfilename', 'arrayfilename', 'function', 'predictor',
+        column_names = ['function', 'predictor',
                         'algparams', 'alg', 'dim', 'chgperiods', 'len_c_p',
                         'ischgperiodrandom', 'veclen', 'peaks', 'noise',
-                        'poschg', 'fitchg', 'run', 'bog-for-run', 'bebc', 'rcs', 'arr']
+                        'poschg', 'fitchg', 'run', 'bog-for-run', 'bebc', 'rcs', 'arr',
+                        'expfilename', 'arrayfilename']
 
         df = pd.DataFrame(columns=column_names)
 
