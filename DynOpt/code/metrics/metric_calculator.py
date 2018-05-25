@@ -8,13 +8,13 @@ from os.path import isdir, join
 from posix import listdir
 
 from metrics.metrics_dynea import best_error_before_change, arr,\
-    avg_best_of_generation, conv_speed, avg_bog_for_one_run
+    conv_speed, avg_bog_for_one_run
 import numpy as np
 import pandas as pd
 from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
 from utils.utils_files import select_experiment_files,\
-    get_sorted_array_file_names_for_experiment_file_name, get_info_from_array_file_name,\
-    get_run_number_from_array_file_name
+    get_sorted_array_file_names_for_experiment_file_name, \
+    get_info_from_array_file_name, get_run_number_from_array_file_name
 
 
 class MetricCalculator():
@@ -104,11 +104,6 @@ class MetricCalculator():
                         key: [] for key in alg_types}
                     # algorithms with predictor types, e.g. "ea_no"
                     for alg in alg_types:
-                        # data structure for metrics (for writing into files)
-                        bebc_per_run = []
-                        bog_per_gen = []
-                        arr_per_run = []
-
                         print("    alg: ", alg)
                         # read all array files for the runs of the experiment
                         arrays_path = subdir_path + alg + "/arrays/"
@@ -171,7 +166,7 @@ class MetricCalculator():
                                 best_found_fit_per_gen)
                             array_file_names_per_run_and_alg[alg].append(
                                 array_file_name)
-                        # bog
+                        # bog (as defined)
                         # bog_avg, bog_dev = avg_best_of_generation(
                         #    best_found_fit_per_gen_and_run_and_alg[alg])
                         #print("bog: ", bog_avg)
@@ -195,39 +190,15 @@ class MetricCalculator():
 
                         # store RCS data
                         for alg in keys:
-                            df.loc[(df['arrayfilename'] == array_file_names_per_run_and_alg[alg][run]),  # &
-                                   #(df['expfilename'] == exp_file_name) &
-                                   #(df['predictor'] == predictor) &
-                                   #(df['algparams'] == subdir) &
-                                   #(df['alg'] == alg) &
-                                   #(df['run'] == run),
+                            df.loc[(df['arrayfilename'] == array_file_names_per_run_and_alg[alg][run]),
                                    ['rcs']] = rcs_per_alg[alg]
-
-                    # write into files
-                    # TODO
-        # for each experiment (in benchmarkfolder):
-        #    - load benchmark files to get information about real global optimum
-        #
-        #    - for each run
-        #         - for each algorithm:
-        #             - load array file
-        #             - compute metrics
-        #             - store data that are necessary for RCS
-        #         - compute RCS
-        #     - average metrics, do other statistical stuff, like box plots (no statistical tests here)
-        # compute normBOG here?
-
-        print(df)
+        # save data frame into file
         df.to_csv("metric_db.csv")
 
 
 def init_metric_calculator():
     # TODO(dev) set parameters as required
     calculator = MetricCalculator()
-    # TODO nein. es wird ja nicht (unbedingt) über Optimierungsalgorithmen,
-    # sondern über Prediktoren verglichen
-
-    # TODO woher weiß man Zuordnung zw. Benchmark und Ausgabepfad (Dict?)
 
     # path to "..../DynOpt/code"
     path_to_code = os.path.abspath(os.pardir)
@@ -249,6 +220,3 @@ def init_metric_calculator():
 if __name__ == '__main__':
     calculator = init_metric_calculator()
     calculator.compute_and_save_all_metrics()
-
-# BOG has values for generations
-# other metrics have values for runs
