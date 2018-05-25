@@ -6,15 +6,14 @@ Created on May 15, 2018
 import os
 from os.path import isdir, join
 from posix import listdir
-import re
 
 from metrics.metrics_dynea import best_error_before_change, arr,\
-    avg_best_of_generation, conv_speed
+    avg_best_of_generation, conv_speed, avg_bog_for_one_run
 import numpy as np
 import pandas as pd
 from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
 from utils.utils_files import select_experiment_files,\
-    get_array_file_names_for_experiment_file_name, get_info_from_array_file_name,\
+    get_sorted_array_file_names_for_experiment_file_name, get_info_from_array_file_name,\
     get_run_number_from_array_file_name
 
 
@@ -54,7 +53,7 @@ class MetricCalculator():
         column_names = ['expfilename', 'arrayfilename', 'function', 'predictor',
                         'algparams', 'alg', 'dim', 'chgperiods', 'len_c_p',
                         'ischgperiodrandom', 'veclen', 'peaks', 'noise',
-                        'poschg', 'fitchg', 'run', 'bog', 'bebc', 'rcs', 'arr']
+                        'poschg', 'fitchg', 'run', 'bog-for-run', 'bebc', 'rcs', 'arr']
 
         df = pd.DataFrame(columns=column_names)
 
@@ -113,8 +112,8 @@ class MetricCalculator():
                         print("    alg: ", alg)
                         # read all array files for the runs of the experiment
                         arrays_path = subdir_path + alg + "/arrays/"
-                        array_names = get_array_file_names_for_experiment_file_name(exp_file_name,
-                                                                                    arrays_path)
+                        array_names = get_sorted_array_file_names_for_experiment_file_name(exp_file_name,
+                                                                                           arrays_path)
 
                         # get general info from one arbitrary array file
                         (predictor, benchmark, d, chgperiods, lenchgperiod,
@@ -150,6 +149,11 @@ class MetricCalculator():
                                                                    global_opt_pos_per_chgperiod,
                                                                    gens_of_chgperiods,
                                                                    orig_global_opt_pos)
+                            # averaged bog for this run (not the average bog as
+                            # defined) (should not be used other than as average
+                            # over all runs)
+                            bog_for_run = avg_bog_for_one_run(
+                                best_found_fit_per_gen)
                             data = {'expfilename': exp_file_name,
                                     'arrayfilename': array_file_name,
                                     'function': benchmarkfunction, 'predictor': predictor,
@@ -158,21 +162,21 @@ class MetricCalculator():
                                     'ischgperiodrandom': ischgperiodrandom,
                                     'veclen': veclen, 'peaks': peaks, 'noise': noise,
                                     'poschg': poschg, 'fitchg': fitchg, 'run': run,
-                                    'bog': None, 'bebc': bebc, 'rcs': None, 'arr': arr_value}
+                                    'bog-for-run': bog_for_run, 'bebc': bebc, 'rcs': None, 'arr': arr_value}
                             df.at[len(df)] = data
                             print("len: ", len(df))
                             print(df.columns)
-                            # TODO wie kann man jetzt Daten für BOG, RCS nachträglich hier hineinpacken???
-                            # store data for bog
+                            # store data for bog and rcs
                             best_found_fit_per_gen_and_run_and_alg[alg].append(
                                 best_found_fit_per_gen)
                             array_file_names_per_run_and_alg[alg].append(
                                 array_file_name)
                         # bog
-                        bog_avg, bog_dev = avg_best_of_generation(
-                            best_found_fit_per_gen_and_run_and_alg[alg])
-                        print("bog: ", bog_avg)
-                        # rcs
+                        # bog_avg, bog_dev = avg_best_of_generation(
+                        #    best_found_fit_per_gen_and_run_and_alg[alg])
+                        #print("bog: ", bog_avg)
+
+                    # rcs
                     keys = list(best_found_fit_per_gen_and_run_and_alg.keys())
                     runs = len(best_found_fit_per_gen_and_run_and_alg[keys[0]])
 
@@ -231,12 +235,13 @@ def init_metric_calculator():
     path_to_output = '/'.join(path_to_code.split('/')[:-1]) + "/output/"
 
     calculator.algorithms = []
-    calculator.benchmarkfunctions = ["sphere"]  # sphere, rosenbrock
+    calculator.benchmarkfunctions = [
+        "sphere", "mpbnoisy"]  # sphere, rosenbrock
     calculator.benchmark_folder_path = path_to_datasets + "EvoStar_2018/"
     calculator.output_dir_path = path_to_output + "EvoStar_2018/"
     calculator.poschgtypes = ["linear", "sine"]
     calculator.fitchgtypes = ["none"]
-    calculator.dims = [50]
+    calculator.dims = [2, 50]
     calculator.noises = [0.0]
     return calculator
 

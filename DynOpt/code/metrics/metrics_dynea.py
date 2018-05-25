@@ -65,6 +65,15 @@ def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_
     return sum_over_changes
 
 
+def avg_bog_for_one_run(best_found_fit_per_gen):
+    '''
+    Averages the best found fitness values over all generations for one run.
+
+    Is not the real average bog.
+    '''
+    return np.average(best_found_fit_per_gen)
+
+
 def __best_of_generation(best_found_fit_per_gen_and_run):
     '''
     Internal function. Called by avg_best_of_generation.

@@ -6,6 +6,7 @@ from os.path import isfile, join
 from posix import listdir
 import re
 import warnings
+import numpy as np
 
 
 def print_to_file(file_name, values):
@@ -86,6 +87,7 @@ def get_run_number_from_array_file_name(array_file_name):
     run = re.search("_\d+.npz", array_file_name).group()
     run = run.replace("_", "")
     run = int(run.replace(".npz", ""))
+    return run
 
 
 def get_info_from_array_file_name(array_file_name):
@@ -146,10 +148,11 @@ def get_info_from_array_file_name(array_file_name):
             ischgperiodrandom, veclen, peaks, noise, poschg, fitchg, date, time, run)
 
 
-def get_array_file_names_for_experiment_file_name(exp_file_name, arrays_path):
+def get_sorted_array_file_names_for_experiment_file_name(exp_file_name, arrays_path):
     '''
     Get all file names in the arrays_path and select only those corresponding 
     to the exp_file_name.
+    Names are sorted.
     '''
     # abhängig, ob mpb oder sphere
     splitted_benchmark_file_name = exp_file_name.split('_')
@@ -174,7 +177,7 @@ def get_array_file_names_for_experiment_file_name(exp_file_name, arrays_path):
             and ("_peaks-" + peaks + "_") in f and ("_noise-" + str(noise) + "_") in f)]
     else:
         warnings.warn("unknown benchmark function")
-    return selected_files
+    return np.sort(selected_files)
 
 
 def select_experiment_files(benchmark_path, benchmarkfunction, poschgtypes,
