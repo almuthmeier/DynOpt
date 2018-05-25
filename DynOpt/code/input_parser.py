@@ -39,7 +39,7 @@ def define_parser_arguments():
     # path to output folder
     parser.add_argument("-outputdirectorypath", type=str)
 
-    # run only some experiments of all for the benchark problem
+    # run only some experiments of all for the benchmark problem
     parser.add_argument("-poschgtypes", type=string_list_type)
     parser.add_argument("-fitchgtypes", type=string_list_type)
     parser.add_argument("-dims", type=int_list_type)  # list of int
@@ -120,22 +120,22 @@ def initialize_comparator_manually(comparator):
     path_to_dynoptim = '/'.join(os.path.abspath(os.pardir).split('/')[:])
 
     # benchmark problem
-    comparator.algorithm = "dynpso"
+    comparator.algorithm = "dynea"
     comparator.repetitions = 4
     comparator.chgperiods = 10
     comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = False
-    comparator.benchmarkfunction = "sphere"
+    comparator.benchmarkfunction = "rosenbrock"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
-        "/DynOpt/datasets/" + "GECCO_2018/"
-    comparator.outputdirectory = "c1c2c3_1.49/pso_no/"
+        "/DynOpt/datasets/" + "EvoStar_2018/"
+    comparator.outputdirectory = "c1c2c3_1.49/ea_no/"
     comparator.outputdirectorypath = path_to_dynoptim + \
-        "/DynOpt/output/" + "myexperiments/" + "sphere/"
+        "/DynOpt/output/" + "EvoStar_2018/" + "rosenbrock/"
 
     # run only some experiments of all for the benchark problem
     comparator.poschgtypes = np.array(["linear", "sine"])
     comparator.fitchgtypes = np.array(["none"])
-    comparator.dims = np.array([2])
+    comparator.dims = np.array([2, 50])
     comparator.noises = np.array([0.0])
 
     # PSO
@@ -164,7 +164,7 @@ def initialize_comparator_manually(comparator):
     # for ANN predictor
     if comparator.predictor == "rnn":
         comparator.neuronstype = "fixed20"
-        comparator.epochs = 30
+        comparator.epochs = 3
         comparator.batchsize = 1
         comparator.ngpus = 1
 

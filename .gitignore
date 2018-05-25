@@ -15,4 +15,5 @@
 *.pyc
 
 # Ausgabe
+*.npz
 
