@@ -18,7 +18,10 @@
 	- 'positions'
 	
 	
-	
+## file name
+- mpbrand_d-50_chgperiods-10000_veclen-0.6_peaks-10_noise-none_2018-05-09_11:19.npz
+- rosenbrock_d-50_chgperiods-10000_pch-sine_fch-none_2018-05-09_11:13.npz
+- gdbg_d-..._chgperiods-..._f-..._c-..._2018-05-..._11:04.npz
 	
 ## content of datasets folder of the project
 - datasets folder must contain sub-directories each containing the benchmark
