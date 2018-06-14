@@ -128,6 +128,7 @@ def initialize_comparator_manually(comparator):
     comparator.benchmarkfunction = "rosenbrock"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "EvoStar_2018/"
+    # attention: naming should be consistent to predictor/other params
     comparator.outputdirectory = "c1c2c3_1.49/ea_no/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "EvoStar_2018/" + "rosenbrock/"

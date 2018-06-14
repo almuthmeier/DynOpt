@@ -19,15 +19,23 @@ from utils.utils_files import select_experiment_files,\
 
 class MetricCalculator():
     def __init__(self):
-        # are set outside
-        self.algorithms = None
-        self.benchmarkfunctions = None
-        self.benchmark_folder_path = None
-        self.output_dir_path = None
-        self.pos_chg_types = None
-        self.fit_chg_types = None
-        self.dims = None
-        self.noises = None
+        # TODO(dev) set parameters as required
+
+        # path to "..../DynOpt/code"
+        path_to_code = os.path.abspath(os.pardir)
+        path_to_datasets = '/'.join(path_to_code.split('/')
+                                    [:-1]) + "/datasets/"
+        path_to_output = '/'.join(path_to_code.split('/')[:-1]) + "/output/"
+
+        self.algorithms = []
+        self.benchmarkfunctions = [
+            "sphere", "mpbnoisy"]  # sphere, rosenbrock
+        self.benchmark_folder_path = path_to_datasets + "EvoStar_2018/"
+        self.output_dir_path = path_to_output + "EvoStar_2018/"
+        self.poschgtypes = ["linear", "sine"]
+        self.fitchgtypes = ["none"]
+        self.dims = [2, 50]
+        self.noises = [0.0]
 
     def compute_metrics(self, best_found_fit_per_gen,
                         real_chgperiods_for_gens,
@@ -194,30 +202,9 @@ class MetricCalculator():
                             df.loc[(df['arrayfilename'] == array_file_names_per_run_and_alg[alg][run]),
                                    ['rcs']] = rcs_per_alg[alg]
         # save data frame into file
-        df.to_csv("metric_db.csv")
-
-
-def init_metric_calculator():
-    # TODO(dev) set parameters as required
-    calculator = MetricCalculator()
-
-    # path to "..../DynOpt/code"
-    path_to_code = os.path.abspath(os.pardir)
-    path_to_datasets = '/'.join(path_to_code.split('/')[:-1]) + "/datasets/"
-    path_to_output = '/'.join(path_to_code.split('/')[:-1]) + "/output/"
-
-    calculator.algorithms = []
-    calculator.benchmarkfunctions = [
-        "sphere", "mpbnoisy"]  # sphere, rosenbrock
-    calculator.benchmark_folder_path = path_to_datasets + "EvoStar_2018/"
-    calculator.output_dir_path = path_to_output + "EvoStar_2018/"
-    calculator.poschgtypes = ["linear", "sine"]
-    calculator.fitchgtypes = ["none"]
-    calculator.dims = [2, 50]
-    calculator.noises = [0.0]
-    return calculator
+        df.to_csv(self.output_dir_path + "metric_db.csv")
 
 
 if __name__ == '__main__':
-    calculator = init_metric_calculator()
+    calculator = MetricCalculator()
     calculator.compute_and_save_all_metrics()

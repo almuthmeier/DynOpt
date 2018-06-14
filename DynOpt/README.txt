@@ -41,3 +41,7 @@
 
 # input:
 # lenchgperiod, and self.chgperiods have to be set even if random change time points
+
+
+## metric_calculator
+- the result file contains values for all runs. If average values/... are required that has to be done separately (TODO)
