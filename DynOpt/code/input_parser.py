@@ -159,7 +159,7 @@ def initialize_comparator_manually(comparator):
         comparator.tau = 0.5
 
     # for predictor
-    comparator.predictor = "rnn"  # "no"
+    comparator.predictor = "no"  # "no"
     comparator.timesteps = 7
 
     # for ANN predictor
@@ -178,8 +178,8 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 32:
-        print("false number of inputs")
+    if n_current_inputs != 33:
+        print("false number of inputs: ", n_current_inputs)
         exit(0)
 
     # benchmark problem
