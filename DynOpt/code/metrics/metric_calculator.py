@@ -19,7 +19,7 @@ from utils.utils_files import select_experiment_files,\
 
 class MetricCalculator():
     def __init__(self):
-        # TODO(dev) set parameters as required
+        # TODO(exp) set parameters as required
 
         # path to "..../DynOpt/code"
         path_to_code = os.path.abspath(os.pardir)

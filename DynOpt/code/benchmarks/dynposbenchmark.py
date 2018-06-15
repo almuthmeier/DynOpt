@@ -3,14 +3,14 @@ Contains the function to create the dynamic optimization problems for the GECCO
 2018 paper. Afterwards extended to re-create the EvoStar 2018 data (14.3.18).
 
 Only the position of the fitness landscape is changed but not the fitnesss 
-level. The data set values are stored per change.
+level. The data set values are stored per change period.
 
 Contains functionality to create a data set as well as computing the 
 fitness during the runtime. 
 Additionally, this module contains functions to test and plot new movements.
 
-Note: in predictor_comparison.py are the data modified so that they have one
-entry for each generation. TODO ist das noch so?
+Note: In convert_data_to_per_generation.py the data are modified so that they
+have one entry for each generation. 
 
 Created on Jan 17, 2018
 
@@ -39,7 +39,7 @@ def create_str_problems():
     '''
     day, time = get_current_day_time()
     # -------------------------------------------------------------------------
-    # TODO(dev) parameters to adjust
+    # TODO(exp) parameters to adjust
     n_chg_periods = 10000
     dims = [2, 5, 10, 20, 50, 100]
     functions = [sphere, rosenbrock, rastrigin]

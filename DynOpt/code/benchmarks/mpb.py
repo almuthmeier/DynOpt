@@ -4,8 +4,6 @@ Branke, J.: Memory enhanced evolutionary algorithms for changing optimization
 problems. In: Congress on Evolutionary Computation (CEC). pp. 1875–1882 (1999)
 
 The data set values are stored per change. 
-
-TODO anderes anpassen, weil es vorher per GENERATIion war? (8.5.18)
  
 Contains functionality to create a MPB data set as well as computing the 
 fitness during the runtime.
@@ -168,6 +166,7 @@ def start_creating_problem():
     '''
     np.random.seed(4)
     # ==================================
+    # TODO(exp)
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "EvoStar_2018"
     func_name = "mpbnoisy"  # "mpbnoisy" or "mpbrand"
@@ -271,7 +270,7 @@ def compute_fitness(x, gen, heights, widths, positions):
     Computes fitness for individual in specific generation.
     @param x: individual
     @param gen: current generation
-    @param heigts, widths, positions: information loaded from the mpb data
+    @param heigts, widths, positions: properties per generation
 
     '''
     peak_results = [__compute_mpb_fitness(x, height[gen], width[gen], pos[gen])

@@ -51,4 +51,8 @@
 
 ## TODOs
 - TODO(exe) -> settings may be changed as desired for execution
-- TODO(dev) -> code may be extended by a developer to integrate more functionality 
+- TODO(dev) -> code may be extended by a developer to integrate more functionality
+
+## Definitions
+- change period: starts with 0; period between two changes; one more than changes; preferred  
+- change: starts with 0; do not use it, otherwise it could become confusing
