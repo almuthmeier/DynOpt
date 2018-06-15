@@ -235,7 +235,8 @@ class DynamicPSO():
                 last_it_with_chg = i
 
                 # store best found solution during change period as training data for predictor
-                # TODO works only for plus-selection (not for comma-selection)
+                # TODO(dev) works only for plus-selection (not for
+                # comma-selection)
                 self.best_found_pos_per_chgperiod.append(
                     copy.copy(self.best_found_pos_per_gen[i - 1]))
                 self.best_found_fit_per_chgperiod.append(

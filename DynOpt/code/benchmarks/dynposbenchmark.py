@@ -62,9 +62,9 @@ def create_str_problems():
     path_to_dynopt = '/'.join(splitted_path[:-1])
     # create data sets
     for func in functions:
-        # same seed for different functions so that the movement is the same
-        np_rand_gen = np.random.RandomState(234012)  # TODO(ueberdenken?) 8.Mai
         for dim in dims:
+            # same seed for different functions so that the movement is same
+            np_rand_gen = np.random.RandomState(234012)
             func_name = func.__name__
             orig_global_opt_position, _ = get_original_global_opt_pos_and_fit(
                 func, dim)

@@ -60,14 +60,14 @@ class Test(unittest.TestCase):
         # load data
         #file_name1 = "sphere_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
         #file_name2 = "rosenbrock_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
-        file_name1 = "sphere_d-50_chgperiods-10000_pch-sine_fch-none_2018-05-09_11:13.npz"
-        file_name2 = "rosenbrock_d-50_chgperiods-10000_pch-sine_fch-none_2018-05-09_11:13.npz"
-        dim = 50
+        file_name1 = "sphere_d-20_chgperiods-100_pch-sine_fch-none_2018-06-15_21:27.npz"
+        file_name2 = "rosenbrock_d-20_chgperiods-100_pch-sine_fch-none_2018-06-15_21:27.npz"
+        dim = 20
 
         f1 = np.load(self.path_test_problems +
-                     "EvoStar_2018/sphere/" + file_name1)
+                     "MyTest/sphere/" + file_name1)
         f2 = np.load(self.path_test_problems +
-                     "EvoStar_2018/rosenbrock/" + file_name2)
+                     "MyTest/rosenbrock/" + file_name2)
         global_opt_fit1 = f1['global_opt_fit_per_chgperiod']
         global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
         orig_opt_pos1 = f1['orig_global_opt_pos']
@@ -93,12 +93,12 @@ class Test(unittest.TestCase):
         For EvoStar 2018 equality with value 2 has to be tested.
         '''
         # load data
-        file_name1 = "sphere_d-50_chgperiods-10000_pch-linear_fch-none_2018-05-09_11:13.npz"
-        file_name2 = "rosenbrock_d-50_chgperiods-10000_pch-linear_fch-none_2018-05-09_11:13.npz"
+        file_name1 = "sphere_d-20_chgperiods-100_pch-linear_fch-none_2018-06-15_21:27.npz"
+        file_name2 = "rosenbrock_d-20_chgperiods-100_pch-linear_fch-none_2018-06-15_21:27.npz"
         f1 = np.load(self.path_test_problems +
-                     "GECCO_2018/sphere/" + file_name1)
+                     "MyTest/sphere/" + file_name1)
         f2 = np.load(self.path_test_problems +
-                     "GECCO_2018/rosenbrock/" + file_name2)
+                     "MyTest/rosenbrock/" + file_name2)
         global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
         orig_opt_pos1 = f1['orig_global_opt_pos']
         global_opt_pos2 = f2['global_opt_pos_per_chgperiod']

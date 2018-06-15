@@ -202,17 +202,13 @@ def start_creating_problem():
     day, time = get_current_day_time()
 
     for n_periods in chg_periods:
+        mpb_np_random_generator = np.random.RandomState(2342)
+        mpb_peaks_np_random_generator = np.random.RandomState(928)
+
         for n_dims in dims:
             for len_movement_vector in lens_movement_vector:
                 for n_peaks in peaks:
                     for noise in noise_strengths:
-                        # TODO not always the same seed? (but then some tests
-                        # will fail)
-                        mpb_np_random_generator = np.random.RandomState(
-                            np.random.randint(0, 567567))
-                        mpb_peaks_np_random_generator = np.random.RandomState(
-                            np.random.randint(0, 234))
-
                         file_name = func_name + "_d-" + str(n_dims) + "_chgperiods-" + \
                             str(n_periods) + "_veclen-" + str(len_movement_vector) + \
                             "_peaks-" + str(n_peaks) + "_noise-" + str(noise).lower() +\
