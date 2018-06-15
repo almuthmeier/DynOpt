@@ -9,10 +9,6 @@ import numpy as np
 
 def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen):
     '''
-    TODO umbenennen optima_of_changes muss optima_of_generations heißen.
-    Nein!?!? soll pro CHANGE (so wie Programmcode aussieht), aber bekommt pro
-    GENERATION?
-
     ARR (absolute recovery rate) from the paper "Evolutionary dynamic 
     optimization: A survey of the state of the art", Trung Thanh Nguyen et al. 2012.
 
@@ -28,7 +24,7 @@ def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_
     @return scalar: ARR
     '''
     # =========================================================================
-    # for test purposes TODO delete this?
+    # for test purposes
     n_gens = 0
     for _, generations in generations_of_chgperiods.items():
         n_gens += len(generations)
@@ -185,7 +181,7 @@ def best_error_before_change(generations_of_chgperiods, global_opt_fit_per_chgpe
     @return scalar: bebc
     '''
     # =========================================================================
-    # for test purposes TODO delete this?
+    # for test purposes
     n_gens = 0
     for _, generations in generations_of_chgperiods.items():
         n_gens += len(generations)

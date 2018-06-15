@@ -29,9 +29,6 @@ class PredictorComparator(object):
 
         Parameters are set by input_parser.py
         '''
-        # TODO testen, wenn Algorithm==dynpso, ob dann auch alle PSO-relevanten
-        # Parameter gesetzt sind
-
         # benchmark problem
         self.algorithm = None  # string
         self.repetitions = None  # int
@@ -135,9 +132,9 @@ class PredictorComparator(object):
             self.predictor, self.exp_file_name, self.day, self.time,
             repetition_ID, self.chgperiods, self.lenchgperiod,
             self.ischgperiodrandom)
-        # TODO what if an algorithm doesn't provide one of the variables? (e.g.
+        # TODO(dev) extend if necessary, e.g, for computing prediction quality
+        # (what if an algorithm doesn't provide one of the variables? (e.g.
         # because it doesn't have change detection?)
-        # TODO will perhaps be extended, e.g for computing prediction quality
         np.savez(self.arrays_file_path + arrays_file_name,
                  best_found_fit_per_gen=alg.best_found_fit_per_gen,
                  best_found_pos_per_gen=alg.best_found_pos_per_gen,
@@ -149,7 +146,6 @@ class PredictorComparator(object):
                  # information about the real changes (is not in benchmark file
                  # because it is a general file for 10000 change periods)
                  real_chgperiods_for_gens=self.chgperiods_for_gens
-                 # TODO more data from the comparator self (info about problem
                  )
 
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):

@@ -135,12 +135,10 @@ def create_str_problems():
 
 def original_fitness(x, problem):
     '''
-    TODO warum ist problem als String übergeben??? (Funktionen werden in diesem
-    Modul ja eh bereits importiert.
-
     Computes fitness for this individual.
     Assumes that the individual/fitness function is not moved.
     '''
+    # TODO(dev) extend by new fitness functions
     if problem == "sphere":
         return sphere(x)
     elif problem == "rosenbrock":
@@ -166,7 +164,6 @@ def compute_fitness(x, gen, problem, global_opt_pos_per_gen, orig_opt_pos):
     # compute optimum movement
     # (since new optimum position was computed by adding the movement to the
     # original one, backwards the movement can be computed by substraction)
-    # TODO should be per CHANGE
     optimum_movement = global_opt_pos_per_gen[gen] - orig_opt_pos
     # move individual, so that its fitness can be computed with the original
     # function

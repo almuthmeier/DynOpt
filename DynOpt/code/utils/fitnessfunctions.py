@@ -73,10 +73,10 @@ def get_original_global_opt_pos_and_fit(function, dimensionality):
     '''
     Global optimum position and its fitness for unmoved fitness function.
 
-    TODO: what if function has multiple global optima?
-    TODO: extend this function if more fitness functions are desired
     @return: tupel: (position, fitness)
     '''
+    # TODO(dev) extend this function if more fitness functions are desired
+    # TODO(dev)  what if function has multiple global optima?
     function_name = function.__name__
     glob_opt_pos = {'sphere': np.array(dimensionality * [0]),
                     'rosenbrock': np.array(dimensionality * [1]),

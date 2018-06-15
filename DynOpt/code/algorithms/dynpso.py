@@ -87,9 +87,10 @@ class DynamicPSO():
         self.init_c2 = self.c2
         self.init_c3 = self.c3
 
+        # TODO(exe) set following parameters as desired
         self.init_inertia = 0.7298
         self.inertia = self.init_inertia
-        self.vmax = 1000.0  # TODO must not be too small
+        self.vmax = 1000.0  # must not be too small
         self.inertia_adapt_factor = 0.5  # like tau for Rechenberg
         self.inertia_min = 0.1
         self.inertia_max = 0.78540
@@ -102,7 +103,7 @@ class DynamicPSO():
         # np.random.rand has values in [0, 1). Therefore multiply with 100 for
         # larger values (one row for each particle)
         self.particles = self.pso_np_rnd_generator.rand(
-            self.n_particles, self.dim) * 100  # TODO
+            self.n_particles, self.dim) * 100  # TODO(exe)
         self.v_vals = self.pso_np_rnd_generator.rand(
             self.n_particles, self.dim)
         # 1d numpy array

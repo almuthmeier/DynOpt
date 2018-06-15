@@ -152,7 +152,7 @@ class DynamicEA():
     def adapt_population(self, curr_gen, my_pred_mode):
         # create new random individual
         n_immigrants = self.mu
-        init_range = 200  # TODO
+        init_range = 200  # TODO(exe)
         random_immigrants = self.ea_np_rnd_generator.uniform(-init_range,
                                                              init_range, (n_immigrants, self.dim))
         if my_pred_mode == "no" or n_immigrants == 0:
@@ -244,7 +244,8 @@ class DynamicEA():
                 self.detected_n_changes += 1
 
                 # store best found solution during change period as training data for predictor
-                # TODO works only for plus-selection (not for comma-selection)
+                # TODO(dev) works only for plus-selection (not for
+                # comma-selection)
                 self.best_found_pos_per_chgperiod.append(
                     copy.copy(self.best_found_pos_per_gen[i - 1]))
                 self.best_found_fit_per_chgperiod.append(

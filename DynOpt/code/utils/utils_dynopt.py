@@ -37,30 +37,6 @@ def fitness(problem, individual, curr_gen, problem_data):
         warnings.warn("unknown problem: ", problem)
 
 
-# def get_global_optimum_pos_and_fit_for_all_generations(problem, problem_data):
-#    '''
-#    Get position and fitness of the global optimum for each generation.
-#    @param problem: string: mpb, sphere, rastrigin or rosenbrock
-#    @param problem_data: containing all the information required to compute the
-#    fitness (loaded from file)
-#    @return tupel: [0]: 2d numpy array: for each generation a row that contains
-#                        the global optimum position
-#                   [1]: 1d numpy array: for each generation the global optimum
-#                        fitness
-#    '''
-#    if problem == "mpb" or problem == "mpbnoisy" or problem == "mpbrand":  # TODO(dev)
-#        # TODO why different for mpb and others
-#        global_optimum_fit = problem_data['global_opt_fit']
-#        global_optimum_pos = problem_data['global_opt_pos']
-#    elif problem == "sphere" or problem == "rastrigin" or problem == "rosenbrock":
-#        global_optimum_fit = problem_data['global_opt_fit_per_gen']
-#        global_optimum_pos = problem_data['global_opt_pos_per_gen']
-#    else:
-#        msg = "get_global_optimum_pos_and_fit(): unknown problem " + problem
-#        warnings.warn(msg)
-#    return global_optimum_pos, global_optimum_fit
-
-
 def environment_changed(curr_gen, individuals_from_last_gen, fitness_from_last_gen,
                         problem, problem_data, alg_np_rnd_generator):
     '''
@@ -98,7 +74,7 @@ def environment_changed(curr_gen, individuals_from_last_gen, fitness_from_last_g
 
     # additionally evaluate some random points
     random_individuals = alg_np_rnd_generator.rand(
-        n_to_reevaluate // 2, dim) * 1000  # TODO warum fest???
+        n_to_reevaluate // 2, dim) * 1000  # TODO(exp)
     prev_fit = np.array([fitness(problem, ind, curr_gen - 1, problem_data)
                          for ind in random_individuals])
     curr_fit = np.array([fitness(problem, ind, curr_gen,  problem_data)
