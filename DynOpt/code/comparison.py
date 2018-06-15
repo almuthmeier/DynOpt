@@ -152,7 +152,6 @@ class PredictorComparator(object):
                  # TODO more data from the comparator self (info about problem
                  )
 
-    # TODO fehlt hier ein Parameter???
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):
         '''
         @param gpu_ID: is None if no GPU is required.

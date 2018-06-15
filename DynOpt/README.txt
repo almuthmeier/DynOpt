@@ -45,3 +45,10 @@
 
 ## metric_calculator
 - the result file contains values for all runs. If average values/... are required that has to be done separately (TODO)
+
+
+
+
+## TODOs
+- TODO(exe) -> settings may be changed as desired for execution
+- TODO(dev) -> code may be extended by a developer to integrate more functionality 

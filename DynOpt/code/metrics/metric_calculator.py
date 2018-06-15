@@ -53,7 +53,6 @@ class MetricCalculator():
         arr_value = arr(gens_of_chgperiods,
                         global_opt_fit_per_chgperiod, best_found_fit_per_gen)
         print("arr: ", arr_value)
-        # TODO metric values of different runs are same!?! (-> seeds?)
         return bebc, arr_value
 
     def compute_and_save_all_metrics(self):

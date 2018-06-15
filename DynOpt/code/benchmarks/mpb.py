@@ -3,8 +3,10 @@ The moving peaks benchmark following the description in the paper:
 Branke, J.: Memory enhanced evolutionary algorithms for changing optimization
 problems. In: Congress on Evolutionary Computation (CEC). pp. 1875–1882 (1999)
 
-The data set values are stored per change. TODO anderes anpassen, weil es vorher
- per GENERATIion war? (8.5.18)
+The data set values are stored per change. 
+
+TODO anderes anpassen, weil es vorher per GENERATIion war? (8.5.18)
+ 
 Contains functionality to create a MPB data set as well as computing the 
 fitness during the runtime.
 
@@ -260,20 +262,6 @@ def __compute_mpb_fitness(x, height, width, position):
     divisor = (1 + width * tmp)
     peak_result = height / divisor
     return peak_result
-
-# TODO löschen
-# def get_global_mpb_optimum_fitness(gen, global_opt_fit):
-#    '''
-#    For global access.
-#    '''
-#    return global_opt_fit[gen]
-
-
-# def get_global_mpb_optimum_position(gen, global_opt_pos):
-#    '''
-#    For global access.
-#    '''
-#    return global_opt_pos[gen]
 
 
 def compute_fitness(x, gen, heights, widths, positions):

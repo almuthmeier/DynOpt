@@ -133,22 +133,6 @@ def create_str_problems():
                          global_opt_pos_per_chgperiod=opts, orig_global_opt_pos=orig_global_opt_position)
 
 
-# TODO löschen (sollte nicht mehr gebraucht werden, weil man in dynea/dynpso
-# das globale Optimum nicht benötigt. Metriken werden getrennt berechnet,
-# sodass dannn die Datensatzdateien ausgelesen werden können.
-#
-# TODO wird für Erweiterung mit Konfidenzintervall das globale Optimum
-# während der Optimierung benötigt? (sollte eigentlich nicht, denn das Wissen
-# über Umwelt darf nicht bekannt sein.)
-# def get_global_optimum(gen, global_opt_fit):
-# TODO umbenennen in get_global_optimum_fit
-#    return global_opt_fit[gen]
-
-
-# def get_global_optimum_position(gen, global_opt_pos):
-#    return global_opt_pos[gen]
-
-
 def original_fitness(x, problem):
     '''
     TODO warum ist problem als String übergeben??? (Funktionen werden in diesem

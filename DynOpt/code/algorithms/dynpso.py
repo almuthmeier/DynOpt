@@ -198,8 +198,6 @@ class DynamicPSO():
         # ---------------------------------------------------------------------
         train_data = []
         n_features = self.dim
-        # TODO auslagern: dem Optimierer einfach den fertigen Predictor geben?
-        # es gibt nur bei RNN ein richtiges Object
         predictor = build_predictor(
             self.predictor_name, self.n_time_steps, n_features, self.batch_size, self.n_neurons)
         # denotes whether the predictor has been trained or not
