@@ -7,6 +7,7 @@ Created on May 9, 2018
 '''
 import copy
 import math
+import random
 import warnings
 
 from algorithms.dynea import DynamicEA
@@ -93,13 +94,12 @@ class PredictorComparator(object):
     def instantiate_optimization_alg(self):
         # random number generators
 
-        # TODO seeds nicht gleich lassen
         # random generator for the optimization algorithm
         #  (e.g. for creation of population, random immigrants)
-        alg_np_rnd_generator = np.random.RandomState(29405601)
+        alg_np_rnd_generator = np.random.RandomState()
         # so?: np.random.RandomState(random.randint(1, 567))
         # for predictor related stuff: random generator for  numpy arrays
-        pred_np_rnd_generator = np.random.RandomState(23044820)
+        pred_np_rnd_generator = np.random.RandomState()
 
         dimensionality = len(self.experiment_data['orig_global_opt_pos'])
         n_generations = self.get_n_generations()
@@ -153,10 +153,13 @@ class PredictorComparator(object):
                  )
 
     # TODO fehlt hier ein Parameter???
-    def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, ):
+    def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):
         '''
         @param gpu_ID: is None if no GPU is required.
         '''
+        np.random.seed(seed)
+        random.seed(seed)
+
         print("run: ", repetition_ID, flush=True)
         # =====================================================================
         # instantiate algorithm
@@ -202,8 +205,11 @@ class PredictorComparator(object):
             gpus_for_runs = np.floor(
                 np.arange(self.repetitions) / max_runs_per_gpu).astype(int)
 
+        # create different seed for each run
+        seeds_for_runs = np.random.randint(1, 7654, self.repetitions)
+
         # copy arguments for each run
-        arguments = [None, None]
+        arguments = [None, None, None]
         # create list of arguments for the repetitions:
         argument_list = []
         for i in range(self.repetitions):
@@ -212,6 +218,7 @@ class PredictorComparator(object):
             argument_list[-1][0] = i
             # set gpu ID
             argument_list[-1][1] = gpus_for_runs[i]
+            argument_list[-1][1] = seeds_for_runs[i]
         # execute repetitions of the experiments on different CPUs
         n_kernels = self.ncpus
         with Pool(n_kernels) as pool:
