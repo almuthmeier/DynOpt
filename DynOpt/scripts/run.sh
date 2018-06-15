@@ -13,35 +13,33 @@
 #------------------------------------------------------------------------------
 
 # benchmark problem
-algorithm="dynpso" 			# dynea or dynpso
-repetitions=1
+algorithm="dynea" 			# dynea or dynpso
+repetitions=4
 chgperiods=10
 lenchgperiod=20				# has to be set even if chgperiod==1 (is then number of generations
 							# also in case ischgperiodrandom is True, lenchgperiod is required, because lenchgperiod*chgperiods is the number of generations!! 
 ischgperiodrandom=False
-benchmarkfunction=sphere	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (neu)
+benchmarkfunction=mpbnoisy	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (neu)
 							# defines the benchmark function, must be located 
 							# in the datasets folder of this project [for the dataset as input]
-benchmarkfunctionfolderpath=/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/GECCO_2018/ # parent directory path of the benchmark functions
+benchmarkfunctionfolderpath=/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/EvoStar_2018/ # parent directory path of the benchmark functions
 								   																				 # and child directory of the datasets folder
 								   																				 # of this project [for the dataset as input]
-outputdirectory="c1c2c3_1.49/pso_no/"	   # name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/myexperiments/sphere/"		# path to output folder
 
 # run only some experiments of all for the benchmark problem (the next four
 # parameters are lists
 poschgtypes=linear,sine
 fitchgtypes=none
-dims=2						# comma-separated integers
+dims=2,50						# comma-separated integers
 noises=0.0
 
 # PSO
-c1=1.496180
-c2=1.496180
-c3=1.496180
+c1=1.496180					# 1.496180
+c2=1.496180					# 1.496180
+c3=1.496180					# 1.496180
 insertpred=False			# False, True
 adaptivec3=False			# False, True
-nparticles=100				#
+nparticles=200				#
 
 # EA
 mu=5
@@ -63,8 +61,11 @@ batchsize=1					# ist 1, weil man ja immer nur ein neues Trainingselement hat (a
 ngpus=1    					#
 
 # runtime
-ncpus=1						# e.g. =n_repetitions 
+ncpus=2						# e.g. =n_repetitions 
 
+# output: TODO adapt if necessary
+outputdirectory="c1c2c3_1.49/$algorithm""_""$predictor/" 				# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/EvoStar_2018/$benchmarkfunction/"		# path to output folder
 
 #------------------------------------------------------------------------------
 # Command
