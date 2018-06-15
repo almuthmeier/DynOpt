@@ -51,7 +51,7 @@ class StatisticalTestsCalculator():
         @return dictionary: containing for each property the corresponding value (int, float, or str)
         '''
         # the following columns have unique values
-        names_of_unique_columns = ["function", "predictor", "dim", "chgperiods",
+        names_of_unique_columns = ["function", "dim", "chgperiods",
                                    "len_c_p", "ischgperiodrandom", "veclen", "peaks",
                                    "noise", "poschg", "fitchg", "expfilename"]
         first_row = selected_rows.iloc[0]  # select arbitrary row
@@ -92,6 +92,7 @@ class StatisticalTestsCalculator():
             first_metrics_file_line.remove("alg")
             first_metrics_file_line.remove("arrayfilename")
             first_metrics_file_line.remove("run")
+            first_metrics_file_line.remove("predictor")
             # skip first column that only contains the row indices
             first_metrics_file_line = first_metrics_file_line[1:]
             # make one string where the entries are comma-separated
@@ -130,6 +131,11 @@ class StatisticalTestsCalculator():
                 # select rows in metric-result file for the algorithms
                 rows_alg1 = self.select_rows_for_alg(df, i, exp)
                 rows_alg2 = self.select_rows_for_alg(df, j, exp)
+                if rows_alg1.empty or rows_alg2.empty:
+                    # this experiment was not executed with at least one of
+                    # the algorithms, so no test can be conducted
+                    continue
+
                 # properties of experiment (should be same for both algs)
                 props1 = self. get_experiment_properties(rows_alg1)
                 props2 = self. get_experiment_properties(rows_alg2)
@@ -146,7 +152,7 @@ class StatisticalTestsCalculator():
                     p_values[m] = p_value
 
                 # construct and print output line
-                metric_values_to_print = [props1["function"], props1["predictor"],
+                metric_values_to_print = [props1["function"],
                                           props1["dim"], props1["chgperiods"],
                                           props1["len_c_p"], props1["ischgperiodrandom"],
                                           props1["veclen"], props1["peaks"],

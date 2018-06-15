@@ -29,7 +29,7 @@ class MetricCalculator():
 
         self.algorithms = []
         self.benchmarkfunctions = [
-            "sphere", "mpbnoisy"]  # sphere, rosenbrock
+            "sphere", "rosenbrock", "mpbnoisy"]  # sphere, rosenbrock
         self.benchmark_folder_path = path_to_datasets + "EvoStar_2018/"
         self.output_dir_path = path_to_output + "EvoStar_2018/"
         self.poschgtypes = ["linear", "sine"]
@@ -96,8 +96,8 @@ class MetricCalculator():
                 print(output_dir_for_benchmark_funct)
                 # different alg settings
                 direct_cild_dirs = [d for d in listdir(output_dir_for_benchmark_funct) if (
-                    isdir(join(output_dir_for_benchmark_funct, d)))]
-                print(direct_cild_dirs)
+                    isdir(join(output_dir_for_benchmark_funct, d)) and not listdir(output_dir_for_benchmark_funct + d) == [])]
+                print("direct_child_dirs: ", direct_cild_dirs)
 
                 # algorithm parameter settings, e.g. "c1c2c3_1.49"
                 for subdir in direct_cild_dirs:
