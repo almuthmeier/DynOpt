@@ -17,6 +17,16 @@
 	- 'widths'
 	- 'positions'
 	
+## array file: (gibt bestimmt noch mehr)
+best_found_fit_per_gen = file['best_found_fit_per_gen']
+best_found_pos_per_gen = file['best_found_pos_per_gen']
+best_found_fit_per_chgperiod = file['best_found_fit_per_chgperiod']
+best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
+pred_opt_fit_per_chgperiod = file['pred_opt_fit_per_chgperiod']
+pred_opt_pos_per_chgperiod = file['pred_opt_pos_per_chgperiod']
+detected_chgperiods_for_gens = file['detected_chgperiods_for_gens']
+real_chgperiods_for_gens = file['real_chgperiods_for_gens']
+
 	
 ## file name
 - mpbrand_d-50_chgperiods-10000_veclen-0.6_peaks-10_noise-none_2018-05-09_11:19.npz

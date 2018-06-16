@@ -38,11 +38,7 @@ class MetricCalculator():
         self.noises = [0.0]
 
     def compute_metrics(self, best_found_fit_per_gen,
-                        real_chgperiods_for_gens,
-                        global_opt_fit_per_chgperiod,
-                        global_opt_pos_per_chgperiod,
-                        gens_of_chgperiods,
-                        orig_global_opt_pos):
+                        global_opt_fit_per_chgperiod, gens_of_chgperiods):
 
         # bebc
         bebc = best_error_before_change(
@@ -121,7 +117,7 @@ class MetricCalculator():
                         # get general info from one arbitrary array file
                         (predictor, benchmark, d, chgperiods, lenchgperiod,
                             ischgperiodrandom, veclen, peaks, noise, poschg,
-                            fitchg,  date, time, run) = get_info_from_array_file_name(array_names[0])
+                            fitchg,  _, _, run) = get_info_from_array_file_name(array_names[0])
                         assert benchmarkfunction == benchmark, "benchmark names unequal; benchmarkfunction: " + \
                             str(benchmarkfunction) + \
                             " and benchmark: " + str(benchmark)
@@ -134,12 +130,6 @@ class MetricCalculator():
 
                             file = np.load(arrays_path + array_file_name)
                             best_found_fit_per_gen = file['best_found_fit_per_gen']
-                            best_found_pos_per_gen = file['best_found_pos_per_gen']
-                            best_found_fit_per_chgperiod = file['best_found_fit_per_chgperiod']
-                            best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
-                            pred_opt_fit_per_chgperiod = file['pred_opt_fit_per_chgperiod']
-                            pred_opt_pos_per_chgperiod = file['pred_opt_pos_per_chgperiod']
-                            detected_chgperiods_for_gens = file['detected_chgperiods_for_gens']
                             real_chgperiods_for_gens = file['real_chgperiods_for_gens']
                             file.close()
                             gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
