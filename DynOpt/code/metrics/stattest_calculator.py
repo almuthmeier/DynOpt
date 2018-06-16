@@ -1,4 +1,7 @@
 '''
+Computes Mann-Whitney-U tests for each possible algorithm pair.
+Requires the file created by metric_calculator.py.
+
 Created on May 18, 2018
 Implemented on June 14, 2018
 

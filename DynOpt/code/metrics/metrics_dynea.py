@@ -1,4 +1,7 @@
 '''
+Defines different metrics to quantify the quality of dynamic optimization 
+algorithms.
+
 Created on Oct 6, 2017
 
 @author: ameier
@@ -66,6 +69,10 @@ def avg_bog_for_one_run(best_found_fit_per_gen):
     Averages the best found fitness values over all generations for one run.
 
     Is not the real average bog.
+
+    @param best_found_fit_per_gen: 1d numpy array: best found fitness for each
+    generation
+    @return scalar
     '''
     return np.average(best_found_fit_per_gen)
 
@@ -78,7 +85,7 @@ def __best_of_generation(best_found_fit_per_gen_and_run):
     "Evolutionary dynamic optimization: A survey of the state of the art"
     by Trung Thanh Nguyen et al. 2012.
 
-    @param best_found_fit_per_gen: 2d numpy array containing for each run 
+    @param best_found_fit_per_gen_and_run: 2d numpy array containing for each run 
     one row that contains per generation the best achieved fitness value
     @return: 1d numpy array: for each generation the average best fitness
     '''
@@ -110,7 +117,7 @@ def normalized_bog(avg_bog_per_alg_and_problem):
     "Evolutionary dynamic optimization: A survey of the state of the art"
     by Trung Thanh Nguyen et al. 2012.
 
-    Computes the quality of the tested algorithms relative to the other tested 
+    Computes the quality of the tested algorithms relatively to the other tested 
     algorithms and over all test problems so that different algorithms can be
     compared regarding their overall quality.
 
@@ -198,7 +205,7 @@ def best_error_before_change(generations_of_chgperiods, global_opt_fit_per_chgpe
     return sum_of_errors / n_chgperiods
 
 
-def conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen_and_alg):
+def rel_conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen_and_alg):
     '''
     Measure of relative convergence speed of algorithms for one run of a 
     specific problem. Depends on the worst fitness value any algorithm achieved.
@@ -273,7 +280,7 @@ def __convergence_speed__(generations_of_chgperiods,
                           best_found_fit_per_gen,
                           worst_fit_per_chgperiod):
     '''
-    Internal method, called by conv_speed().
+    Internal method, called by rel_conv_speed().
 
     Computes convergence speed for one specific algorithm.
 

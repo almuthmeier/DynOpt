@@ -1,6 +1,11 @@
 '''
 Main class to execute all the experiments.
 
+To execute the experiments 
+    - either execute this file after having specified all parameters in the
+      function initialize_comparator_manually()
+    - or specify the parameters in the scripts/run.sh file and run that script.
+
 Created on May 9, 2018
 
 @author: ameier

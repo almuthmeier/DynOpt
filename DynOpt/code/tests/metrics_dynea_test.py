@@ -12,12 +12,10 @@ from matplotlib import colors
 
 import matplotlib.pyplot as plt
 from metrics.metrics_dynea import arr, best_error_before_change,\
-    avg_best_of_generation, conv_speed, normalized_bog, __convergence_speed__
+    avg_best_of_generation, rel_conv_speed, normalized_bog, __convergence_speed__
 import numpy as np
 
 
-# from dynamicopt.metrics.metrics_dynea import arr, normalized_bog, best_error_before_change,\
-#    avg_best_of_generation, __convergence_speed__, conv_speed
 class Test(unittest.TestCase):
 
     def test_arr(self):
@@ -251,7 +249,7 @@ class Test(unittest.TestCase):
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_1)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_1]))
-        speed = conv_speed(
+        speed = rel_conv_speed(
             generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_1})
         print(name, ": \n    ARR ", act_arr, "\n    Speed ", speed,
               "\n    BEBC ", bebc, "\n    avg BOG ", avg_bog)
@@ -265,7 +263,7 @@ class Test(unittest.TestCase):
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_2)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_2]))
-        speed = conv_speed(
+        speed = rel_conv_speed(
             generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_2})
         print(name, ": \n    ARR ", act_arr, "\n    Speed ", speed,
               "\n    BEBC ", bebc, "\n    avg BOG ", avg_bog)
@@ -279,7 +277,7 @@ class Test(unittest.TestCase):
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_3)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_3]))
-        speed = conv_speed(
+        speed = rel_conv_speed(
             generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_3})
         print(name, ": \n    ARR ", act_arr, "\n    Speed ", speed,
               "\n    BEBC ", bebc, "\n    avg BOG ", avg_bog)
@@ -293,7 +291,7 @@ class Test(unittest.TestCase):
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_4)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_4]))
-        speed = conv_speed(
+        speed = rel_conv_speed(
             generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_4})
         print(name, ": \n    ARR", act_arr, "\n    Speed ", speed,
               "\n    BEBC ", bebc, "\n    avg BOG ", avg_bog)
@@ -307,7 +305,7 @@ class Test(unittest.TestCase):
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_5)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_5]))
-        speed = conv_speed(
+        speed = rel_conv_speed(
             generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_5})
         print(name, ": \n    ARR ", act_arr, "\n    Speed ", speed,
               "\n    BEBC ", bebc, "\n    avg BOG ", avg_bog)
@@ -321,7 +319,7 @@ class Test(unittest.TestCase):
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_6)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_6]))
-        speed = conv_speed(
+        speed = rel_conv_speed(
             generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_6})
         print(name, ": \n    ARR ", act_arr, "\n    Speed ", speed,
               "\n    BEBC ", bebc, "\n    avg BOG ", avg_bog)
@@ -330,7 +328,7 @@ class Test(unittest.TestCase):
         print()
         print()
         # overall convergence speed
-        overall_speed = conv_speed(
+        overall_speed = rel_conv_speed(
             generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
         for alg, speed in overall_speed.items():
             print(alg, "\n    ", speed)
@@ -518,15 +516,15 @@ class Test(unittest.TestCase):
         exp = (0 + (4 / 4) + (13 / 21)) / 3
         self.assertEqual(act, exp)
 
-    def test_conv_speed(self):
+    def test_rel_conv_speed(self):
         # test case 1: worst and best case (one change)
         generations_of_chgperiods = {0: [0, 1, 2, 3]}
         global_opt_fit_per_chgperiod = np.array([-12])
         best_fit_evals_a = np.array([-12, -12, -12, -12])
         best_fit_evals_b = np.array([8, 8, 8, 8])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
-        act = conv_speed(generations_of_chgperiods,
-                         global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
+        act = rel_conv_speed(generations_of_chgperiods,
+                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
         exp = {'a': 0, 'b': 1}
         self.assertEqual(act, exp)
 
@@ -538,8 +536,8 @@ class Test(unittest.TestCase):
         best_fit_evals_b = np.array([8, 8, 8, 8,
                                      3, 3, 3])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
-        act = conv_speed(generations_of_chgperiods,
-                         global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
+        act = rel_conv_speed(generations_of_chgperiods,
+                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
 
         exp_b = (((1 * abs(8 - (-12)) + 2 * abs(8 - (-12)) +
                    3 * abs(8 - (-12)) + 4 * abs(8 - (-12))) / (1 * abs(8 - (-12)) + 2 * abs(8 - (-12)) +
@@ -554,8 +552,8 @@ class Test(unittest.TestCase):
         best_fit_evals_a = np.array([8, 6, 4, 4])
         best_fit_evals_b = np.array([9, 7, 5, 4])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
-        act = conv_speed(generations_of_chgperiods,
-                         global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
+        act = rel_conv_speed(generations_of_chgperiods,
+                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
         exp_a = (1 * 4 + 2 * 2 + 0 + 0) / (5 * (1 + 2 + 3 + 4))
         exp_b = (1 * 5 + 2 * 3 + 3 * 1 + 0) / (5 * (1 + 2 + 3 + 4))
         exp = {'a': exp_a, 'b': exp_b}
@@ -567,8 +565,8 @@ class Test(unittest.TestCase):
         best_fit_evals_a = np.array([8, 6, 4, 4])
         best_fit_evals_b = np.array([9, 5, 5, 4])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
-        act = conv_speed(generations_of_chgperiods,
-                         global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
+        act = rel_conv_speed(generations_of_chgperiods,
+                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
         exp_a = (1 * 4 + 2 * 2 + 0 + 0) / (5 * (1 + 2 + 3 + 4))
         exp_b = (1 * 5 + 2 * 1 + 3 * 1 + 0) / (5 * (1 + 2 + 3 + 4))
         exp = {'a': exp_a, 'b': exp_b}
@@ -593,7 +591,7 @@ class Test(unittest.TestCase):
             best_fit_evals_per_alg[graph_nr] = graphs[graph_nr]
 
         # compute convergence speed
-        speeds = conv_speed(
+        speeds = rel_conv_speed(
             generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
 
         # plot all graphs
@@ -624,7 +622,7 @@ class Test(unittest.TestCase):
                                   'b': [8, 8, 8, 6, 6, 6, 3, 3, 3, 3],
                                   'c': [7, 7, 7, 7, 7, 7, 1, 1, 1, 1]}
         # immediately optimum fitness
-        speed = conv_speed(
+        speed = rel_conv_speed(
             generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
 
         # ===========
@@ -705,7 +703,7 @@ def other_simple_test():
 
     act_arr = arr(generations_of_chgperiods,
                   global_opt_fit_per_chgperiod, best_fit_evals_1)
-    speed = conv_speed(
+    speed = rel_conv_speed(
         generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_1})
 
     print(name, ": \n    ARR ", act_arr, "\n    Speed ", speed)
@@ -716,13 +714,13 @@ def other_simple_test():
 
     act_arr = arr(generations_of_chgperiods,
                   global_opt_fit_per_chgperiod, best_fit_evals_2)
-    speed = conv_speed(
+    speed = rel_conv_speed(
         generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_2})
 
     print(name, ": \n    ARR ", act_arr, "\n    Speed ", speed)
 
     # overall convergence speed
-    overall_speed = conv_speed(
+    overall_speed = rel_conv_speed(
         generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
     for alg, speed in overall_speed.items():
         print(alg, "\n    ", speed)
@@ -736,7 +734,7 @@ if __name__ == "__main__":
     t.test_normalized_bog()
     t.test_best_error_before_change()
     t.test_convergence_speed()
-    t.test_conv_speed()
+    t.test_rel_conv_speed()
     t.examine_convergence_speed_II()
     t.examine_convergence_speed()
     other_simple_test()

@@ -1,5 +1,5 @@
 '''
-Files for this test have been created by dynposbenchmark.create_str_problems().
+Files for this test have been created by dynposbenchmark.create_problems().
 
 Created on Jan 18, 2018
 
@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
         path_to_dynopt = '/'.join(os.path.abspath(os.pardir).split('/')[:-1])
         self.path_test_problems = path_to_dynopt + "/datasets/"
 
-    def test_create_str_problems(self):
+    def test_create_problems(self):
         '''
         Only a visual test (for arbitrary data set).
 
@@ -54,7 +54,7 @@ class Test(unittest.TestCase):
     def test_same_sine_movement(self):
         '''
         Tests whether the movement for different functions is the same.
-        It should be the same since dynbposbenchmark.create_str_problems() uses 
+        It should be the same since dynbposbenchmark.create_problems() uses 
         the same seed for each function.
         '''
         # load data
@@ -144,5 +144,5 @@ class Test(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.test_create_str_problems']
+    #import sys;sys.argv = ['', 'Test.test_create_problems']
     unittest.main()

@@ -1,6 +1,9 @@
 '''
 Is called by the module input_parser.py.
 
+Contains functionality to convert the fitness function data into a format used
+by the optimization algorithms, and starts the experiments.
+
 Created on May 9, 2018
 
 @author: ameier
@@ -19,9 +22,6 @@ from utils.utils_prediction import get_n_neurons
 
 
 class PredictorComparator(object):
-    '''
-    classdocs
-    '''
 
     def __init__(self):
         '''
@@ -40,7 +40,7 @@ class PredictorComparator(object):
         self.outputdirectory = None  # string
         self.outputdirectorypath = None  # string
 
-        # run only some experiments of all for the benchark problem
+        # run only some experiments of all for the benchmark problem
         self.poschgtypes = None  # str
         self.fitchgtypes = None  # str
         self.dims = None  # int

@@ -1,4 +1,8 @@
 '''
+Computes the metric after the optimization by reading in the files generated
+by the optimization algorithms and the data set files of the corresponding
+experiments.
+ 
 Created on May 15, 2018
 
 @author: ameier
@@ -8,7 +12,7 @@ from os.path import isdir, join
 from posix import listdir
 
 from metrics.metrics_dynea import best_error_before_change, arr,\
-    conv_speed, avg_bog_for_one_run
+    rel_conv_speed, avg_bog_for_one_run
 import numpy as np
 import pandas as pd
 from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
@@ -19,6 +23,9 @@ from utils.utils_files import select_experiment_files,\
 
 class MetricCalculator():
     def __init__(self):
+        '''
+        Initialize paths, properties of the experiments, etc.
+        '''
         # TODO(exp) set parameters as required
 
         # path to "..../DynOpt/code"
@@ -39,6 +46,9 @@ class MetricCalculator():
 
     def compute_metrics(self, best_found_fit_per_gen,
                         global_opt_fit_per_chgperiod, gens_of_chgperiods):
+        '''
+        Computes BEBC and ARR
+        '''
 
         # bebc
         bebc = best_error_before_change(
@@ -52,7 +62,11 @@ class MetricCalculator():
         return bebc, arr_value
 
     def compute_and_save_all_metrics(self):
-        # order of columns should be meaningless!!!
+        '''
+        Computes all metrics for all algorithms and experiments and stores them
+        in one file.
+        '''
+        # order of columns should is meaningless
         column_names = ['function', 'predictor',
                         'algparams', 'alg', 'dim', 'chgperiods', 'len_c_p',
                         'ischgperiodrandom', 'veclen', 'peaks', 'noise',
@@ -182,7 +196,7 @@ class MetricCalculator():
                         for alg in keys:
                             new_dict[alg] = best_found_fit_per_gen_and_run_and_alg[alg][run]
 
-                        rcs_per_alg = conv_speed(
+                        rcs_per_alg = rel_conv_speed(
                             gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict)
                         print("rcs_per_alg ", rcs_per_alg)
 

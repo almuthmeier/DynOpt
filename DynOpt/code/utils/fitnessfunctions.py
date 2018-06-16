@@ -73,6 +73,8 @@ def get_original_global_opt_pos_and_fit(function, dimensionality):
     '''
     Global optimum position and its fitness for unmoved fitness function.
 
+    Used by dynposbenchmark.create_problems().
+
     @return: tupel: (position, fitness)
     '''
     # TODO(dev) extend this function if more fitness functions are desired

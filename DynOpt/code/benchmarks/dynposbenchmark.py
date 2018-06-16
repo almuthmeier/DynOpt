@@ -1,16 +1,13 @@
 '''
-Contains the function to create the dynamic optimization problems for the GECCO 
-2018 paper. Afterwards extended to re-create the EvoStar 2018 data (14.3.18).
+Contains functionality to create the dynamic variants of the  sphere, 
+rosenbrock, and rastrigin function.
 
-Only the position of the fitness landscape is changed but not the fitnesss 
-level. The data set values are stored per change period.
+The data set values are stored per change. 
 
-Contains functionality to create a data set as well as computing the 
+Contains functionality to create a MPB data set as well as computing the 
 fitness during the runtime. 
-Additionally, this module contains functions to test and plot new movements.
 
-Note: In convert_data_to_per_generation.py the data are modified so that they
-have one entry for each generation. 
+With create_problems() the data sets are created.
 
 Created on Jan 17, 2018
 
@@ -32,7 +29,7 @@ from utils.fitnessfunctions import sphere, rosenbrock, rastrigin,\
 from utils.utils_files import get_current_day_time
 
 
-def create_str_problems():
+def create_problems():
     '''
     Computes for each change the global optimum position. The new position
     is computed by adding a movement vector that depends on the change number.
@@ -244,4 +241,4 @@ def plot_scatter(points):
 if __name__ == '__main__':
     # create_and_plot_different_movements()
     # create_and_plot_random_sine_movement()
-    create_str_problems()
+    create_problems()

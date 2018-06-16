@@ -1,6 +1,7 @@
 9.5.18
 
 # benchmarks
+- generated data contain all information to compute the fitness of any point in the solution space at a specific generation
 ## all benchmarks
 - global optimum position and fitness per change
 	- 'global_opt_fit_per_chgperiod'
@@ -55,9 +56,7 @@ real_chgperiods_for_gens = file['real_chgperiods_for_gens']
 
 ## metric_calculator
 - the result file contains values for all runs. If average values/... are required that has to be done separately (TODO)
-
-
-
+- BOG: is averaged over generations leading to one value per run
 
 ## TODOs
 - TODO(exe) -> settings may be changed as desired for execution
