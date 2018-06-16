@@ -6,6 +6,8 @@ To execute the experiments
       function initialize_comparator_manually()
     - or specify the parameters in the scripts/run.sh file and run that script.
 
+The meaning of the input parameters is explained in the file scipts/run.sh
+
 Created on May 9, 2018
 
 @author: ameier

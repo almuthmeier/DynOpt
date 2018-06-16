@@ -217,6 +217,8 @@ class PredictorComparator(object):
         # execute repetitions of the experiments on different CPUs
         n_kernels = self.ncpus
         with Pool(n_kernels) as pool:
+            # TODO optimize parallelization parameters (e.g.,
+            # max_tasks_per_child, chunk_size)
             list(pool.starmap(self.instantiate_and_run_algorithm, argument_list))
 
     def convert_data_to_per_generation(self):
