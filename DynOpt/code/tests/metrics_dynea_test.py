@@ -153,7 +153,7 @@ class Test(unittest.TestCase):
             6  # (ARR without math.abs)
         #----
         exp_arr = (6 / 8 + 2 / 6 + 1 + 0 + 0 + 1) / 6  # (ARR with math.abs)
-        self.assertEqual(act_arr, exp_arr)  # TODO evtl. auskommentieren
+        self.assertEqual(act_arr, exp_arr)
         print("case 6: ", exp_arr)
 
         #======================================================================
@@ -239,7 +239,7 @@ class Test(unittest.TestCase):
         '''
 
         generations_of_chgperiods = {0: [0, 1, 2, 3, 4, 5, 6]}
-        global_opt_fit_per_chgperiod = [1]
+        global_opt_fit_per_chgperiod = np.array([1])
         best_fit_evals_per_alg = OrderedDict()
 
         # immediately optimum fitness
@@ -521,38 +521,41 @@ class Test(unittest.TestCase):
     def test_conv_speed(self):
         # test case 1: worst and best case (one change)
         generations_of_chgperiods = {0: [0, 1, 2, 3]}
-        optima_of_gens = [-12, -12, -12, -12]
+        global_opt_fit_per_chgperiod = np.array([-12])
         best_fit_evals_a = np.array([-12, -12, -12, -12])
         best_fit_evals_b = np.array([8, 8, 8, 8])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
         act = conv_speed(generations_of_chgperiods,
-                         optima_of_gens, best_fit_evals_per_alg)
+                         global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
         exp = {'a': 0, 'b': 1}
         self.assertEqual(act, exp)
 
         # test case 2: worst and best case, but now changed (two changes)
         generations_of_chgperiods = {0: [0, 1, 2, 3], 1: [4, 5, 6]}
-        optima_of_gens = [-12, -12, -12, -12,
-                          3, 3, 3]
+        global_opt_fit_per_chgperiod = np.array([-12, 3])
         best_fit_evals_a = np.array([-12, -12, -12, -12,
                                      8, 8, 8])
         best_fit_evals_b = np.array([8, 8, 8, 8,
                                      3, 3, 3])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
-        # TODO this test case fails
         act = conv_speed(generations_of_chgperiods,
-                         optima_of_gens, best_fit_evals_per_alg)
-        exp = {'a': 0.5, 'b': 0.5}
+                         global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
+
+        exp_b = (((1 * abs(8 - (-12)) + 2 * abs(8 - (-12)) +
+                   3 * abs(8 - (-12)) + 4 * abs(8 - (-12))) / (1 * abs(8 - (-12)) + 2 * abs(8 - (-12)) +
+                                                               3 * abs(8 - (-12)) + 4 * abs(8 - (-12))))
+                 + (0)) / 2
+        exp = {'a': 0.5, 'b': exp_b}  # 'b': 0.5}
         self.assertEqual(act, exp)
 
         # test case 2: "normal" fitness developments (one always better)
         generations_of_chgperiods = {0: [0, 1, 2, 3]}
-        optima_of_gens = [4, 4, 4, 4]
+        global_opt_fit_per_chgperiod = np.array([4])
         best_fit_evals_a = np.array([8, 6, 4, 4])
         best_fit_evals_b = np.array([9, 7, 5, 4])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
         act = conv_speed(generations_of_chgperiods,
-                         optima_of_gens, best_fit_evals_per_alg)
+                         global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
         exp_a = (1 * 4 + 2 * 2 + 0 + 0) / (5 * (1 + 2 + 3 + 4))
         exp_b = (1 * 5 + 2 * 3 + 3 * 1 + 0) / (5 * (1 + 2 + 3 + 4))
         exp = {'a': exp_a, 'b': exp_b}
@@ -560,54 +563,16 @@ class Test(unittest.TestCase):
 
         # test case 2: "normal" fitness developments
         generations_of_chgperiods = {0: [0, 1, 2, 3]}
-        optima_of_gens = [4, 4, 4, 4]
+        global_opt_fit_per_chgperiod = np.array([4])
         best_fit_evals_a = np.array([8, 6, 4, 4])
         best_fit_evals_b = np.array([9, 5, 5, 4])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
         act = conv_speed(generations_of_chgperiods,
-                         optima_of_gens, best_fit_evals_per_alg)
+                         global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
         exp_a = (1 * 4 + 2 * 2 + 0 + 0) / (5 * (1 + 2 + 3 + 4))
         exp_b = (1 * 5 + 2 * 1 + 3 * 1 + 0) / (5 * (1 + 2 + 3 + 4))
         exp = {'a': exp_a, 'b': exp_b}
         self.assertEqual(act, exp)  # -> {'a': 0.16, 'b': 0.2}
-
-    def test_published_results_GECCO(self):
-        # file from GECCO experiments
-        # Evo* files have other data structure
-        array_path = "/home/ameier/Documents/Promotion/Ausgaben/Predictorvergleich/PSO/Pruefung_GECCO-Ausgabe/"
-        array_file_a_name = "no_sphere_str_5_sine_pos_ch_none_fit_ch_lenchgperiod-20_noise-None_2018-01-25_13:48_9.npz"
-        #array_file_a_name = "no_sphere_str_5_sine_pos_ch_none_fit_ch_2017-11-01_13:32_9.npz"
-        array_file_a = np.load(array_path + array_file_a_name)
-
-        array_file_b_name = "rnn_sphere_str_5_sine_pos_ch_none_fit_ch_lenchgperiod-20_noise-None_2018-01-25_13:53_9.npz"
-        array_file_b = np.load(array_path + array_file_b_name)
-
-        periods_for_generations = array_file_a['periods_for_generations']
-        generations_of_chgperiods = {}  # {0: [0, 1, 2, 3]}
-        change = 0
-        generations_of_chgperiods[change] = [change]
-        for i in range(1, len(periods_for_generations)):
-            if periods_for_generations[i] != periods_for_generations[i - 1]:
-                change += 1
-                generations_of_chgperiods[change] = []
-            generations_of_chgperiods[change].append(i)
-
-        # {0: -12}
-        # TODO: confusing name: actually this array contains optimum fitness values
-        # per generation
-        global_opt_fit_per_chgperiod = array_file_a['global_opt_fit_of_changes']
-
-        best_fit_evals_a = array_file_a['best_fitness_evals']
-        best_fit_evals_b = array_file_b['best_fitness_evals']
-        best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
-
-        array_file_a.close()
-        array_file_b.close()
-
-        act = conv_speed(generations_of_chgperiods,
-                         global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
-        # "no" faster than "rnn3" (according to results in paper)
-        self.assertTrue(act['a'] < act['b'])
 
     def examine_convergence_speed_II(self):
         '''
@@ -618,7 +583,7 @@ class Test(unittest.TestCase):
         n_gens = 2
         max_fit = 10
         generations_of_chgperiods = {0: [i for i in range(n_gens)]}
-        global_opt_fit_per_chgperiod = {0: 0}
+        global_opt_fit_per_chgperiod = np.array([0])
 
         # all permutations of posssible fitness values
         graphs = graph_interface(max_fit, n_gens)
@@ -654,7 +619,7 @@ class Test(unittest.TestCase):
         '''
         # one change
         generations_of_chgperiods = {0: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}
-        global_opt_fit_per_chgperiod = {0: 0}
+        global_opt_fit_per_chgperiod = np.array([0])
         best_fit_evals_per_alg = {'a': [10, 4, 4, 4, 4, 2, 2, 2, 2, 2],
                                   'b': [8, 8, 8, 6, 6, 6, 3, 3, 3, 3],
                                   'c': [7, 7, 7, 7, 7, 7, 1, 1, 1, 1]}
@@ -731,7 +696,7 @@ def __make_graphs__(list_prefix, max_len):
 
 def other_simple_test():
     generations_of_chgperiods = {0: [0, 1, 2, 3, ]}
-    global_opt_fit_per_chgperiod = {0: 0}
+    global_opt_fit_per_chgperiod = np.array([0])
     best_fit_evals_per_alg = OrderedDict()
     # immediately optimum fitness
     name = "begin worse"
@@ -766,8 +731,12 @@ def other_simple_test():
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.test_arr']
     t = Test()
+    t.test_arr()
     t.examine_arr()
-    # t.examine___convergence_speed__()
+    t.test_normalized_bog()
+    t.test_best_error_before_change()
+    t.test_convergence_speed()
+    t.test_conv_speed()
     t.examine_convergence_speed_II()
-    # unittest.main()
+    t.examine_convergence_speed()
     other_simple_test()
