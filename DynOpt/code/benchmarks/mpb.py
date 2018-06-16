@@ -8,7 +8,8 @@ The data set values are stored per change.
 Contains functionality to create a MPB data set as well as computing the 
 fitness during the runtime.
 
-With "start_creating_problem()" the MPB-Benchmark data sets are created.
+With "start_creating_problem()" the MPB-Benchmark data sets are created. There 
+the desired parameters have to be specified.
 
 Created on Oct 10, 2017
 

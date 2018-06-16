@@ -7,7 +7,8 @@ The data set values are stored per change.
 Contains functionality to create a MPB data set as well as computing the 
 fitness during the runtime. 
 
-With create_problems() the data sets are created.
+With create_problems() the data sets are created. There the desired parameters
+have to be specified.
 
 Created on Jan 17, 2018
 
