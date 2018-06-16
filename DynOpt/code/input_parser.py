@@ -123,7 +123,7 @@ def initialize_comparator(parser, comparator):
 
 
 def initialize_comparator_manually(comparator):
-    # path to ".../DynOptimization"
+    # path to parent directory of the project directory DynOpt/
     path_to_dynoptim = '/'.join(os.path.abspath(os.pardir).split('/')[:])
 
     # benchmark problem
