@@ -11,13 +11,13 @@ This software package provides python code to reproduce the experiments we condu
 ## Requirements & Installation
 In order to run this python project you need a python installation and Keras with TensorFlow to run the recurrent neural network prediction models. Use the requirements.txt to ensure you have all necessary python packages, but not all packages listed in the requirements.txt are obligatory.
 
-The code has been tested with:
-    - Python 3.5.2
-    - Keras 2.1.1
-    - TensorFlow 1.5.0
-    - Cuda 9.0.176
-    - cuDNN 7.0.5
-    - Ubuntu 16.04
+The code has been tested with:  
+    - Python 3.5.2  
+    - Keras 2.1.1  
+    - TensorFlow 1.5.0  
+    - Cuda 9.0.176  
+    - cuDNN 7.0.5  
+    - Ubuntu 16.04  
 
 ## Usage
 
