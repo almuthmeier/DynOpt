@@ -30,7 +30,7 @@ ischgperiodrandom=False		# True if the change occurs at a random time point.
 benchmarkfunction=mpbnoisy	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
-benchmarkfunctionfolderpath=/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/EvoStar_2018/ # parent directory path of the benchmark functions
+benchmarkfunctionfolderpath=<Path-to>/DynOpt/datasets/EvoStar_2018/ # parent directory path of the benchmark functions
 								   																				 # and child directory of the datasets folder
 								   																				 # of this project 
 
@@ -75,7 +75,7 @@ ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any ex
 # output: TODO adapt if necessary
 outputdirectory="c1c2c3_1.49/$algorithm""_""$predictor/" 				# name of the output directory. Necessary to separate results
 																		# for different algorithm settings.				
-outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/EvoStar_2018/$benchmarkfunction/"		# path to output
+outputdirectorypath="<Path-to>/DynOpt/output/EvoStar_2018/$benchmarkfunction/"		# path to output
 																																	# folder
 
 #------------------------------------------------------------------------------
