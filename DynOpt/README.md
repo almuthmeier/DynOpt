@@ -18,6 +18,19 @@ The code has been tested with:
     - Cuda 9.0.176  
     - cuDNN 7.0.5  
     - Ubuntu 16.04  
+    
+## Directory Structure
+Since in git it is not possible to commit empty directories you have to create some directories in order to get the following structure:  
+
+- DynOpt/  
+    - code/  
+        - (everyting is already there)  
+    - datasets/  
+        - [eventname for that the benchmark files are required] (sub-directories are generated   automatically)  
+    - output/  
+        - [eventname for that the benchmark files are required] (same as under datasets/)  
+    - scripts/  
+        - (everything is already there)  
 
 ## Usage
 
