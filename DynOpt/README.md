@@ -6,7 +6,7 @@ Dynamic Optimization
 This software package provides python code to reproduce the experiments we conducted for our GECCO 2018 and Evo* 2018 papers [1, 2]. Due to some reconstructions (e.g., changes of the seeds), the exact values from the papers might not be reproducible.
 
 [1] A. Meier, O. Kramer: Recurrent Neural Network-Predictions for PSO in Dynamic Optimization, EvoApplications 2018.  
-[2] A. Meier, O. Kramer: Prediction with Recurrent Neural Networks in Evolutionary Dynamic Optimization (2018).
+[2] A. Meier, O. Kramer: Prediction with Recurrent Neural Networks in Evolutionary Dynamic Optimization, GECCO 2018.
 
 ## Requirements & Installation
 In order to run this python project you need a python installation and Keras with TensorFlow to run the recurrent neural network prediction models. Use the requirements.txt to ensure you have all necessary python packages, but not all packages listed in the requirements.txt are obligatory.
