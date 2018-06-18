@@ -27,8 +27,12 @@ The generated data set files contain all information to compute the fitness for 
 The properties of an instance can be seen in the file name, e.g.:  
     - mpbnoisy_d-50_chgperiods-10000_veclen-0.6_peaks-10_noise-0.0_2018-05-09_11:20.npz  
     - rosenbrock_d-50_chgperiods-10000_pch-sine_fch-none_2018-05-09_11:13.npz  
-Since information will be read out from the file name its structure must be like : [benchmark name]_[property1]-[value of property1]_<propert2><value of property2>_...
+Since information will be read out from the file name its structure must be like : `<benchmark name>`\_`<property1>`-`<value of property1>`\_`<property2>`-`<value of property2>`\_...
 
+
+  
+ 
+  `[asdf]`
  
 ### Content of all benchmark files
 
