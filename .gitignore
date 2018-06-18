@@ -14,6 +14,11 @@
 # Python Cache files
 *.pyc
 
-# Ausgabe
+# Benchmarks
 *.npz
+
+# Output
+**/logs
+**/stattests
+metric_db.csv
 
