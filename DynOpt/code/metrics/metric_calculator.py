@@ -151,11 +151,8 @@ class MetricCalculator():
 
                             # arr, bebc
                             bebc, arr_value = self.compute_metrics(best_found_fit_per_gen,
-                                                                   real_chgperiods_for_gens,
                                                                    global_opt_fit_per_chgperiod,
-                                                                   global_opt_pos_per_chgperiod,
-                                                                   gens_of_chgperiods,
-                                                                   orig_global_opt_pos)
+                                                                   gens_of_chgperiods)
                             # averaged bog for this run (not the average bog as
                             # defined) (should not be used other than as average
                             # over all runs)
