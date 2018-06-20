@@ -88,6 +88,9 @@ def replace_worst_individuals(alg_np_rnd_generator, problem, curr_gen, populatio
     '''
     Replaces individuals with the worst fitness by random immigrants/individuals.
     1/5th of the population/swarm is replaced by this function.
+    The individuals could have even worse fitness but with the immigrant 
+    nonetheless diversity is introduced into the population.
+
     @param pop_size: size of the swarm/population
     @param n_features: dimensionality of solution space
     @param prediction: predicted optimum position. If it is not None, it
