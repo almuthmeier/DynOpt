@@ -71,16 +71,17 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
     Creates mpb data set for a specific setting.
     '''
     # 2d list: for each peak one row containing a list that contains for each
-    # generation the peak's height
+    # change period the peak's height
     heights = []
     # 2d list: similar to heights
     widths = []
     # 3d list: for each peak one row, containing a list that contains the
-    # multi-dimensional position of the peak for that generation
+    # multi-dimensional position of the peak for that change period
     positions = []
-    # 1d list: for each generation the optimum fitness
+    # 1d list: for each change period the optimum fitness
     global_opt_fit = []
-    # 2d list: for each generation: position corresponding to optimal fitness
+    # 2d list: for each change period: position corresponding to optimal
+    # fitness
     global_opt_pos = []
 
     heigth_severity = 7  # as in initial paper by Branke
@@ -162,8 +163,7 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
 
 def start_creating_problem():
     '''
-    Call this function to create and save MPB-functions with different settings
-    (generates data for each generation (not only for the changes))
+    Call this function to create and save MPB-functions with different settings)
     '''
     np.random.seed(4)
     # ==================================

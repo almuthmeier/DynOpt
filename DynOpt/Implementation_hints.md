@@ -34,8 +34,8 @@ Since information will be read out from the file name its structure must be like
 ### Content of all benchmark files
 
 Every .npz file contains the following entries:  
-    - 'global_opt_fit_per_chgperiod' (global optimum fitness per change; 1d numpy array: for each generation the optimum fitness)  
-	- 'global_opt_pos_per_chgperiod' (global optimum position per change; 2d numpy array: for each generation the position corresponding to the optimum fitness)  
+    - 'global_opt_fit_per_chgperiod' (global optimum fitness per change; 1d numpy array: for each change period the optimum fitness)  
+	- 'global_opt_pos_per_chgperiod' (global optimum position per change; 2d numpy array: for each change period the position corresponding to the optimum fitness)  
 	- 'orig_global_opt_pos' (original (unmoved) optimum position (is the same as the first entry in 'global_opt_pos_per_chgperiod'))  
 The first two listed keys must have "_per_chgperiod" at the end because they are automatically renamed to "_per_gen" in comparison.convert_data_to_per_generation().  
 
