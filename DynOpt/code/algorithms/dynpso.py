@@ -316,6 +316,7 @@ class DynamicPSO():
             # store which change period the current generation belongs to
             self.detected_chgperiods_for_gens.append(self.detected_n_changes)
             # random values
+            # TODO new values in every iteration?
             r1_vals = self.pso_np_rnd_generator.rand(
                 self.n_particles, self.dim)
             r2_vals = self.pso_np_rnd_generator.rand(
