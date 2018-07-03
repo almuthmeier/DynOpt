@@ -39,7 +39,7 @@ benchmarkfunctionfolderpath=<Path-to>/DynOpt/datasets/EvoStar_2018/ # parent dir
 poschgtypes=linear,sine			# position change type; comma-separated integers
 fitchgtypes=none				# fitness change type; comma-separated integers
 dims=2,50						# dimensionality of fitness function; comma-separated integers
-noises=0.0						# noise, required only for mpb-benchmarks; comma-separated integers
+noises=0.0,0.1,1.0,10.0			# noise, required only for mpb-benchmarks; comma-separated floats
 
 # PSO
 c1=1.496180					# influence of particle's best solution 
