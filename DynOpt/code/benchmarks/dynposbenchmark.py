@@ -21,13 +21,16 @@ import os
 import sys
 import warnings
 
-sys.path.append(os.path.abspath(os.pardir))
-
+from benchmarks.circlemovement import create_circle_movement_points,\
+    plot_movement
 import matplotlib.pyplot as plt
 import numpy as np
 from utils.fitnessfunctions import sphere, rosenbrock, rastrigin,\
     get_original_global_opt_pos_and_fit
 from utils.utils_files import get_current_day_time
+
+
+sys.path.append(os.path.abspath(os.pardir))
 
 
 def create_problems():
@@ -39,19 +42,29 @@ def create_problems():
     # -------------------------------------------------------------------------
     # TODO(exp) parameters to adjust
     n_chg_periods = 10000
-    dims = [2, 5, 10, 20, 50, 100]
+    dims = [2]  # , 5, 10, 20, 50, 100]
     functions = [sphere, rosenbrock, rastrigin]
-    pos_chng_types = ['pch-linear', 'pch-sine']
+    pos_chng_types = ['pch-linear', 'pch-sine', 'pch-circle']
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
-    conference = "GECCO_2018"
+    conference = "GECCO_2019"
+    # -------------------------------------------------------------------------
+    # for circle movement
+
+    # Euclidean distance between two optimium positions
+    distance = 5
+    # number of optimum positions on one circle (if more change periods than
+    # n_points_circle the old optimum positions are repeated
+    n_points_circle = 50
     # -------------------------------------------------------------------------
 
     # severity of change (for linear movement)
-    if conference == "GECCO_2018":
+    if conference == "GECCO_2018" or conference == "GECCO_2019":
         linear_movement_factor = 5
     elif conference == "EvoStar_2018":
         linear_movement_factor = 2
+    else:
+        warnings.warn("unknown conference type")
 
     # path to data set directory to store data sets there
     # ".../DynOptimization/DynOpt/code"
@@ -83,7 +96,7 @@ def create_problems():
                 opts = []
                 opts.append(copy.copy(orig_global_opt_position))
                 if pos_chng_type == 'pch-sine':
-                    if conference == "GECCO_2018":
+                    if conference == "GECCO_2018" or conference == "GECCO_2019":
                         # initialize sine-parameters randomly (stay unchanged
                         # during all change periods
                         amplitudes = np_rand_gen.randint(5, 50, dim)
@@ -115,13 +128,45 @@ def create_problems():
                             new_opt[1] = new_opt[1] + \
                                 30.0 * math.sin(0.25 * step)
                             opts.append(copy.copy(new_opt))
+                    else:
+                        warnings.warn("unknown conference type")
                 elif pos_chng_type == 'pch-linear':
-                    if conference == "GECCO_2018" or conference == "EvoStar_2018":
+                    if conference == "GECCO_2018" or conference == "EvoStar_2018" or conference == "GECCO_2019":
                         for chg_period in range(1, n_chg_periods):
                             movement = np.array(
                                 dim * [chg_period * linear_movement_factor])
                             new_opt = orig_global_opt_position + movement
                             opts.append(copy.copy(new_opt))
+                    else:
+                        warnings.warn("unknown conference type")
+                elif pos_chng_type == 'pch-circle':
+                    if dim == 2:
+                        all_points = []
+                        n_calls = math.ceil(n_chg_periods / n_points_circle)
+                        for _ in range(n_calls):
+                            points = create_circle_movement_points(
+                                distance, n_points_circle, orig_global_opt_position)
+                            if len(all_points) == 0:
+                                all_points = copy.deepcopy(points)
+                            else:
+                                all_points = np.concatenate(
+                                    (all_points, points), axis=0)
+                        opts = all_points[:n_chg_periods]
+
+                        # check whether result is correct
+                        uni = np.unique(opts, axis=0)
+                        assert len(opts) == n_chg_periods, "false number of optima: " + \
+                            str(len(opts)) + " instead of " + \
+                            str(n_chg_periods)
+                        assert len(uni) <= n_points_circle, "false number of points per circle: " + str(
+                            len(uni)) + " is not <= " + str(n_points_circle)
+                        assert (orig_global_opt_position == opts[0]).all()
+                        # plot_movement(np.array(opts))
+                    else:
+                        # works until now only for 2 dimensions
+                        continue
+                else:
+                    warnings.warn("unknown position change type")
                 opts = np.array(opts)
                 # save optimum
                 ds_file_name = folder_path + func_name + "_d-" + \
