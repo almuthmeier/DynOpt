@@ -1,4 +1,5 @@
 '''
+TODO use also circle movement in tests?
 Files for this test have been created by dynposbenchmark.create_problems().
 
 Created on Jan 18, 2018
