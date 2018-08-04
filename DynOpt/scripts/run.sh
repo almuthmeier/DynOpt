@@ -18,7 +18,7 @@
 
 # benchmark problem
 algorithm="dynea" 			# dynea or dynpso
-repetitions=4				# number runs for each experiment
+repetitions=1				# number runs for each experiment
 chgperiods=10				# number of change periods 
 lenchgperiod=20				# number of generations per change period; has to be
 							# set even if chgperiod==1 (is then number of 
@@ -27,19 +27,19 @@ lenchgperiod=20				# number of generations per change period; has to be
 							# because lenchgperiod*chgperiods is the number of 
 							# generations. 
 ischgperiodrandom=False		# True if the change occurs at a random time point.
-benchmarkfunction=mpbnoisy	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom
+benchmarkfunction=rastrigin	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
-benchmarkfunctionfolderpath=<Path-to>/DynOpt/datasets/EvoStar_2018/ # parent directory path of the benchmark functions
+benchmarkfunctionfolderpath=/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/GECCO_2019/ # parent directory path of the benchmark functions
 								   																				 # and child directory of the datasets folder
 								   																				 # of this project 
 
 # run only some experiments of all for the benchmark problem (the next four
 # parameters are lists)
-poschgtypes=linear,sine			# position change type; comma-separated integers
+poschgtypes=linear,sine,circle	# position change type; comma-separated integers
 fitchgtypes=none				# fitness change type; comma-separated integers
-dims=2,50						# dimensionality of fitness function; comma-separated integers
-noises=0.0,0.1,1.0,10.0			# noise, required only for mpb-benchmarks; comma-separated floats
+dims=2							# dimensionality of fitness function; comma-separated integers
+noises=0.0						# noise, required only for mpb-benchmarks; comma-separated floats
 
 # PSO
 c1=1.496180					# influence of particle's best solution 
@@ -75,7 +75,7 @@ ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any ex
 # output: TODO adapt if necessary
 outputdirectory="c1c2c3_1.49/$algorithm""_""$predictor/" 				# name of the output directory. Necessary to separate results
 																		# for different algorithm settings.				
-outputdirectorypath="<Path-to>/DynOpt/output/EvoStar_2018/$benchmarkfunction/"		# path to output
+outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/$benchmarkfunction/"		# path to output
 																																	# folder
 
 #------------------------------------------------------------------------------

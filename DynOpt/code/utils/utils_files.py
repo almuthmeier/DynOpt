@@ -97,8 +97,8 @@ def get_info_from_array_file_name(array_file_name):
 
     Example file names:
     rnn_mpbnoisy_d-2_chgperiods-10_lenchgperiod-20_ischgperiodrandom-False_veclen-0.6_peaks-10_noise-0.0_2018-05-24_10:22_00.npz
+    gdbg_f-0_t-1_d-5_chgperiods-100_peaks-10_2018-07-03_12:25
     rnn_rosenbrock_d-2_chgperiods-10_lenchgperiod-20_ischgperiodrandom-False_pch-linear_fch-none_2018-05-24_10:27_00.npz
-
     @return tupel, the extracted information
     '''
 

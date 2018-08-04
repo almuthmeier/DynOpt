@@ -36,12 +36,12 @@ class MetricCalculator():
 
         self.algorithms = []
         self.benchmarkfunctions = [
-            "sphere", "rosenbrock", "mpbnoisy"]  # sphere, rosenbrock
-        self.benchmark_folder_path = path_to_datasets + "EvoStar_2018/"
-        self.output_dir_path = path_to_output + "EvoStar_2018/"
-        self.poschgtypes = ["linear", "sine"]
+            "sphere", "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy
+        self.benchmark_folder_path = path_to_datasets + "GECCO_2019/"
+        self.output_dir_path = path_to_output + "GECCO_2019/"
+        self.poschgtypes = ["linear", "sine", "circle"]
         self.fitchgtypes = ["none"]
-        self.dims = [2, 50]
+        self.dims = [2]
         self.noises = [0.0]
 
     def compute_metrics(self, best_found_fit_per_gen,
