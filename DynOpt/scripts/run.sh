@@ -26,7 +26,7 @@ lenchgperiod=20				# number of generations per change period; has to be
 							# Is required also in case ischgperiodrandom is True, 
 							# because lenchgperiod*chgperiods is the number of 
 							# generations. 
-ischgperiodrandom=False		# True if the change occurs at a random time point.
+ischgperiodrandom="False"	# True if the change occurs at a random time point.
 benchmarkfunction=rastrigin	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
@@ -45,8 +45,8 @@ noises=0.0						# noise, required only for mpb-benchmarks; comma-separated float
 c1=1.496180					# influence of particle's best solution 
 c2=1.496180					# influence of swarm's best solution
 c3=1.496180					# influence of prediction term
-insertpred=False			# True if predicted optimum should be inserted as individual into the population
-adaptivec3=False			# True if c3 should be changed adaptively
+insertpred="False"			# True if predicted optimum should be inserted as individual into the population
+adaptivec3="False"			# True if c3 should be changed adaptively
 nparticles=200				# swarm size
 
 # EA
@@ -82,7 +82,7 @@ outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/Dy
 # Command
 #------------------------------------------------------------------------------
 
-(There must always be a space between the argument and the backslash!)
+# (There must always be a space between the argument and the backslash!)
 
 ~/.virtualenvs/promotion/prototype/bin/python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
@@ -116,4 +116,4 @@ outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/Dy
 -epochs="$epochs" \
 -batchsize="$batchsize" \
 -ngpus="$ngpus" \
--ncpus="$ncpus" \
+-ncpus="$ncpus"

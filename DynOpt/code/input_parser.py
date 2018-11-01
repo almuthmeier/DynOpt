@@ -32,7 +32,7 @@ def define_parser_arguments():
     parser.add_argument("-chgperiods", type=int)  # n_chgs = chgperiods - 1
     parser.add_argument("-lenchgperiod", type=int)
     # true, if changes occur at random time points
-    parser.add_argument("-ischgperiodrandom", type=bool)
+    parser.add_argument("-ischgperiodrandom", type=str)
     # "mpb" or "sphere-rastrigin-rosenbrock" (alt)
     # sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (neu)
     # defines the benchmark function, must be located in the datasets folder of
@@ -56,8 +56,8 @@ def define_parser_arguments():
     parser.add_argument("-c1", type=float)  # sind Zahlen erlaubt?
     parser.add_argument("-c2", type=float)
     parser.add_argument("-c3", type=float)
-    parser.add_argument("-insertpred", type=bool)
-    parser.add_argument("-adaptivec3", type=bool)
+    parser.add_argument("-insertpred", type=str)
+    parser.add_argument("-adaptivec3", type=str)
     parser.add_argument("-nparticles", type=int)
 
     # for EA
@@ -131,7 +131,7 @@ def initialize_comparator_manually(comparator):
     comparator.repetitions = 1
     comparator.chgperiods = 10
     comparator.lenchgperiod = 20
-    comparator.ischgperiodrandom = False
+    comparator.ischgperiodrandom = "False"
     comparator.benchmarkfunction = "sphere"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "GECCO_2019/"
@@ -151,8 +151,8 @@ def initialize_comparator_manually(comparator):
         comparator.c1 = 1.496180
         comparator.c2 = 1.496180
         comparator.c3 = 1.496180
-        comparator.insertpred = False
-        comparator.adaptivec3 = False
+        comparator.insertpred = "False"
+        comparator.adaptivec3 = "False"
         comparator.nparticles = 200
 
     # EA
@@ -194,7 +194,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.repetitions = args.repetitions
     comparator.chgperiods = args.chgperiods
     comparator.lenchgperiod = args.lenchgperiod
-    comparator.ischgperiodrandom = args.ischgperiodrandom
+    comparator.ischgperiodrandom = args.ischgperiodrandom == 'True'  # convert str to bool
     comparator.benchmarkfunction = args.benchmarkfunction
     comparator.benchmarkfunctionfolderpath = args.benchmarkfunctionfolderpath
     comparator.outputdirectory = args.outputdirectory
@@ -211,8 +211,8 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.c1 = args.c1
         comparator.c2 = args.c2
         comparator.c3 = args.c3
-        comparator.insertpred = args.insertpred
-        comparator.adaptivec3 = args.adaptivec3
+        comparator.insertpred = args.insertpred == 'True'
+        comparator.adaptivec3 = args.adaptivec3 == 'True'
         comparator.nparticles = args.nparticles
 
     # EA
