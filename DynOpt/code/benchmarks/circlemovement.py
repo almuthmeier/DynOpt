@@ -59,7 +59,7 @@ def rotate(degree, point, rotation_center):
     return retransformed_rotated_point
 
 
-def create_circle_movement_points(distance, n_points, orig_glob_opt_position=None):
+def create_circle_movement_points(distance, n_points_one_circle, orig_glob_opt_position=None):
     '''
     Creates first two points and the following ones by rotation of the second 
     last point around the last point in order to get a circle as movement
@@ -71,7 +71,7 @@ def create_circle_movement_points(distance, n_points, orig_glob_opt_position=Non
     '''
     # =========================================================================
     # inner angle at each point of the polygon
-    degree = ((n_points - 2) * 180) / n_points
+    degree = ((n_points_one_circle - 2) * 180) / n_points_one_circle
     # =========================================================================
     # for printing
     points = []
@@ -96,7 +96,7 @@ def create_circle_movement_points(distance, n_points, orig_glob_opt_position=Non
     points.append(second)
     # =========================================================================
     # remaining points
-    for i in range(2, n_points):
+    for i in range(2, n_points_one_circle):
         # rotate second last point with last point as rotation center
         to_rotate = points[i - 2]
         rotation_center = points[i - 1]
@@ -109,9 +109,13 @@ def create_circle_movement_points(distance, n_points, orig_glob_opt_position=Non
 if __name__ == '__main__':
     # parameters
     distance = 0.5
-    n_points = 100
+    n_points_one_circle = 100
+    n_overall_points = 150
     orig_glob_opt_position = np.array([2, 4])
-
-    points = create_circle_movement_points(
-        distance, n_points, orig_glob_opt_position)
-    plot_movement(np.array(points))
+    points = []
+    for _ in range(0, n_overall_points, n_points_one_circle):
+        points += create_circle_movement_points(
+            distance, n_points_one_circle, orig_glob_opt_position)
+    # cut the surplus entries
+    points = np.array(points[:n_overall_points])
+    plot_movement(points)
