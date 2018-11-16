@@ -168,9 +168,9 @@ def start_creating_problem():
     np.random.seed(4)
     # ==================================
     # TODO(exp)
-    # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
-    conference = "EvoStar_2018"
-    func_name = "mpbnoisy"  # "mpbnoisy" or "mpbrand"
+    # "EvoStar_2018" or "GECCO_2018" or "ESANN_2019" (must be equivalent to directory)
+    conference = "ESANN_2019"
+    func_name = "mpbrand"  # "mpbnoisy" or "mpbrand"
 
     if func_name == "mpbrand":
         # settings for experiments "mpbrand"

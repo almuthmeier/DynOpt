@@ -134,13 +134,13 @@ def initialize_comparator_manually(comparator):
     comparator.ischgperiodrandom = "False"
     comparator.benchmarkfunction = "sphere"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
-        "/DynOpt/datasets/" + "GECCO_2019/"
+        "/DynOpt/datasets/" + "ESANN_2019/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "c1c2c3_1.49/ea_no/"
+    comparator.outputdirectory = "ersterTest/ea_no/"
     comparator.outputdirectorypath = path_to_dynoptim + \
-        "/DynOpt/output/" + "GECCO_2019/" + "sphere/"
+        "/DynOpt/output/" + "ESANN_2019/" + "sphere/"
 
-    # run only some experiments of all for the benchark problem
+    # run only some experiments of all for the benchmark problem
     comparator.poschgtypes = np.array(["linear", "sine", "circle"])
     comparator.fitchgtypes = np.array(["none"])
     comparator.dims = np.array([2])

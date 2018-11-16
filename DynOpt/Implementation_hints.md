@@ -39,7 +39,7 @@ Every .npz file contains the following entries:
 	- 'orig_global_opt_pos' (original (unmoved) optimum position (is the same as the first entry in 'global_opt_pos_per_chgperiod'))  
 The first two listed keys must have "_per_chgperiod" at the end because they are automatically renamed to "_per_gen" in comparison.convert_data_to_per_generation().  
 
-Note that it is important that the properties are stored "per change" and not "per generation" as they are converted to "per change" in comparison.py during runtime.
+Note that it is important that the properties are stored "per change" and not "per generation" as they are converted to "per generation" in comparison.py during runtime.
 
 
 ### Additional content of mpb benchmark files

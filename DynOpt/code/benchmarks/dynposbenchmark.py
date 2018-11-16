@@ -47,7 +47,7 @@ def create_problems():
     pos_chng_types = ['pch-linear', 'pch-sine', 'pch-circle']
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
-    conference = "GECCO_2019"
+    conference = "ESANN_2019"
     # -------------------------------------------------------------------------
     # for circle movement
 
@@ -59,7 +59,7 @@ def create_problems():
     # -------------------------------------------------------------------------
 
     # severity of change (for linear movement)
-    if conference == "GECCO_2018" or conference == "GECCO_2019":
+    if conference == "GECCO_2018" or conference == "GECCO_2019" or conference == "ESANN_2019":
         linear_movement_factor = 5
     elif conference == "EvoStar_2018":
         linear_movement_factor = 2
@@ -96,7 +96,7 @@ def create_problems():
                 opts = []
                 opts.append(copy.copy(orig_global_opt_position))
                 if pos_chng_type == 'pch-sine':
-                    if conference == "GECCO_2018" or conference == "GECCO_2019":
+                    if conference == "GECCO_2018" or conference == "GECCO_2019" or conference == "ESANN_2019":
                         # initialize sine-parameters randomly (stay unchanged
                         # during all change periods
                         amplitudes = np_rand_gen.randint(5, 50, dim)
@@ -131,7 +131,8 @@ def create_problems():
                     else:
                         warnings.warn("unknown conference type")
                 elif pos_chng_type == 'pch-linear':
-                    if conference == "GECCO_2018" or conference == "EvoStar_2018" or conference == "GECCO_2019":
+                    if (conference == "GECCO_2018" or conference == "EvoStar_2018" or
+                            conference == "GECCO_2019" or conference == "ESANN_2019"):
                         for chg_period in range(1, n_chg_periods):
                             movement = np.array(
                                 dim * [chg_period * linear_movement_factor])
