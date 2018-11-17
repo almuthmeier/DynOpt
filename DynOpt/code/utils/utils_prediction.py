@@ -56,12 +56,11 @@ def make_multidim_samples_from_series(train_data, n_time_steps):
 def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons):
     '''
     Creates the desired prediction model.
-    @param mode: which predictor: rnn, autoregressive
+    @param mode: which predictor: no, rnn, autoregressive, tltfrnn, tfrnn
     @param batch_size: batch size for the RNN
     @param n_time_steps: number of time steps to use for prediction/training
     @param n_features: dimensionality of the solution space
     '''
-
     if mode == "no":
         predictor = None
     elif mode == "rnn":
@@ -76,8 +75,32 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons):
         predictor.compile(loss='mean_squared_error', optimizer='adam')
     elif mode == "autoregressive":
         # no object required since the AR model is created every time a
-        # prediction is neede
+        # prediction is needed
         predictor = None
+    elif mode == "tfrnn":
+        from utils.utils_transferlearning import build_tl_rnn_predictor
+        rnn_type = "RNN"
+        ntllayers = 0
+        n_overall_layers = 2
+        epochs = 5
+        returnseq = True
+        test_b_size = 128
+        apply_tl = True
+        predictor = build_tl_rnn_predictor(rnn_type, ntllayers,
+                                           n_overall_layers, n_time_steps, epochs, n_features,
+                                           returnseq, test_b_size, apply_tl)
+    elif mode == "tltfrnn":
+        from utils.utils_transferlearning import build_tl_rnn_predictor
+        rnn_type = "RNN"
+        ntllayers = 1
+        n_overall_layers = 2
+        epochs = 5
+        returnseq = True
+        test_b_size = 128
+        apply_tl = True
+        predictor = build_tl_rnn_predictor(rnn_type, ntllayers,
+                                           n_overall_layers, n_time_steps, epochs, n_features,
+                                           returnseq, test_b_size, apply_tl)
     else:
         msg = "unknown prediction mode " + mode
         warnings.warn(msg)
@@ -203,6 +226,10 @@ def predict_next_optimum_position(mode, new_train_data, n_epochs, batch_size,
             raise
     elif mode == "no":
         return None
+    elif mode == "tfrnn":
+        pass  # TODO (Almuth)
+    elif mode == "tltfrnn":
+        pass  # TODO (Almuth)
 
 
 def get_n_neurons(n_neurons_type, dim):

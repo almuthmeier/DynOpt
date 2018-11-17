@@ -70,7 +70,7 @@ def define_parser_arguments():
     parser.add_argument("-tau", type=float)
 
     # for predictor
-    # no, rnn, autoregressive
+    # no, rnn, autoregressive, tltfrnn, tfrnn
     parser.add_argument("-predictor", type=str)
     parser.add_argument("-timesteps", type=int)
 
@@ -128,7 +128,7 @@ def initialize_comparator_manually(comparator):
 
     # benchmark problem
     comparator.algorithm = "dynea"
-    comparator.repetitions = 2
+    comparator.repetitions = 1
     comparator.chgperiods = 50
     comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = "False"
@@ -138,13 +138,13 @@ def initialize_comparator_manually(comparator):
     # attention: naming should be consistent to predictor/other params
     comparator.outputdirectory = "ersterTest/ea_no/"
     comparator.outputdirectorypath = path_to_dynoptim + \
-        "/DynOpt/output/" + "ESANN_2019/" + "sphere/"
+        "/DynOpt/output/" + "ESANN_2019/" + "rosenbrock/"
 
     # run only some experiments of all for the benchmark problem
     # ["linear", "sine", "circle"])
     comparator.poschgtypes = np.array(["mixture", "linear"])
     comparator.fitchgtypes = np.array(["none"])
-    comparator.dims = np.array([2])
+    comparator.dims = np.array([5])
     comparator.noises = np.array([0.0])
 
     # PSO
@@ -167,11 +167,11 @@ def initialize_comparator_manually(comparator):
         comparator.tau = 0.5
 
     # for predictor
-    comparator.predictor = "no"  # "no"
+    comparator.predictor = "tltfrnn"  # "no"
     comparator.timesteps = 7
 
     # for ANN predictor
-    if comparator.predictor == "rnn":
+    if comparator.predictor == "rnn" or comparator.predictor == "tltfrnn" or comparator.predictor == "tfrnn":
         comparator.neuronstype = "fixed20"
         comparator.epochs = 3
         comparator.batchsize = 1
@@ -231,7 +231,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.timesteps = args.timesteps
 
     # for ANN predictor
-    if args.predictor == "rnn":
+    if args.predictor == "rnn" or args.predictor == "tltfrnn" or args.predictor == "tfrnn":
         comparator.neuronstype = args.neuronstype
         comparator.epochs = args.epochs
         comparator.batchsize = args.batchsize

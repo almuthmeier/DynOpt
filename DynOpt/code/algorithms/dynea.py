@@ -10,8 +10,6 @@ import copy
 import math
 import warnings
 
-from sklearn.preprocessing.data import MinMaxScaler
-
 import numpy as np
 from utils import utils_dynopt
 from utils.utils_dynopt import environment_changed
@@ -19,6 +17,7 @@ from utils.utils_ea import dominant_recombination, gaussian_mutation,\
     mu_plus_lambda_selection, adapt_sigma
 from utils.utils_prediction import build_predictor,\
     predict_next_optimum_position, prepare_scaler
+from utils.utils_transferlearning import get_variables_and_names
 
 
 class DynamicEA():
@@ -162,7 +161,8 @@ class DynamicEA():
             # randomly
             immigrants = random_immigrants
 
-        elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive" or my_pred_mode == "tlrnn":
+        elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive" or \
+                my_pred_mode == "tltfrnn" or my_pred_mode == "tfrnn":
             # last predicted optimum
             pred_optimum_position = self.pred_opt_pos_per_chgperiod[-1]
             # insert predicted optimum into immigrants
@@ -232,8 +232,8 @@ class DynamicEA():
 
             # transform absolute values to differences
             if self.predict_diffs:
-                best_found_vals_per_chgperiod = self.best_found_pos_per_chgperiod[1:] - \
-                    self.best_found_pos_per_chgperiod[:-1]
+                best_found_vals_per_chgperiod = np.subtract(
+                    self.best_found_pos_per_chgperiod[1:], self.best_found_pos_per_chgperiod[:-1])
             else:
                 best_found_vals_per_chgperiod = self.best_found_pos_per_chgperiod
 
@@ -267,7 +267,8 @@ class DynamicEA():
                                                        scaler, predictor)
             # convert predicted difference into position
             if self.predict_diffs:
-                prediction = self.best_found_pos_per_chgperiod[-1] + prediction
+                prediction = np.add(
+                    self.best_found_pos_per_chgperiod[-1], prediction)
 
             self.pred_opt_pos_per_chgperiod.append(
                 copy.copy(prediction))
@@ -276,12 +277,41 @@ class DynamicEA():
         return my_pred_mode
 
     def optimize(self):
+        ntllayers = 1  # TODO
+        apply_tl = True
+        tl_model_path = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/" + \
+            "tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"
         # ---------------------------------------------------------------------
         # local variables for predictor
         # ---------------------------------------------------------------------
         train_data = []
         predictor = build_predictor(
             self.predictor_name, self.n_time_steps, self.dim, self.batch_size, self.n_neurons)
+
+        print("1")
+        if self.predictor_name == "tltfrnn" or self.predictor_name == "tfrnn":
+            import tensorflow as tf
+            print("2")
+            # if transfer leanring than load weights
+            if apply_tl:
+                print("3")
+                # instantiate saver to restore pre-trained weights/biases
+                tl_variables, _, _, _, _, _ = get_variables_and_names(
+                    ntllayers)
+                saver = tf.train.Saver(tl_variables)
+                print("4")
+            # start session
+            print("5")
+            sess = tf.Session()
+            print("5.1")
+            # initialize empty model (otherwise exception)
+            sess.run(tf.global_variables_initializer())
+            print("6")
+            if apply_tl:
+                # overwrite initial values with pre-trained weights/biases
+                print("7")
+                saver.restore(sess, tl_model_path)
+        print("8")
         # denotes whether the predictor has been trained or not
         trained_first_time = False
         scaler = prepare_scaler(self.lbound, self.ubound, self.dim)
@@ -356,3 +386,6 @@ class DynamicEA():
                 self.population_fitness[min_fitness_index])
             self.best_found_pos_per_gen[i] = copy.copy(
                 self.population[min_fitness_index])
+        if self.predictor_name == "tltfrnn" or self.predictor_name == "tfrnn":
+            sess.close()
+            tf.reset_default_graph()

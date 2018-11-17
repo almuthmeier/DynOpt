@@ -13,7 +13,6 @@ import sys
 import warnings
 
 import numpy as np
-import tensorflow as tf
 
 
 class TFRNNWithoutState():
@@ -28,6 +27,7 @@ class TFRNNWithoutState():
                  n_rnn_layers=1,
                  n_neurons=10,
                  rnn_type="LSTM"):
+        import tensorflow as tf
         # TODO: n_neurons als Liste mit einem Eintrag pro Schicht
 
         # parameters for model
@@ -80,6 +80,7 @@ class TFRNNWithoutState():
         self.__build_architecture()
 
     def __build_architecture(self):
+        import tensorflow as tf
         # RNN layers
 
         # create own cells for the layers (5.10.18)
@@ -169,6 +170,7 @@ class TFRNNWithoutState():
               shuffle_between_epochs=False, saver=None, saver_path=None, model_name=None,
               do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None):
 
+        import tensorflow as tf
         n_train_data = train_out.shape[0]
         # TODO hier oder im Aufrufer tun?
         sess.run(tf.global_variables_initializer())

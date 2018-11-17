@@ -18,7 +18,6 @@ from algorithms.dynpso import DynamicPSO
 import numpy as np
 from utils.utils_files import get_current_day_time, select_experiment_files, \
     convert_exp_to_arrays_file_name
-from utils.utils_prediction import get_n_neurons
 
 
 class PredictorComparator(object):
@@ -89,6 +88,7 @@ class PredictorComparator(object):
         self.logs_file_path = None
 
     def instantiate_optimization_alg(self):
+        from utils.utils_prediction import get_n_neurons
         # random number generators
 
         # random generator for the optimization algorithm
@@ -168,16 +168,16 @@ class PredictorComparator(object):
         config.gpu_options.allow_growth = True  # prevent using whole GPU
         tf.Session(config=config)
         tf.set_random_seed(seed)
-        from keras import backend as K
+        #from keras import backend as K
 
         # run algorithm
         if gpu_ID is None:
             alg.optimize()
         else:
             # run algorithm on specified GPU
-            with tf.device('/gpu:' + str(gpu_ID)):
-                alg.optimize()
-                K.clear_session()
+            # with tf.device('/gpu:' + str(gpu_ID)):
+            alg.optimize()
+            #    K.clear_session()
 
         # =====================================================================
         # save results
@@ -217,10 +217,14 @@ class PredictorComparator(object):
             argument_list[-1][1] = seeds_for_runs[i]
         # execute repetitions of the experiments on different CPUs
         n_kernels = self.ncpus
+        '''
         with Pool(n_kernels) as pool:
             # TODO optimize parallelization parameters (e.g.,
             # max_tasks_per_child, chunk_size)
             list(pool.starmap(self.instantiate_and_run_algorithm, argument_list))
+        '''
+        for i in range(self.repetitions):
+            self.instantiate_and_run_algorithm(*argument_list[i])
 
     def convert_data_to_per_generation(self):
         '''
