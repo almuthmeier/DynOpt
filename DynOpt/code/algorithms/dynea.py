@@ -71,6 +71,8 @@ class DynamicEA():
 
         self.use_all_train_data = True  # user all previous data to train with
         self.predict_diffs = True  # predict position differences, TODO insert into PSO
+        self.return_seq = True  # return values for all time steps not only the last one
+        self.shuffle_train_data = True
         # ---------------------------------------------------------------------
         # for EA (fixed values)
         # ---------------------------------------------------------------------
@@ -214,7 +216,7 @@ class DynamicEA():
         self.population_fitness = np.array([utils_dynopt.fitness(self.benchmarkfunction, individual, curr_gen,  self.experiment_data)
                                             for individual in self.population]).reshape(-1, 1)
 
-    def prepare_data_train_and_predict(self, gen_idx, trained_first_time, scaler,
+    def prepare_data_train_and_predict(self, sess, gen_idx, trained_first_time, scaler,
                                        n_features, predictor):
         '''
         TODO insert this function into dynpso
@@ -261,10 +263,10 @@ class DynamicEA():
                         transf_best_found_pos_per_chgperiod[-step_idx])
                 train_data = np.array(train_data)
             # predict next optimum position or difference (and re-scale value)
-            prediction = predict_next_optimum_position(my_pred_mode, train_data,
+            prediction = predict_next_optimum_position(my_pred_mode, sess, train_data,
                                                        self.n_epochs, self.batch_size,
                                                        self.n_time_steps, n_features,
-                                                       scaler, predictor)
+                                                       scaler, predictor, self.return_seq, self.shuffle_train_data)
             # convert predicted difference into position
             if self.predict_diffs:
                 prediction = np.add(
@@ -287,7 +289,7 @@ class DynamicEA():
         train_data = []
         predictor = build_predictor(
             self.predictor_name, self.n_time_steps, self.dim, self.batch_size, self.n_neurons)
-
+        sess = None
         print("1")
         if self.predictor_name == "tltfrnn" or self.predictor_name == "tfrnn":
             import tensorflow as tf
@@ -344,7 +346,7 @@ class DynamicEA():
                     copy.copy(self.best_found_fit_per_gen[i - 1]))
 
                 # prepare data and predict optimum
-                my_pred_mode = self.prepare_data_train_and_predict(i, trained_first_time, scaler,
+                my_pred_mode = self.prepare_data_train_and_predict(sess, i, trained_first_time, scaler,
                                                                    self.dim, predictor)
 
                 # adapt population to environment change

@@ -317,7 +317,9 @@ class TFRNNWithoutState():
                                                           self.in_keep_prob_pl: in_keep_prob,
                                                           self.out_keep_prob_pl: out_keep_prob,
                                                           self.st_keep_prob_pl: st_keep_prob})
-        return model_out
+        # return value of sees.run() is always a list, even if there is only one goal
+        # -> use model_out[0]
+        return np.array(model_out[0])
 
     def predict_and_train_stepwise(self, sess, train_in, train_out, in_data, out_data,
                                    pred_uncer=False, obs_noise=None, n_mc_runs=None,

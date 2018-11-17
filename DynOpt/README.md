@@ -47,3 +47,7 @@ The quality metrics are computed by running the code/metrics/metric_calculator.p
 In order to conduct the statistical tests, run code/metrics/stattest_calculator.py. It takes metric_db.csv as input and outputs for each possible algorithm pair one file in the stattest subdirectory.
 
 Further explanations about the usage of the modules can be found in the [implementation hints](Implementation_hints.md) and in the code itself.
+
+## Update November 2018
+
+- returnseq=True only possible with tftlrnn and tfrnn

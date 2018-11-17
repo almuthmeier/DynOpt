@@ -53,6 +53,36 @@ def make_multidim_samples_from_series(train_data, n_time_steps):
     return series
 
 
+def shuffle_split_output(samples, returnseq, ntimesteps, n_features, shuffle):
+    '''
+    Shuffle data (the rows, but content within rows stays same). Cuts also the
+    data that doesn't fit into the last batch.
+    '''
+    if shuffle:
+        np.random.shuffle(samples)
+
+    # split input and output
+    in_data = samples[:, :-1]
+    if returnseq:
+        # return values for all time steps
+        out_data = samples[:, 1:]
+    else:
+        out_data = samples[:, -1]
+    n_train_data = len(in_data)
+
+    # convert input format to 3d array [n_train_samples, time_steps, features]
+    in_data = in_data.reshape([n_train_data, ntimesteps, n_features])
+
+    # convert output format, depending on whether a sequence is returned
+    if returnseq:
+        # 3d array
+        out_data = out_data.reshape([n_train_data, ntimesteps, n_features])
+    else:
+        # 2d arr
+        out_data = out_data.reshape([n_train_data, n_features])
+    return np.float32(in_data), np.float32(out_data)
+
+
 def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons):
     '''
     Creates the desired prediction model.
@@ -173,7 +203,7 @@ def predict_with_rnn(new_train_data, n_epochs, batch_size, n_time_steps,
 
     for i in range(n_epochs):
         hist = predictor.fit(train_in_data, train_out_data, epochs=1,
-                             batch_size=batch_size,  verbose=0, shuffle=False)
+                             batch_size=batch_size,  verbose=0, shuffle=False)  # TODO shuffle should be True
         # print("epoch ", i, "/", n_epochs, ": loss ",
         #      hist.history['loss'], flush=True)
         predictor.reset_states()
@@ -199,8 +229,49 @@ def predict_with_rnn(new_train_data, n_epochs, batch_size, n_time_steps,
     return next_optimum
 
 
-def predict_next_optimum_position(mode, new_train_data, n_epochs, batch_size,
-                                  n_time_steps, n_features, scaler, predictor):
+def predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
+                       n_features, scaler, predictor, returnseq, shuffle):
+    '''
+    Predicts next optimum position with a recurrent neural network.
+    '''
+    #========================
+    # prepare training data
+
+    # make supervised data from series
+    train_samples = make_multidim_samples_from_series(
+        new_train_data, n_time_steps)
+    # separate input series (first values) and prediction value (last value)
+    train_in_data, train_out_data = shuffle_split_output(train_samples, returnseq,
+                                                         n_time_steps, n_features, shuffle)
+    #========================
+    # train regressor
+    # TODO save model? report training error?
+    predictor.train(sess, train_in_data, train_out_data, in_keep_prob=1.0, out_keep_prob=1.0, st_keep_prob=1.0,
+                    shuffle_between_epochs=True, saver=None, saver_path=None, model_name=None,
+                    do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None)
+
+    #========================
+    # prediction for next step (with n_time_steps)
+    prediction_series = np.array(new_train_data[-n_time_steps:])
+
+    n_sampl = 1  # should be 1
+    reshaped_sample_x = prediction_series.reshape(
+        n_sampl, n_time_steps, n_features)
+
+    sample_y_hat = predictor.predict_one_sample(sess, reshaped_sample_x, in_keep_prob=1.0,
+                                                out_keep_prob=1.0, st_keep_prob=1.0)
+    if returnseq:
+        # cut previous time steps that are also returned in this case
+        sample_y_hat = sample_y_hat[:, -1, :]
+
+    # invert scaling
+    next_optimum = scaler.inverse_transform(sample_y_hat).flatten()
+    return next_optimum
+
+
+def predict_next_optimum_position(mode, sess, new_train_data, n_epochs, batch_size,
+                                  n_time_steps, n_features, scaler, predictor,
+                                  returnseq, shuffle):
     '''
     @param mode: the desired predictor
     @param new_train_data: 2d numpy array: contains time series of 
@@ -226,10 +297,9 @@ def predict_next_optimum_position(mode, new_train_data, n_epochs, batch_size,
             raise
     elif mode == "no":
         return None
-    elif mode == "tfrnn":
-        pass  # TODO (Almuth)
-    elif mode == "tltfrnn":
-        pass  # TODO (Almuth)
+    elif mode == "tltfrnn" or mode == "tfrnn":
+        return predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
+                                  n_features, scaler, predictor, returnseq, shuffle)
 
 
 def get_n_neurons(n_neurons_type, dim):
