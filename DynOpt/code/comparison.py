@@ -161,18 +161,19 @@ class PredictorComparator(object):
         alg = self.instantiate_optimization_alg()
 
         # =====================================================================
+
+        # make tensorflow deterministic
+        import tensorflow as tf
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True  # prevent using whole GPU
+        tf.Session(config=config)
+        tf.set_random_seed(seed)
+        from keras import backend as K
+
         # run algorithm
         if gpu_ID is None:
             alg.optimize()
         else:
-            # make tensorflow deterministic
-            import tensorflow as tf
-            config = tf.ConfigProto()
-            config.gpu_options.allow_growth = True  # prevent using whole GPU
-            tf.Session(config=config)
-            tf.set_random_seed(1234)
-            from keras import backend as K
-
             # run algorithm on specified GPU
             with tf.device('/gpu:' + str(gpu_ID)):
                 alg.optimize()
