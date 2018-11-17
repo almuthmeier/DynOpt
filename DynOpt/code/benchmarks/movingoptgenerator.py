@@ -506,7 +506,7 @@ def mix_dims(values_per_dim, min_value, max_value, plots_allowed=False):
         return values_per_dim
     # =========================================================================
     # choose random pairs of three dimensions that should be mixed
-    n_tupels = n_dims // 2
+    n_tupels = n_dims // (3 + 1)  # +1 so that at least 3 dims are not tupeled
     tupels_size = 3
     # draw randomly dims that have to be combined
     random_dims = np.random.choice(
