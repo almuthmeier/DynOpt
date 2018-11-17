@@ -162,7 +162,7 @@ class DynamicEA():
             # randomly
             immigrants = random_immigrants
 
-        elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive":
+        elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive" or my_pred_mode == "tlrnn":
             # last predicted optimum
             pred_optimum_position = self.pred_opt_pos_per_chgperiod[-1]
             # insert predicted optimum into immigrants
@@ -222,7 +222,8 @@ class DynamicEA():
 
         overall_n_train_data = len(self.best_found_pos_per_chgperiod)
         # prevent training with too few train data
-        if overall_n_train_data <= self.n_time_steps or overall_n_train_data < 50 or self.predictor_name == "no":
+        if (overall_n_train_data <= self.n_time_steps or overall_n_train_data < 50 or self.predictor_name == "no") or\
+                (self.predict_diffs and overall_n_train_data <= self.n_time_steps + 1):  # to build differences 1 item more is required
             my_pred_mode = "no"
             train_data = None
             prediction = None
@@ -312,6 +313,7 @@ class DynamicEA():
                 self.best_found_fit_per_chgperiod.append(
                     copy.copy(self.best_found_fit_per_gen[i - 1]))
 
+                # prepare data and predict optimum
                 my_pred_mode = self.prepare_data_train_and_predict(i, trained_first_time, scaler,
                                                                    self.dim, predictor)
 
