@@ -61,7 +61,7 @@ class DynamicEA():
         self.predictor_name = predictor_name
 
         self.lbound = 0  # assumed that the input data follow this assumption
-        self.ubound = 100
+        self.ubound = 100  # TODO(exe) , TODO insert into dynPSO
         # ---------------------------------------------------------------------
         # for the predictor
         # ---------------------------------------------------------------------
@@ -71,7 +71,7 @@ class DynamicEA():
         self.batch_size = batchsize
 
         self.use_all_train_data = True  # user all previous data to train with
-        self.predict_diffs = True  # predict position differences
+        self.predict_diffs = True  # predict position differences, TODO insert into PSO
         # ---------------------------------------------------------------------
         # for EA (fixed values)
         # ---------------------------------------------------------------------
@@ -156,9 +156,8 @@ class DynamicEA():
     def adapt_population(self, curr_gen, my_pred_mode):
         # create new random individual
         n_immigrants = self.mu
-        init_range = 200  # TODO(exe)
-        random_immigrants = self.ea_np_rnd_generator.uniform(-init_range,
-                                                             init_range, (n_immigrants, self.dim))
+        random_immigrants = self.ea_np_rnd_generator.uniform(self.lbound,
+                                                             self.ubound, (n_immigrants, self.dim))
         if my_pred_mode == "no" or n_immigrants == 0:
             # randomly
             immigrants = random_immigrants
