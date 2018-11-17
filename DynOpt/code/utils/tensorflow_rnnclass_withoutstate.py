@@ -17,7 +17,8 @@ import tensorflow as tf
 
 
 class TFRNNWithoutState():
-    def __init__(self, train_in, train_out,
+    def __init__(self,
+                 n_features,
                  n_time_steps_to_use=7,
                  train_b_size=128,
                  test_b_size=128,
@@ -26,8 +27,7 @@ class TFRNNWithoutState():
                  custom_reset=False,
                  n_rnn_layers=1,
                  n_neurons=10,
-                 rnn_type="LSTM",
-                 validation_in=None, validation_out=None):
+                 rnn_type="LSTM"):
         # TODO: n_neurons als Liste mit einem Eintrag pro Schicht
 
         # parameters for model
@@ -48,13 +48,8 @@ class TFRNNWithoutState():
         # https://stackoverflow.com/questions/47415036/tensorflow-how-to-use-variational-recurrent-dropout-correctly
         self.st_keep_prob_pl = tf.placeholder_with_default(1.0, ())
 
-        seed = None  # TODO for DropoutWrapper
-        self.train_in = train_in
-        self.train_out = train_out
-        self.validation_in = validation_in
-        self.validation_out = validation_out
-        self.data_type = train_in.dtype
-        self.n_features = train_in.shape[2]  # problem dimensionality
+        self.data_type = tf.float32  # train_in.dtype (type of training data)
+        self.n_features = n_features  # problem dimensionality
         #self.n_neurons = n_neurons
         self.n_neurons = math.ceil(self.n_features * 1.5)
 
@@ -109,8 +104,7 @@ class TFRNNWithoutState():
             # example for input_size found here:
             # https://github.com/tensorflow/tensorflow/issues/11650 (24.9.18)
             if layer_idx == 0:
-                input_size = tf.convert_to_tensor(self.train_in).get_shape()[
-                    2]  # number of dimensions/features
+                input_size = self.n_features  # number of dimensions/features
             else:
                 input_size = self.n_neurons
             drop_with_rnn_layer = tf.nn.rnn_cell.DropoutWrapper(cell=rnn_layer,
@@ -171,11 +165,11 @@ class TFRNNWithoutState():
         # https://www.tensorflow.org/api_guides/python/meta_graph
         #tf.add_to_collection('train_op', self.train_op)
 
-    def train(self, sess, in_keep_prob=1.0, out_keep_prob=1.0, st_keep_prob=1.0,
+    def train(self, sess, train_in, train_out, in_keep_prob=1.0, out_keep_prob=1.0, st_keep_prob=1.0,
               shuffle_between_epochs=False, saver=None, saver_path=None, model_name=None,
-              do_validation=False, do_early_stopping=False):
+              do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None):
 
-        n_train_data = self.train_out.shape[0]
+        n_train_data = train_out.shape[0]
         # TODO hier oder im Aufrufer tun?
         sess.run(tf.global_variables_initializer())
 
@@ -192,16 +186,16 @@ class TFRNNWithoutState():
                 # in same order
                 idx = np.arange(n_train_data)
                 np.random.shuffle(idx)
-                self.train_in = self.train_in[idx]
-                self.train_out = self.train_out[idx]
+                train_in = train_in[idx]
+                train_out = train_out[idx]
             # https://stackoverflow.com/questions/46840539/online-or-batch-training-by-default-in-tensorflow
             # (21.9.18)
             # train in batches
             # also last batch with possibly fewer data is applied
             for start in range(0, n_train_data, self.train_b_size):
                 end = min(start + self.train_b_size, n_train_data + 1)
-                in_data = self.train_in[start:end]
-                out_data = self.train_out[start:end]
+                in_data = train_in[start:end]
+                out_data = train_out[start:end]
                 # b_size may be different for batches
                 curr_b_size = len(in_data)
 
@@ -231,12 +225,12 @@ class TFRNNWithoutState():
 
             # training error
             train_error, train_model_out = self.evaluate_model(
-                self.train_in, sess, self.train_b_size, True, self.train_out)
+                train_in, sess, self.train_b_size, True, train_out)
             train_err_per_epoch.append(train_error)
             # validation error
-            if do_validation and self.validation_in is not None and self.validation_out is not None:
+            if do_validation and validation_in is not None and validation_out is not None:
                 validation_error, _ = self.evaluate_model(
-                    self.validation_in, sess, self.train_b_size, True, self.validation_out)
+                    validation_in, sess, self.train_b_size, True, validation_out)
                 val_err_per_epoch.append(validation_error)
                 min_val_err = min(min_val_err, validation_error)
                 if do_early_stopping:
@@ -323,7 +317,7 @@ class TFRNNWithoutState():
                                                           self.st_keep_prob_pl: st_keep_prob})
         return model_out
 
-    def predict_and_train_stepwise(self, sess, in_data, out_data,
+    def predict_and_train_stepwise(self, sess, train_in, train_out, in_data, out_data,
                                    pred_uncer=False, obs_noise=None, n_mc_runs=None,
                                    in_keep_prob=1.0, out_keep_prob=1.0, st_keep_prob=1.0):
         '''
@@ -357,11 +351,11 @@ class TFRNNWithoutState():
             # TODO: Implementierung mit Tensoren/arrays effizient?
             # training with real value of next step to prepare for next prediction
             # add data to old data, skip first/oldest one
-            self.train_in = np.delete(self.train_in, 0, axis=0)
-            self.train_in = np.append(self.train_in, resh_sample_x, axis=0)
-            self.train_out = np.delete(self.train_out, 0, axis=0)
-            self.train_out = np.append(
-                self.train_out, np.array([sample_out]), axis=0)
+            train_in = np.delete(train_in, 0, axis=0)
+            train_in = np.append(train_in, resh_sample_x, axis=0)
+            train_out = np.delete(train_out, 0, axis=0)
+            train_out = np.append(
+                train_out, np.array([sample_out]), axis=0)
 
             # TODO braucht train hier evtl. den state???
             train_error, train_model_out = self.train(
