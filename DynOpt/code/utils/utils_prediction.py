@@ -12,6 +12,8 @@ Created on Jan 18, 2018
 import math
 import warnings
 
+from sklearn.preprocessing.data import MinMaxScaler
+
 import numpy as np
 
 
@@ -217,3 +219,20 @@ def get_n_neurons(n_neurons_type, dim):
             str(n_neurons_type)
         warnings.warn(msg)
     return n_neurons
+
+
+def prepare_scaler(min_input_value, max_input_value, dim):
+    '''
+    Instantiates scaler that scales input data into range [-1,1] whereby the
+    minimum and maximum input values have to be specified.
+
+    To scale data only the transform() method has to be called (otherwise 
+    different scaling behavior would be obtained for different data).
+    '''
+    # fit scaler to desired range [-1,1]
+    scaler = MinMaxScaler(feature_range=(-1, 1))
+    # first row contains minimum value per feature, second row max values
+    min_max_per_feature = np.array(
+        [[min_input_value] * dim, [max_input_value] * dim])
+    scaler.fit(min_max_per_feature)
+    return scaler

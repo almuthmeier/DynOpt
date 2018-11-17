@@ -18,7 +18,7 @@ from utils.utils_dynopt import environment_changed
 from utils.utils_ea import dominant_recombination, gaussian_mutation,\
     mu_plus_lambda_selection, adapt_sigma
 from utils.utils_prediction import build_predictor,\
-    predict_next_optimum_position
+    predict_next_optimum_position, prepare_scaler
 
 
 class DynamicEA():
@@ -60,6 +60,8 @@ class DynamicEA():
         self.experiment_data = experiment_data
         self.predictor_name = predictor_name
 
+        self.lbound = 0  # assumed that the input data follow this assumption
+        self.ubound = 100
         # ---------------------------------------------------------------------
         # for the predictor
         # ---------------------------------------------------------------------
@@ -68,6 +70,8 @@ class DynamicEA():
         self.n_epochs = epochs
         self.batch_size = batchsize
 
+        self.use_all_train_data = True  # user all previous data to train with
+        self.predict_diffs = True  # predict position differences
         # ---------------------------------------------------------------------
         # for EA (fixed values)
         # ---------------------------------------------------------------------
@@ -211,18 +215,76 @@ class DynamicEA():
         self.population_fitness = np.array([utils_dynopt.fitness(self.benchmarkfunction, individual, curr_gen,  self.experiment_data)
                                             for individual in self.population]).reshape(-1, 1)
 
+    def prepare_data_train_and_predict(self, gen_idx, trained_first_time, scaler,
+                                       n_features, predictor):
+        '''
+        TODO insert this function into dynpso
+        '''
+
+        overall_n_train_data = len(self.best_found_pos_per_chgperiod)
+        # prevent training with too few train data
+        if overall_n_train_data <= self.n_time_steps or overall_n_train_data < 50 or self.predictor_name == "no":
+            my_pred_mode = "no"
+            train_data = None
+            prediction = None
+        else:
+            my_pred_mode = self.predictor_name
+
+            # transform absolute values to differences
+            if self.predict_diffs:
+                best_found_vals_per_chgperiod = self.best_found_pos_per_chgperiod[1:] - \
+                    self.best_found_pos_per_chgperiod[:-1]
+            else:
+                best_found_vals_per_chgperiod = self.best_found_pos_per_chgperiod
+
+            # scale data (the data are re-scaled directly after the
+            # prediction in this iteration)
+            #scaler = scaler.fit(best_found_vals_per_chgperiod)
+            transf_best_found_pos_per_chgperiod = scaler.transform(
+                copy.copy(best_found_vals_per_chgperiod))
+
+            # choose training data
+            if not trained_first_time or self.use_all_train_data:
+                # use all found optimum positions (if it's the first time of
+                # training; or if desired)
+                trained_first_time = True
+                train_data = transf_best_found_pos_per_chgperiod
+            else:
+                # append the last new train data (one) and in addition
+                # n_time_steps already evaluated data in order to create a
+                # whole time series of n_time_steps together with the new
+                # data. The oldest data is appended first, then a newer
+                # one and so on.
+                train_data = []
+                for step_idx in range(self.n_time_steps + 1, 0, -1):
+                    train_data.append(
+                        transf_best_found_pos_per_chgperiod[-step_idx])
+                train_data = np.array(train_data)
+            # predict next optimum position or difference (and re-scale value)
+            prediction = predict_next_optimum_position(my_pred_mode, train_data,
+                                                       self.n_epochs, self.batch_size,
+                                                       self.n_time_steps, n_features,
+                                                       scaler, predictor)
+            # convert predicted difference into position
+            if self.predict_diffs:
+                prediction = self.best_found_pos_per_chgperiod[-1] + prediction
+
+            self.pred_opt_pos_per_chgperiod.append(
+                copy.copy(prediction))
+            self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
+                self.benchmarkfunction, prediction, gen_idx, self.experiment_data))
+        return my_pred_mode
+
     def optimize(self):
         # ---------------------------------------------------------------------
         # local variables for predictor
         # ---------------------------------------------------------------------
         train_data = []
-        n_features = self.dim
         predictor = build_predictor(
-            self.predictor_name, self.n_time_steps, n_features, self.batch_size, self.n_neurons)
+            self.predictor_name, self.n_time_steps, self.dim, self.batch_size, self.n_neurons)
         # denotes whether the predictor has been trained or not
         trained_first_time = False
-        scaler = MinMaxScaler(feature_range=(-1, 1))
-
+        scaler = prepare_scaler(self.lbound, self.ubound, self.dim)
         # ---------------------------------------------------------------------
         # local variables for EA
         # ---------------------------------------------------------------------
@@ -250,48 +312,9 @@ class DynamicEA():
                     copy.copy(self.best_found_pos_per_gen[i - 1]))
                 self.best_found_fit_per_chgperiod.append(
                     copy.copy(self.best_found_fit_per_gen[i - 1]))
-                overall_n_train_data = len(self.best_found_pos_per_chgperiod)
 
-                # prevent training with too few train data
-                if overall_n_train_data <= self.n_time_steps or overall_n_train_data < 50 or self.predictor_name == "no":
-                    my_pred_mode = "no"
-                    train_data = None
-                    prediction = None
-                else:
-                    my_pred_mode = self.predictor_name
-
-                    # scale data (the data are re-scaled directly after the
-                    # prediction in this iteration)
-                    scaler = scaler.fit(self.best_found_pos_per_chgperiod)
-                    transf_best_found_pos_per_chgperiod = scaler.transform(
-                        copy.copy(self.best_found_pos_per_chgperiod))
-
-                    # choose training data
-                    if not trained_first_time:
-                        # first time, has not been trained before, therefore use all
-                        # found optimum positions
-                        trained_first_time = True
-                        train_data = transf_best_found_pos_per_chgperiod
-                    else:
-                        # append the last new train data (one) and in addition
-                        # n_time_steps already evaluated data in order to create a
-                        # whole time series of n_time_steps together with the new
-                        # data. The oldest data is appended first, then a newer
-                        # one and so on.
-                        train_data = []
-                        for step_idx in range(self.n_time_steps + 1, 0, -1):
-                            train_data.append(
-                                transf_best_found_pos_per_chgperiod[-step_idx])
-                        train_data = np.array(train_data)
-                    # predict next optimum position
-                    prediction = predict_next_optimum_position(my_pred_mode, train_data,
-                                                               self.n_epochs, self.batch_size,
-                                                               self.n_time_steps, n_features,
-                                                               scaler, predictor)
-                    self.pred_opt_pos_per_chgperiod.append(
-                        copy.copy(prediction))
-                    self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
-                        self.benchmarkfunction, prediction, i, self.experiment_data))
+                my_pred_mode = self.prepare_data_train_and_predict(i, trained_first_time, scaler,
+                                                                   self.dim, predictor)
 
                 # adapt population to environment change
                 self.adapt_population(i, my_pred_mode)
