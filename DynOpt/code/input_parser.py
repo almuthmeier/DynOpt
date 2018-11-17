@@ -244,7 +244,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 def int_list_type(string):
     '''
     Input type for argparse.
-    Otherwise is it not possible to read in a list of int.
+    Otherwise it is not possible to read in a list of int.
     https://www.tuxevara.de/2015/01/pythons-argparse-and-lists/ (12.5.18)
 
     @param string: a list as string, e.g.: '2,5,7,50'
