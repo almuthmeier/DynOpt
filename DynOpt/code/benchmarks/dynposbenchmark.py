@@ -169,7 +169,8 @@ def create_problems():
                         # works until now only for 2 dimensions
                         continue
                 elif pos_chng_type == 'pch-mixture':
-                    opts = start_mixture(dims=dim)
+                    opts = start_mixture(
+                        dims=dim, seed=np_rand_gen.randint(974))
                     opts = opts[:n_chg_periods]
                     # re-set orig_global_opt_position (is differently for the
                     # other pos-change-types)

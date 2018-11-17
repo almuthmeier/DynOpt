@@ -764,7 +764,9 @@ def start_sine(n_points=1250):
     return sine(min_value, max_value, n_points, with_plots)
 
 
-def start_mixture(dims=3, n_points=12500):
+def start_mixture(dims=3, n_points=12500, seed=None):
+    if seed is not None:
+        np.random.seed(seed)
     available_base_fcts = ['linear', 'sine', 'polynomial', 'spline']
     # functions that can be mixed to other functions
     mixture_fcts = np.concatenate((available_base_fcts, ['noise']))

@@ -57,12 +57,17 @@ class Test(unittest.TestCase):
         Tests whether the movement for different functions is the same.
         It should be the same since dynbposbenchmark.create_problems() uses 
         the same seed for each function.
+
+        Not only for sine movement type, also for mixture ...
         '''
         # load data
         #file_name1 = "sphere_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
         #file_name2 = "rosenbrock_d-50_chgs-10000_pch-sine_fch-none_2018-05-07_15:53.npz"
         file_name1 = "sphere_d-20_chgperiods-100_pch-sine_fch-none_2018-06-15_21:27.npz"
         file_name2 = "rosenbrock_d-20_chgperiods-100_pch-sine_fch-none_2018-06-15_21:27.npz"
+
+        file_name1 = "sphere_d-2_chgperiods-10000_pch-mixture_fch-none_2018-11-17_10:15.npz"
+        file_name2 = "rosenbrock_d-2_chgperiods-10000_pch-mixture_fch-none_2018-11-17_10:15.npz"
         dim = 20
 
         f1 = np.load(self.path_test_problems +
@@ -84,8 +89,11 @@ class Test(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             global_opt_pos1 - orig_opt_pos1, global_opt_pos2 - orig_opt_pos2, tolerance)
         np.testing.assert_array_equal(global_opt_fit1, global_opt_fit2)
-        np.testing.assert_array_equal(orig_opt_pos1, np.array(dim * [0]))
-        np.testing.assert_array_equal(orig_opt_pos2, np.array(dim * [1]))
+        global_opt_pos1
+        np.testing.assert_array_equal(orig_opt_pos1, global_opt_pos1[0])
+        np.testing.assert_array_equal(orig_opt_pos2, global_opt_pos2[0])
+        #np.testing.assert_array_equal(orig_opt_pos1, np.array(dim * [0]))
+        #np.testing.assert_array_equal(orig_opt_pos2, np.array(dim * [1]))
 
     def test_linear_movement(self):
         '''
