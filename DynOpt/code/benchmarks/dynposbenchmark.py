@@ -23,6 +23,7 @@ import warnings
 
 from benchmarks.circlemovement import create_circle_movement_points,\
     plot_movement
+from benchmarks.movingoptgenerator import start_mixture
 import matplotlib.pyplot as plt
 import numpy as np
 from utils.fitnessfunctions import sphere, rosenbrock, rastrigin,\
@@ -43,8 +44,9 @@ def create_problems():
     # TODO(exp) parameters to adjust
     n_chg_periods = 10000
     dims = [2]  # , 5, 10, 20, 50, 100]
-    functions = [sphere, rosenbrock, rastrigin]
-    pos_chng_types = ['pch-linear', 'pch-sine', 'pch-circle']
+    functions = [sphere, rosenbrock]  # , rastrigin]
+    pos_chng_types = ['pch-linear', 'pch-sine', 'pch-circle', 'pch-mixture']
+    pos_chng_types = ['pch-linear', 'pch-mixture']
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "ESANN_2019"
@@ -166,6 +168,12 @@ def create_problems():
                     else:
                         # works until now only for 2 dimensions
                         continue
+                elif pos_chng_type == 'pch-mixture':
+                    opts = start_mixture(dims=dim)
+                    opts = opts[:n_chg_periods]
+                    # re-set orig_global_opt_position (is differently for the
+                    # other pos-change-types)
+                    orig_global_opt_position = opts[0]
                 else:
                     warnings.warn("unknown position change type")
                 opts = np.array(opts)

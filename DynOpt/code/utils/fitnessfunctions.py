@@ -75,6 +75,8 @@ def get_original_global_opt_pos_and_fit(function, dimensionality):
 
     Used by dynposbenchmark.create_problems().
 
+    In case of change type pch-mixture another position is the original one.
+
     @return: tupel: (position, fitness)
     '''
     # TODO(dev) extend this function if more fitness functions are desired
