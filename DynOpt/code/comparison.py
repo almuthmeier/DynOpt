@@ -227,7 +227,8 @@ class PredictorComparator(object):
         '''
         n_gens = self.get_n_generations()
         # for all (key-value)-pairs in experiment_data: TODO(dev) insert new
-        for key, property_per_chg in self.experiment_data.items():
+        key_property_items = self.experiment_data.items()
+        for key, property_per_chg in key_property_items:
             if key == "heights" or key == "widths" or key == "positions":
                 # pop old key and data
                 self.experiment_data.pop(key)
@@ -250,7 +251,8 @@ class PredictorComparator(object):
             elif key == "orig_global_opt_pos":
                 pass
             else:
-                warnings.warn("unknown property")
+                msg = "unknown property: " + key
+                warnings.warn(msg)
 
     def get_chgperiods_for_gens(self):
         '''
