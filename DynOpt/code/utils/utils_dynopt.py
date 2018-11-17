@@ -46,7 +46,8 @@ def environment_changed(curr_gen, individuals_from_last_gen, fitness_from_last_g
     points.
     @param curr_gen: current generation
     @param individuals_from_last_gen: population (generated in last generation)
-    @param fitness_from_last_gen: populations fitness (computed in last generation)
+    @param fitness_from_last_gen: populations fitness (computed in last generation), 
+    2d numpy array (for each individual one row)
     @param problem: string: mpb, sphere, rastrigin or rosenbrock
     @param problem_data: containing all the information required to compute the
     fitness (loaded from file)
@@ -63,7 +64,7 @@ def environment_changed(curr_gen, individuals_from_last_gen, fitness_from_last_g
         indices, size=n_to_reevaluate // 2, replace=False)
     # convert list to array, otherwise indexing with array does not work
     individuals_from_last_gen = np.asarray(individuals_from_last_gen)
-    fitness_from_last_gen = np.asarray(fitness_from_last_gen)
+    fitness_from_last_gen = np.asarray(fitness_from_last_gen).flatten()
     # select the individuals w.r.t. the random indices
     indv_to_reevaluate = individuals_from_last_gen[idx_to_reevaluate]
     fit_to_reevaluate = fitness_from_last_gen[idx_to_reevaluate]

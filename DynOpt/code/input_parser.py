@@ -123,6 +123,11 @@ def initialize_comparator(parser, comparator):
 
 
 def initialize_comparator_manually(comparator):
+    '''
+    Here boolean values have to be set as booleans (not as strings), because the
+    function initialize_comparator_with_read_inputs() is not called afterwards 
+    to convert the strings to booleans.
+    '''
     # path to parent directory of the project directory DynOpt/
     path_to_dynoptim = '/'.join(os.path.abspath(os.pardir).split('/')[:])
 
@@ -131,7 +136,7 @@ def initialize_comparator_manually(comparator):
     comparator.repetitions = 1
     comparator.chgperiods = 50
     comparator.lenchgperiod = 20
-    comparator.ischgperiodrandom = "False"
+    comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "rosenbrock"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "ESANN_2019/"
@@ -152,8 +157,8 @@ def initialize_comparator_manually(comparator):
         comparator.c1 = 1.496180
         comparator.c2 = 1.496180
         comparator.c3 = 1.496180
-        comparator.insertpred = "False"
-        comparator.adaptivec3 = "False"
+        comparator.insertpred = False
+        comparator.adaptivec3 = False
         comparator.nparticles = 200
 
     # EA
@@ -167,7 +172,7 @@ def initialize_comparator_manually(comparator):
         comparator.tau = 0.5
 
     # for predictor
-    comparator.predictor = "tltfrnn"  # "no"
+    comparator.predictor = "tltfrnn"  # "tfrnn"  # "tltfrnn"  # "no"
     comparator.timesteps = 7
 
     # for ANN predictor

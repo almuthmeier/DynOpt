@@ -99,6 +99,7 @@ class DynamicEA():
         # larger values. And make column vector from row vector.
         self.population = self.ea_np_rnd_generator.rand(
             self.mu, self.dim) * 100
+        # 2d numpy array (for each individual one row)
         self.population_fitness = np.array([utils_dynopt.fitness(self.benchmarkfunction,
                                                                  individual, 0,
                                                                  self.experiment_data)
