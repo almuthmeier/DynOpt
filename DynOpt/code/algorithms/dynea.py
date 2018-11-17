@@ -122,9 +122,13 @@ class DynamicEA():
         # position & fitness of predicted optima (one for each change period)
         self.pred_opt_pos_per_chgperiod = []
         self.pred_opt_fit_per_chgperiod = []
-
+        # training error per chgperiod (if prediction was done)
+        self.train_error_per_chgperiod = []
+        # training error per epoch for each chgperiod (if prediction was done)
+        self.train_error_for_epochs_per_chgperiod = []
 # =============================================================================
 # for (static) EA
+
     def recombinate(self):
         '''
         @return offspring individual 
@@ -229,6 +233,7 @@ class DynamicEA():
             my_pred_mode = "no"
             train_data = None
             prediction = None
+
         else:
             my_pred_mode = self.predictor_name
 
@@ -263,10 +268,10 @@ class DynamicEA():
                         transf_best_found_pos_per_chgperiod[-step_idx])
                 train_data = np.array(train_data)
             # predict next optimum position or difference (and re-scale value)
-            prediction = predict_next_optimum_position(my_pred_mode, sess, train_data,
-                                                       self.n_epochs, self.batch_size,
-                                                       self.n_time_steps, n_features,
-                                                       scaler, predictor, self.return_seq, self.shuffle_train_data)
+            prediction, train_error, train_err_per_epoch = predict_next_optimum_position(my_pred_mode, sess, train_data,
+                                                                                         self.n_epochs, self.batch_size,
+                                                                                         self.n_time_steps, n_features,
+                                                                                         scaler, predictor, self.return_seq, self.shuffle_train_data)
             # convert predicted difference into position
             if self.predict_diffs:
                 prediction = np.add(
@@ -276,19 +281,29 @@ class DynamicEA():
                 copy.copy(prediction))
             self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
                 self.benchmarkfunction, prediction, gen_idx, self.experiment_data))
+            self.train_error_per_chgperiod.append(train_error)
+            self.train_error_for_epochs_per_chgperiod.append(
+                train_err_per_epoch)
         return my_pred_mode
 
     def optimize(self):
-        ntllayers = 1  # TODO
-        apply_tl = True
+        n_overall_layers = 2
+        apply_tl = False  # has to be False if predictor=="tfrnn"
+        if apply_tl:
+            ntllayers = 1  # TODO
+        else:
+            ntllayers = 0
+        rnn_type = "RNN"
         tl_model_path = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/" + \
             "tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"
         # ---------------------------------------------------------------------
         # local variables for predictor
         # ---------------------------------------------------------------------
         train_data = []
-        predictor = build_predictor(
-            self.predictor_name, self.n_time_steps, self.dim, self.batch_size, self.n_neurons)
+        predictor = build_predictor(self.predictor_name, self.n_time_steps,
+                                    self.dim, self.batch_size, self.n_neurons,
+                                    self.return_seq, apply_tl, n_overall_layers,
+                                    self.n_epochs, rnn_type, ntllayers)
         sess = None
         print("1")
         if self.predictor_name == "tltfrnn" or self.predictor_name == "tfrnn":
@@ -327,6 +342,7 @@ class DynamicEA():
 
         # ---------------------------------------------------------------------
         for i in range(self.n_generations):
+            print("generation: ", i)
             # test for environment change
             env_changed = environment_changed(i, self.population, self.population_fitness,
                                               self.benchmarkfunction, self.experiment_data, self.ea_np_rnd_generator)

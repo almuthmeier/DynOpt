@@ -83,7 +83,8 @@ def shuffle_split_output(samples, returnseq, ntimesteps, n_features, shuffle):
     return np.float32(in_data), np.float32(out_data)
 
 
-def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons):
+def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
+                    returnseq, apply_tl, n_overall_layers, epochs, rnn_type, ntllayers):
     '''
     Creates the desired prediction model.
     @param mode: which predictor: no, rnn, autoregressive, tltfrnn, tfrnn
@@ -107,30 +108,11 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons):
         # no object required since the AR model is created every time a
         # prediction is needed
         predictor = None
-    elif mode == "tfrnn":
+    elif mode == "tltfrnn" or mode == "tfrnn":
         from utils.utils_transferlearning import build_tl_rnn_predictor
-        rnn_type = "RNN"
-        ntllayers = 0
-        n_overall_layers = 2
-        epochs = 5
-        returnseq = True
-        test_b_size = 128
-        apply_tl = True
         predictor = build_tl_rnn_predictor(rnn_type, ntllayers,
                                            n_overall_layers, n_time_steps, epochs, n_features,
-                                           returnseq, test_b_size, apply_tl)
-    elif mode == "tltfrnn":
-        from utils.utils_transferlearning import build_tl_rnn_predictor
-        rnn_type = "RNN"
-        ntllayers = 1
-        n_overall_layers = 2
-        epochs = 5
-        returnseq = True
-        test_b_size = 128
-        apply_tl = True
-        predictor = build_tl_rnn_predictor(rnn_type, ntllayers,
-                                           n_overall_layers, n_time_steps, epochs, n_features,
-                                           returnseq, test_b_size, apply_tl)
+                                           returnseq, batch_size, apply_tl)
     else:
         msg = "unknown prediction mode " + mode
         warnings.warn(msg)
@@ -232,7 +214,7 @@ def predict_with_rnn(new_train_data, n_epochs, batch_size, n_time_steps,
 def predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
                        n_features, scaler, predictor, returnseq, shuffle):
     '''
-    Predicts next optimum position with a recurrent neural network.
+    Predicts next optimum position with a tensorflow recurrent neural network.
     '''
     #========================
     # prepare training data
@@ -246,9 +228,9 @@ def predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
     #========================
     # train regressor
     # TODO save model? report training error?
-    predictor.train(sess, train_in_data, train_out_data, in_keep_prob=1.0, out_keep_prob=1.0, st_keep_prob=1.0,
-                    shuffle_between_epochs=True, saver=None, saver_path=None, model_name=None,
-                    do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None)
+    train_error, _, _, train_err_per_epoch, _ = predictor.train(sess, train_in_data, train_out_data, in_keep_prob=1.0, out_keep_prob=1.0, st_keep_prob=1.0,
+                                                                shuffle_between_epochs=True, saver=None, saver_path=None, model_name=None,
+                                                                do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None)
 
     #========================
     # prediction for next step (with n_time_steps)
@@ -266,7 +248,7 @@ def predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
 
     # invert scaling
     next_optimum = scaler.inverse_transform(sample_y_hat).flatten()
-    return next_optimum
+    return next_optimum, train_error, train_err_per_epoch
 
 
 def predict_next_optimum_position(mode, sess, new_train_data, n_epochs, batch_size,
@@ -286,20 +268,22 @@ def predict_next_optimum_position(mode, sess, new_train_data, n_epochs, batch_si
     it is not required to train it completely new
     @return 1d numpy array: position of next optimum (already re-scaled)
     '''
-
+    train_error = None
+    train_err_per_epoch = None
     if mode == "rnn":
-        return predict_with_rnn(new_train_data, n_epochs, batch_size,
-                                n_time_steps, n_features, scaler, predictor)
+        prediction = predict_with_rnn(new_train_data, n_epochs, batch_size,
+                                      n_time_steps, n_features, scaler, predictor)
     elif mode == "autoregressive":
         try:
-            return predict_with_autoregressive(new_train_data, scaler)
+            prediction = predict_with_autoregressive(new_train_data, scaler)
         except ValueError:
             raise
     elif mode == "no":
-        return None
+        prediction = None
     elif mode == "tltfrnn" or mode == "tfrnn":
-        return predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
-                                  n_features, scaler, predictor, returnseq, shuffle)
+        prediction, train_error, train_err_per_epoch = predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
+                                                                          n_features, scaler, predictor, returnseq, shuffle)
+    return prediction, train_error, train_err_per_epoch
 
 
 def get_n_neurons(n_neurons_type, dim):

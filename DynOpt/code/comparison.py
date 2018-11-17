@@ -145,7 +145,9 @@ class PredictorComparator(object):
                  detected_chgperiods_for_gens=alg.detected_chgperiods_for_gens,
                  # information about the real changes (is not in benchmark file
                  # because it is a general file for 10000 change periods)
-                 real_chgperiods_for_gens=self.chgperiods_for_gens
+                 real_chgperiods_for_gens=self.chgperiods_for_gens,
+                 train_error_per_chgperiod=alg.train_error_per_chgperiod,
+                 train_error_for_epochs_per_chgperiod=alg.train_error_for_epochs_per_chgperiod
                  )
 
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):
