@@ -36,10 +36,11 @@ class MetricCalculator():
 
         self.algorithms = []
         self.benchmarkfunctions = [
-            "sphere", "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy
-        self.benchmark_folder_path = path_to_datasets + "GECCO_2019/"
-        self.output_dir_path = path_to_output + "GECCO_2019/"
-        self.poschgtypes = ["linear", "sine", "circle"]
+            "sphere"]  # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy
+        self.benchmark_folder_path = path_to_datasets + "ESANN_2019/"
+        self.output_dir_path = path_to_output + "ESANN_2019/"
+        # ["linear", "sine", "circle"]
+        self.poschgtypes = ["mixture", "linear"]
         self.fitchgtypes = ["none"]
         self.dims = [2]
         self.noises = [0.0]

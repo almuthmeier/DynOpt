@@ -128,11 +128,11 @@ def initialize_comparator_manually(comparator):
 
     # benchmark problem
     comparator.algorithm = "dynea"
-    comparator.repetitions = 1
-    comparator.chgperiods = 10
+    comparator.repetitions = 2
+    comparator.chgperiods = 50
     comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = "False"
-    comparator.benchmarkfunction = "sphere"
+    comparator.benchmarkfunction = "rosenbrock"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "ESANN_2019/"
     # attention: naming should be consistent to predictor/other params
@@ -141,7 +141,8 @@ def initialize_comparator_manually(comparator):
         "/DynOpt/output/" + "ESANN_2019/" + "sphere/"
 
     # run only some experiments of all for the benchmark problem
-    comparator.poschgtypes = np.array(["linear", "sine", "circle"])
+    # ["linear", "sine", "circle"])
+    comparator.poschgtypes = np.array(["mixture", "linear"])
     comparator.fitchgtypes = np.array(["none"])
     comparator.dims = np.array([2])
     comparator.noises = np.array([0.0])
