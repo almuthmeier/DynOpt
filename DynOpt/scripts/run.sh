@@ -64,7 +64,7 @@ predictor=tfrnn				# no, rnn, autoregressive, tfrnn
 timesteps=7					# number of previous optima used for the predictions
 
 # ANN predictor
-neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model
+neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
 epochs=30					# number of training epochs for the RNN prediction model
 batchsize=128					# batch size for RNN model
 nlayers=2					# overall number of layers (incl. tl layers)

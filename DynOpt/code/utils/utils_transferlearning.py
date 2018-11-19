@@ -68,10 +68,9 @@ def build_tl_model(rnn_type, ntllayers, ntimesteps,
                    epochs, dims, returnseq, test_b_size):
     from utils.tensorflow_rnnclass_withoutstate import TFRNNWithoutState
     # build transfer learning network
-    n_neurons = max(10, dims + math.ceil(dims / 3))
     return TFRNNWithoutState(dims, n_time_steps_to_use=ntimesteps,
                              test_b_size=test_b_size, n_epochs=epochs, has_time_outputs=returnseq,
-                             custom_reset=False, n_rnn_layers=ntllayers, n_neurons=n_neurons, rnn_type=rnn_type)
+                             custom_reset=False, n_rnn_layers=ntllayers, n_neurons_per_layer=None, rnn_type=rnn_type)
 
 
 def build_tl_rnn_predictor(rnn_type, ntllayers, n_overall_layers,

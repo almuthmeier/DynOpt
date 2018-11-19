@@ -25,7 +25,7 @@ class TFRNNWithoutState():
                  has_time_outputs=False,
                  custom_reset=False,
                  n_rnn_layers=1,
-                 n_neurons=10,
+                 n_neurons_per_layer=[10],
                  rnn_type="LSTM"):
         import tensorflow as tf
         # TODO: n_neurons als Liste mit einem Eintrag pro Schicht
@@ -51,7 +51,14 @@ class TFRNNWithoutState():
         self.data_type = tf.float32  # train_in.dtype (type of training data)
         self.n_features = n_features  # problem dimensionality
         #self.n_neurons = n_neurons
-        self.n_neurons = math.ceil(self.n_features * 1.5)
+        #self.n_neurons = math.ceil(self.n_features * 1.5)
+        # TODO specify outside
+        n_neurons_1st_layer = math.ceil(self.n_features * 1.5)
+        n_neurons_2nd_layer = math.ceil(self.n_features * 2.0)
+        n_neurons_3rd_layer = math.ceil(self.n_features * 2.5)
+        self.n_neurons_per_layer = [
+            n_neurons_1st_layer, n_neurons_2nd_layer, n_neurons_3rd_layer]
+        assert n_rnn_layers <= 3, "more than 3 layers -> no specified number neurons for the additional layers"
 
         # training/testing parameters
         self.train_b_size = train_b_size
@@ -91,15 +98,16 @@ class TFRNNWithoutState():
         # https://danijar.com/introduction-to-recurrent-networks-in-tensorflow/
         cell_list = []
         for layer_idx in range(self.n_rnn_layers):
+            n_neurons = self.n_neurons_per_layer[layer_idx]
             # TODO evtl CudnnRNNTanh Layer statt BasicRNNCell nutzen
             # https://www.tensorflow.org/api_docs/python/tf/contrib/cudnn_rnn/CudnnRNNTanh
             # https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/BasicRNNCell
             if self.rnn_type == "LSTM":
                 rnn_layer = tf.nn.rnn_cell.LSTMCell(
-                    num_units=self.n_neurons, activation=self.act_func)
+                    num_units=n_neurons, activation=self.act_func)
             elif self.rnn_type == "RNN":
                 rnn_layer = tf.nn.rnn_cell.BasicRNNCell(
-                    num_units=self.n_neurons, activation=self.act_func)
+                    num_units=n_neurons, activation=self.act_func)
             else:
                 warnings.warn("unsupported RNN type: ", self.rnn_type)
             # Dropout for RNN
@@ -110,7 +118,7 @@ class TFRNNWithoutState():
             if layer_idx == 0:
                 input_size = self.n_features  # number of dimensions/features
             else:
-                input_size = self.n_neurons
+                input_size = self.n_neurons_per_layer[layer_idx - 1]
             drop_with_rnn_layer = tf.nn.rnn_cell.DropoutWrapper(cell=rnn_layer,
                                                                 input_keep_prob=self.in_keep_prob_pl,
                                                                 output_keep_prob=self.out_keep_prob_pl,
