@@ -17,14 +17,14 @@ benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/d
 # -----------------------------------------------------------------------------
 # mpbcorr
 benchmarkfunction="mpbcorr"
-python3.5 ../code/benchmarks/benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
 
 
 # -----------------------------------------------------------------------------
 # shpere, rastrigin, rosenbrock
 benchmarkfunction="srr"
 
-python3.5 ../code/benchmarks/benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
 
 # -----------------------------------------------------------------------------
 #
