@@ -347,7 +347,6 @@ class DynamicEA():
 
         # ---------------------------------------------------------------------
         for i in range(self.n_generations):
-            print("generation: ", i)
             # test for environment change
             env_changed = environment_changed(i, self.population, self.population_fitness,
                                               self.benchmarkfunction, self.experiment_data, self.ea_np_rnd_generator)
@@ -357,7 +356,7 @@ class DynamicEA():
                 self.reset_parameters()
                 # count change
                 self.detected_n_changes += 1
-
+                print("detected change ", self.detected_n_changes, flush=True)
                 # store best found solution during change period as training data for predictor
                 # TODO(dev) works only for plus-selection (not for
                 # comma-selection)

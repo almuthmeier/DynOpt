@@ -191,7 +191,7 @@ class TFRNNWithoutState():
         min_val_err = sys.float_info.max  # maximum possible float value
         # train in epochs
         for i in range(self.n_epochs):
-            print("\nepoch: ", i, flush=True)
+            #print("\nepoch: ", i, flush=True)
 
             # shuffle training data if desired
             if shuffle_between_epochs:

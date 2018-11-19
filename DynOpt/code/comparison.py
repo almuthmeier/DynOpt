@@ -167,7 +167,7 @@ class PredictorComparator(object):
         np.random.seed(seed)
         random.seed(seed)
 
-        print("run: ", repetition_ID, flush=True)
+        print("\n run: ", repetition_ID, flush=True)
         # =====================================================================
         # instantiate algorithm
         alg = self.instantiate_optimization_alg()
@@ -355,8 +355,9 @@ class PredictorComparator(object):
             # =================================================================
             # logging
             curr_day, curr_time = get_current_day_time()
-            print("Started experiment ", exp_counter, " of ", n_experiments, ". ",
+            print("\n\n\nStarted experiment ", exp_counter, " of ", n_experiments, ". ",
                   curr_day, " ", curr_time, flush=True)
+            print("This is experiment for file: ", file_name, flush=True)
             exp_counter += 1
 
             # =================================================================
