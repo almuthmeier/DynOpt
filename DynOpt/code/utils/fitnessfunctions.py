@@ -84,6 +84,7 @@ def get_original_global_opt_pos_and_fit(function, dimensionality):
     function_name = function.__name__
     glob_opt_pos = {'sphere': np.array(dimensionality * [0]),
                     'rosenbrock': np.array(dimensionality * [1]),
-                    'rastrigin': np.array(dimensionality * [0])}
+                    'rastrigin': np.array(dimensionality * [0]),
+                    'griewank': np.array(dimensionality * [0])}
     pos = glob_opt_pos[function_name]
     return pos, function(pos)

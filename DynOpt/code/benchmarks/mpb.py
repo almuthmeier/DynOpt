@@ -238,10 +238,10 @@ def start_creating_problem(func_name=None, output_dir_path=None):
             os.pardir).split('/')  # ".../DynOpt/code"
         path_to_dynopt = '/'.join(splitted_path[:-1])
 
-        folder_path = path_to_dynopt + "/datasets/" + conference + "/" + func_name
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-        output_dir_path = folder_path + "/"
+        output_dir_path = path_to_dynopt + "/datasets/" + conference + "/" + func_name
+        if not os.path.exists(output_dir_path):
+            os.makedirs(output_dir_path)
+        output_dir_path = output_dir_path + "/"
 
     day, time = get_current_day_time()
 
@@ -257,7 +257,7 @@ def start_creating_problem(func_name=None, output_dir_path=None):
                             str(n_periods) + "_veclen-" + str(len_movement_vector) + \
                             "_peaks-" + str(n_peaks) + "_noise-" + str(noise).lower() +\
                             "_" + day + "_" + time + ".npz"
-                        path_to_file = folder_path + file_name
+                        path_to_file = output_dir_path + file_name
                         __create_and_save_mpb_problem__(min_range, max_range,
                                                         n_periods, n_dims, n_peaks,
                                                         len_movement_vector,
