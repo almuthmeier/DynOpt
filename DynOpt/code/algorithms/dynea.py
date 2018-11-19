@@ -182,7 +182,7 @@ class DynamicEA():
             immigrants = random_immigrants
 
         elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive" or \
-                my_pred_mode == "tltfrnn" or my_pred_mode == "tfrnn":
+                my_pred_mode == "tfrnn":
             # last predicted optimum
             pred_optimum_position = self.pred_opt_pos_per_chgperiod[-1]
             # insert predicted optimum into immigrants
@@ -318,7 +318,7 @@ class DynamicEA():
                                     self.return_seq, self.apply_tl, self.n_layers,
                                     self.n_epochs, self.tl_rnn_type, self.n_tllayers)
         sess = None
-        if self.predictor_name == "tltfrnn" or self.predictor_name == "tfrnn":
+        if self.predictor_name == "tfrnn":
             import tensorflow as tf
             # if transfer leanring than load weights
             if self.apply_tl:
@@ -409,6 +409,6 @@ class DynamicEA():
                 self.population_fitness[min_fitness_index])
             self.best_found_pos_per_gen[i] = copy.copy(
                 self.population[min_fitness_index])
-        if self.predictor_name == "tltfrnn" or self.predictor_name == "tfrnn":
+        if self.predictor_name == "tfrnn":
             sess.close()
             tf.reset_default_graph()

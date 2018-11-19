@@ -70,7 +70,7 @@ def define_parser_arguments():
     parser.add_argument("-tau", type=float)
 
     # for predictor
-    # no, rnn, autoregressive, tltfrnn, tfrnn
+    # no, rnn, autoregressive, tfrnn
     parser.add_argument("-predictor", type=str)
     parser.add_argument("-timesteps", type=int)
 
@@ -177,11 +177,11 @@ def initialize_comparator_manually(comparator):
         comparator.tau = 0.5
 
     # for predictor
-    comparator.predictor = "tfrnn"  # "tfrnn"  # "tltfrnn"  # "no"
+    comparator.predictor = "tfrnn"  # "tfrnn"  # "no"
     comparator.timesteps = 7
 
     # for ANN predictor
-    if comparator.predictor == "rnn" or comparator.predictor == "tltfrnn" or comparator.predictor == "tfrnn":
+    if comparator.predictor == "rnn" or comparator.predictor == "tfrnn":
         comparator.neuronstype = "fixed20"
         comparator.epochs = 3
         comparator.batchsize = 1
@@ -246,7 +246,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.timesteps = args.timesteps
 
     # for ANN predictor
-    if args.predictor == "rnn" or args.predictor == "tltfrnn" or args.predictor == "tfrnn":
+    if args.predictor == "rnn" or args.predictor == "tfrnn":
         comparator.neuronstype = args.neuronstype
         comparator.epochs = args.epochs
         comparator.batchsize = args.batchsize

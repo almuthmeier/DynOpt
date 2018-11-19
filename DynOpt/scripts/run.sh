@@ -59,7 +59,7 @@ trechenberg=5				# number of generations during that the number of successful mu
 tau=0.5						# 0 < tau < 1, for Rechenberg
 
 # predictor
-predictor=tfrnn				# no, rnn, autoregressive, tltfrnn, tfrnn
+predictor=tfrnn				# no, rnn, autoregressive, tfrnn
 							# prediciton model to predict the new optimum
 timesteps=7					# number of previous optima used for the predictions
 
