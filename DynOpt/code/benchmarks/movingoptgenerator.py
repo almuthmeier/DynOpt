@@ -776,7 +776,7 @@ def start_mixture(dims=3, n_points=12500, seed=None):
     #n_points = 12500
     mix_within_dim = True
     mix_between_dims = True
-    with_plots = True
+    with_plots = False
     n_dims = dims
     return multidim_section_functions(n_dims, n_points, available_base_fcts, mixture_fcts,
                                       min_value, max_value, mix_within_dim, mix_between_dims, with_plots)
