@@ -27,7 +27,7 @@ from benchmarks.movingoptgenerator import start_mixture
 import matplotlib.pyplot as plt
 import numpy as np
 from utils.fitnessfunctions import sphere, rosenbrock, rastrigin,\
-    get_original_global_opt_pos_and_fit
+    get_original_global_opt_pos_and_fit, griewank
 from utils.utils_files import get_current_day_time
 
 
@@ -44,7 +44,7 @@ def create_problems(output_dir_path=None):
     # TODO(exp) parameters to adjust
     n_chg_periods = 10000
     dims = [1, 5, 10, 50]
-    functions = [sphere, rastrigin, rosenbrock]  # , rastrigin]
+    functions = [sphere, rastrigin, griewank]  # , rastrigin]
     pos_chng_types = ['pch-linear', 'pch-sine', 'pch-circle', 'pch-mixture']
     pos_chng_types = ['pch-mixture']
     fit_chng_type = 'fch-none'
