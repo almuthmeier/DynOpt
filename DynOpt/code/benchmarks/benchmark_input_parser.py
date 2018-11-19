@@ -34,16 +34,18 @@ def read_input_values(parser):
 def run_parser():
     parser = define_parser_arguments()
     values = read_input_values(parser)  # returns a tupel
+    benchmark_fct = values[0]
+    benchmark_path = values[1]
+
     # pass values of tupel as separate parameters
-    if parser.benchmarkfunction == "mpbrand" or parser.benchmarkfunction == "mpbnoisy" or \
-            parser.benchmarkfunction == "mpbcorr":
+    if benchmark_fct == "mpbrand" or benchmark_fct == "mpbnoisy" or \
+            benchmark_fct == "mpbcorr":
         start_creating_problem(*values)  # use all values
-    elif parser.benchmarkfunction == "srr":  # sphere, rastrigin, rosenbrock are created at once
-        create_problems(values[1])  # use only path
+    elif benchmark_fct == "srr":  # sphere, rastrigin, rosenbrock are created at once
+        create_problems(benchmark_path)  # use only path
 
 
 if __name__ == '__main__':
     from benchmarks.dynposbenchmark import create_problems
     from benchmarks.mpb import start_creating_problem
-    print("number inputs: ", len(sys.argv))
     run_parser()
