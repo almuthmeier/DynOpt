@@ -13,7 +13,8 @@ import sys
 # otherwise import error when script is run
 path_to_code = os.path.abspath(os.pardir)  # .split('/')
 #path_to_dynopt = ('/').join(path_to_code[:-1])
-sys.path.append(path_to_code)  # path to code directory
+path_to_benchmarks = path_to_code + "/benchmarks"
+sys.path.append(path_to_benchmarks)  # path to benchmark directory
 
 
 def define_parser_arguments():
