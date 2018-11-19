@@ -190,18 +190,19 @@ def __create_and_save_mpb_problem__(min_range, max_range,
              orig_global_opt_pos=orig_global_opt_position)
 
 
-def start_creating_problem():
+def start_creating_problem(func_name=None, output_dir_path=None):
     '''
     Call this function to create and save MPB-functions with different settings)
+    @param func_name: "mpbnoisy" or "mpbrand" or "mpbcorr"
     '''
     np.random.seed(4)
     # ==================================
     # TODO(exp)
     # "EvoStar_2018" or "GECCO_2018" or "ESANN_2019" (must be equivalent to directory)
     conference = "ESANN_2019"
-    func_name = "mpbcorr"  # "mpbnoisy" or "mpbrand" or "mpbcorr"
     min_range = 0
     max_range = 100
+    func_name = "mpbcorr" if func_name is None else func_name
     if func_name == "mpbrand":
         # settings for experiments "mpbrand"
         chg_periods = [10000]
@@ -222,24 +223,25 @@ def start_creating_problem():
     elif func_name == "mpbcorr":
         # settings for experiments "mpbcorr" (with correlation factor)
         chg_periods = [10000]
-        dims = [2, 5, 10, 20, 50, 100]
-        dims = [2, 5]
+        dims = [1, 5, 10, 50]
         peaks = [10]
         lens_movement_vector = [0.6]
         use_correlation = True  # TODO adapt file name
-        correlation_factors = [1.0]  # in range [0,1]
+        correlation_factors = [0.6, 0.8, 1.0]  # in range [0,1]
         # convert correlation to noise
         noise_strengths = np.subtract(1, correlation_factors)
     # ==================================
 
-    # create output folder for data set if not existing
-    splitted_path = os.path.abspath(os.pardir).split('/')  # ".../DynOpt/code"
-    path_to_dynopt = '/'.join(splitted_path[:-1])
+    if output_dir_path is None:
+        # create output folder for data set if not existing
+        splitted_path = os.path.abspath(
+            os.pardir).split('/')  # ".../DynOpt/code"
+        path_to_dynopt = '/'.join(splitted_path[:-1])
 
-    folder_path = path_to_dynopt + "/datasets/" + conference + "/" + func_name
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-    folder_path = folder_path + "/"
+        folder_path = path_to_dynopt + "/datasets/" + conference + "/" + func_name
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        output_dir_path = folder_path + "/"
 
     day, time = get_current_day_time()
 
