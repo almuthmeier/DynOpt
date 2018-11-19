@@ -11,11 +11,7 @@ import sys
 
 
 # otherwise import error when script is run
-path_to_code = os.path.abspath(os.pardir)  # .split('/')
-#path_to_dynopt = ('/').join(path_to_code[:-1])
-path_to_benchmarks = path_to_code + "/benchmarks"
-print("path-to-b: ", path_to_benchmarks)
-# sys.path.append(path_to_benchmarks)  # path to benchmark directory
+path_to_code = os.path.abspath(os.pardir)
 sys.path.append(path_to_code)
 
 
@@ -49,4 +45,5 @@ def run_parser():
 if __name__ == '__main__':
     from benchmarks.dynposbenchmark import create_problems
     from benchmarks.mpb import start_creating_problem
+    print("number inputs: ", len(sys.argv))
     run_parser()
