@@ -15,8 +15,8 @@ path_to_code = os.path.abspath(os.pardir)  # .split('/')
 #path_to_dynopt = ('/').join(path_to_code[:-1])
 path_to_benchmarks = path_to_code + "/benchmarks"
 print("path-to-b: ", path_to_benchmarks)
-sys.path.append(path_to_benchmarks)  # path to benchmark directory
-# sys.path.append(path_to_code)
+# sys.path.append(path_to_benchmarks)  # path to benchmark directory
+sys.path.append(path_to_code)
 
 
 def define_parser_arguments():
