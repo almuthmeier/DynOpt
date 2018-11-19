@@ -34,7 +34,7 @@ def define_parser_arguments():
     # true, if changes occur at random time points
     parser.add_argument("-ischgperiodrandom", type=str)
     # "mpb" or "sphere-rastrigin-rosenbrock" (alt)
-    # sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (neu)
+    # sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (neu), mpbcorr
     # defines the benchmark function, must be located in the datasets folder of
     # this project
     parser.add_argument("-benchmarkfunction", type=str)

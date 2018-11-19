@@ -65,7 +65,8 @@ class Test(unittest.TestCase):
                             are_not_equal = np.any(np.not_equal(
                                 global_opt_pos[i - 1], global_opt_pos[i]))
                             np.testing.assert_equal(are_not_equal, True)
-                    elif ("mpbrand" in abs_file_path or "mpbnoisy" in abs_file_path):  # TODO(dev)
+                    elif ("mpbrand" in abs_file_path or "mpbnoisy" in abs_file_path or
+                          "mpbcorr" in abs_file_path):  # TODO(dev)
                         # For MPB the optimum may remain the same in successive
                         # change periods and change suddenly after some changes.
                         # Therefore this benchmark is not testable

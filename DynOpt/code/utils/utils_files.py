@@ -167,7 +167,7 @@ def get_sorted_array_file_names_for_experiment_file_name(exp_file_name, arrays_p
             arrays_path, f)) and f.endswith('.npz') and function in f
             and ("_d-" + str(dim) + "_") in f and ("_pch-" + pch + "_")in f
             and ("_fch-" + fch + "_") in f)]
-    elif function == "mpbnoisy" or function == "mpbrand":
+    elif function == "mpbnoisy" or function == "mpbrand" or function == "mpbcorr":
         veclen = splitted_benchmark_file_name[3].split('-')[1]
         peaks = splitted_benchmark_file_name[4].split('-')[1]
         noise = splitted_benchmark_file_name[5].split('-')[1]
@@ -203,7 +203,8 @@ def select_experiment_files(benchmark_path, benchmarkfunction, poschgtypes,
                               any(("_pch-" + poschgtype + "_") in f for poschgtype in poschgtypes) and
                               any(("_fch-" + fitchgtype + "_") in f for fitchgtype in fitchgtypes))]
     elif benchmarkfunction == "mpbnoisy" or \
-            benchmarkfunction == "mpbrand":
+            benchmarkfunction == "mpbrand" or \
+            benchmarkfunction == "mpbcorr":
         selected_exp_files = [f for f in all_experiment_files if (
                               any(("_d-" + str(dim) + "_") in f for dim in dims) and
                               any(("_noise-" + str(noise) + "_") in f for noise in noises))]

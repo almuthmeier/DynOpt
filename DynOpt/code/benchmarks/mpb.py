@@ -220,7 +220,7 @@ def start_creating_problem():
         noise_strengths = [0.0]
         lens_movement_vector = [0.6]
     elif func_name == "mpbcorr":
-        # for using the correlation factor
+        # settings for experiments "mpbcorr" (with correlation factor)
         chg_periods = [10000]
         dims = [2, 5, 10, 20, 50, 100]
         dims = [2, 5]

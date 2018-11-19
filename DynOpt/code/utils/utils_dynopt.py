@@ -18,7 +18,7 @@ import numpy as np
 def fitness(problem, individual, curr_gen, problem_data):
     '''
     Compute fitness for one individual.
-    @param problem: string: sphere, rastrigin, rosenbrock, mpbnoisy, mpbrand
+    @param problem: string: sphere, rastrigin, rosenbrock, mpbnoisy, mpbrand, mpbcorr
     @param individual: individual for that the fitness is computed
     @param curr_gen: number of current generation as fitness is time-dependent
     @param problem_data: containing all the information required to compute the
@@ -26,7 +26,7 @@ def fitness(problem, individual, curr_gen, problem_data):
     '''
 
     # TODO(dev) insert new problems
-    if problem == "mpbnoisy" or problem == "mpbrand":
+    if problem == "mpbnoisy" or problem == "mpbrand" or problem == "mpbcorr":
         return mpb.compute_fitness(individual, curr_gen, problem_data['heights'],
                                    problem_data['widths'], problem_data['positions'])
     elif problem == "sphere" or problem == "rastrigin" or problem == "rosenbrock":

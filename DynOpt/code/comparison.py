@@ -301,7 +301,8 @@ class PredictorComparator(object):
                 "rastrigin" or self.benchmarkfunction == "rosenbrock":
             pass
         if self.benchmarkfunction == "mpbnoisy" or \
-                self.benchmarkfunction == "mpbrand":
+                self.benchmarkfunction == "mpbrand" or \
+                self.benchmarkfunction == "mpbcorr":
             heights = exp_file['heights']
             widths = exp_file['widths']
             positions = exp_file['positions']
