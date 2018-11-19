@@ -100,7 +100,7 @@ class PredictorComparator(object):
 
         dimensionality = len(self.experiment_data['orig_global_opt_pos'])
         n_generations = self.get_n_generations()
-        if self.predictor == "no":
+        if self.predictor == "no" or self.predictor == "autoregressive":
             n_neurons = None
         else:
             n_neurons = get_n_neurons(self.neuronstype, dimensionality)
