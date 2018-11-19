@@ -7,8 +7,8 @@ jobname="benchmarks"
 #SBATCH --ntasks=5
 #SBATCH --mem=16G
 #SBATCH --time=2-00:00
-#SBATCH --output="slurm_$jobname.%j.out"
-#SBATCH --error="slurm_$jobname.%j.err"
+#SBATCH --output="slurm""_""$jobname.%j.out"
+#SBATCH --error="slurm""_""$jobname.%j.err"
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
@@ -19,14 +19,14 @@ benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/d
 # -----------------------------------------------------------------------------
 # mpbcorr
 benchmarkfunction="mpbcorr"
-python3.5 ../input_parser_RNNvsLSTM.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+python3.5 ../benchmarks/benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
 
 
 # -----------------------------------------------------------------------------
 # shpere, rastrigin, rosenbrock
 benchmarkfunction="srr"
 
-python3.5 ../input_parser_RNNvsLSTM.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+python3.5 ../benchmarks/benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
 
 # -----------------------------------------------------------------------------
 #
