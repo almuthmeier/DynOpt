@@ -104,7 +104,7 @@ def build_tl_rnn_predictor(rnn_type, ntllayers, n_overall_layers,
             ntllayers)
         var_list1 = tl_variables  # first layers
         var_list2 = predlayer_variables  # remaining layers
-        opt1 = tf.train.AdamOptimizer(0.00001)
+        opt1 = tf.train.AdamOptimizer(0.0001)
         opt2 = tf.train.AdamOptimizer(0.001)
         grads = tf.gradients(pred_model.loss, var_list1 + var_list2)
         grads1 = grads[:len(var_list1)]
