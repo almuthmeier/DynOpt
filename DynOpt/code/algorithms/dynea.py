@@ -65,6 +65,10 @@ class DynamicEA():
         # for the predictor
         # ---------------------------------------------------------------------
         self.n_time_steps = timesteps
+        # number steps used to predict before the number of training data is
+        # equal or larger than self.n_time_steps
+        # TODO  set at another location? (value depends on n_time_steps)
+        self.preliminary_n_steps = 5
         self.n_neurons = n_neurons
         self.n_epochs = epochs
         self.batch_size = batchsize
@@ -228,9 +232,11 @@ class DynamicEA():
         '''
 
         overall_n_train_data = len(self.best_found_pos_per_chgperiod)
+        n_steps_to_use = self.n_time_steps if overall_n_train_data > self.n_time_steps else self.preliminary_n_steps
+
         # prevent training with too few train data
-        if (overall_n_train_data <= self.n_time_steps or overall_n_train_data < 50 or self.predictor_name == "no") or\
-                (self.predict_diffs and overall_n_train_data <= self.n_time_steps + 1):  # to build differences 1 item more is required
+        if (overall_n_train_data <= n_steps_to_use or self.predictor_name == "no") or\
+                (self.predict_diffs and overall_n_train_data <= n_steps_to_use + 1):  # to build differences 1 item more is required
             my_pred_mode = "no"
             train_data = None
             prediction = None
@@ -259,19 +265,19 @@ class DynamicEA():
                 train_data = transf_best_found_pos_per_chgperiod
             else:
                 # append the last new train data (one) and in addition
-                # n_time_steps already evaluated data in order to create a
-                # whole time series of n_time_steps together with the new
+                # n_steps_to_use already evaluated data in order to create a
+                # whole time series of n_steps_to_use together with the new
                 # data. The oldest data is appended first, then a newer
                 # one and so on.
                 train_data = []
-                for step_idx in range(self.n_time_steps + 1, 0, -1):
+                for step_idx in range(n_steps_to_use + 1, 0, -1):
                     train_data.append(
                         transf_best_found_pos_per_chgperiod[-step_idx])
                 train_data = np.array(train_data)
             # predict next optimum position or difference (and re-scale value)
             prediction, train_error, train_err_per_epoch = predict_next_optimum_position(my_pred_mode, sess, train_data,
                                                                                          self.n_epochs, self.batch_size,
-                                                                                         self.n_time_steps, n_features,
+                                                                                         n_steps_to_use, n_features,
                                                                                          scaler, predictor, self.return_seq, self.shuffle_train_data)
             # convert predicted difference into position
             if self.predict_diffs:
