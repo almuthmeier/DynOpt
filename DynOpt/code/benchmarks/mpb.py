@@ -27,7 +27,7 @@ from utils.utils_ea import gaussian_mutation
 from utils.utils_files import get_current_day_time
 
 
-def __create_vector(dimensionality, len_vector, np_random_generator, noise=None):
+def __create_vector(dimensionality, len_vector, np_random_generator, noise=None, correlation_factor=None, old_movement=None):
     '''
     Creates a random vector with specified length (i.e. Euclidean norm).
 
@@ -38,8 +38,23 @@ def __create_vector(dimensionality, len_vector, np_random_generator, noise=None)
     @param noise: if noise is not None, instead of random movement the peaks' 
     positions are moved linearly with random noise. "noise" specifies its strength.
     '''
-    if noise is None:
-        # normal case as defined in the paper
+    if correlation_factor is not None and old_movement is not None:
+        # newer verion of MPB, like listed in
+        #    - CEC tutorial: http://ieee-tf-ecidue.cug.edu.cn/Yang-CEC2017-Tutorial-ECDOP.pdf
+        #    - publication of e.g. Irene Moser: "Dynamic Function Optimization: The Moving Peaks Benchmark"
+
+        # the initial random vector
+        rnd_vec = np_random_generator.uniform(-1, 1, dimensionality)
+        denominator = np.linalg.norm(rnd_vec + old_movement)
+        fraction = len_vector / denominator
+        rnd_factor = (1 - correlation_factor) * rnd_vec
+        deterministic_part = correlation_factor * old_movement
+        return fraction * rnd_factor + deterministic_part
+    elif noise is None or (correlation_factor is not None and old_movement is None):
+        # normal case as defined in the paper (or actually the "correlation"-variant
+        # is desired but it is only the second point for which no previous
+        # movement exists (only from the third on)
+
         # the initial random vector
         rnd_vec = np_random_generator.uniform(-1, 1, dimensionality)
         initial_length = np.linalg.norm(rnd_vec)
@@ -66,7 +81,8 @@ def __create_vector(dimensionality, len_vector, np_random_generator, noise=None)
 
 
 def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement_vector,
-                                    np_random_generator, mpb_peaks_np_random_generator, path_to_file, noise=None):
+                                    np_random_generator, mpb_peaks_np_random_generator,
+                                    path_to_file, noise=None, correlation_factor=None):
     '''
     Creates mpb data set for a specific setting.
     '''
@@ -91,6 +107,9 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
     min_bound = 0
     max_bound = 100
     orig_global_opt_position = []
+    # saves for each peak the previous position movement (required for
+    # correlation-based MPB variant
+    old_movement_per_peak = np.array([None] * n_peaks)
     for chg_period in range(n_chg_periods):
         if chg_period == 0:  # first change period
             # initialize position etc.
@@ -125,7 +144,8 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
 
                 # compute parameter values of current change period
                 position_movement = __create_vector(
-                    n_dims, len_movement_vector, np_random_generator, noise)
+                    n_dims, len_movement_vector, np_random_generator, noise, correlation_factor, old_movement=old_movement_per_peak[peak])
+                old_movement_per_peak[peak] = position_movement
                 min_heigth = 1.0
                 curr_height = max(min_heigth, old_height + heigth_severity *
                                   mpb_peaks_np_random_generator.normal(loc=0.0, scale=1.0))
@@ -170,7 +190,7 @@ def start_creating_problem():
     # TODO(exp)
     # "EvoStar_2018" or "GECCO_2018" or "ESANN_2019" (must be equivalent to directory)
     conference = "ESANN_2019"
-    func_name = "mpbrand"  # "mpbnoisy" or "mpbrand"
+    func_name = "mpbcorr"  # "mpbnoisy" or "mpbrand" or "mpbcorr"
 
     if func_name == "mpbrand":
         # settings for experiments "mpbrand"
@@ -189,6 +209,15 @@ def start_creating_problem():
         noise_strengths = [0.0, 0.1, 1.0, 10.0]
         noise_strengths = [0.0]
         lens_movement_vector = [0.6]
+    elif func_name == "mpbcorr":
+        # for using the correlation factor
+        chg_periods = [10000]
+        dims = [2, 5, 10, 20, 50, 100]
+        dims = [2, 5]
+        peaks = [10]
+        noise_strengths = [None]
+        lens_movement_vector = [0.6]
+        correlation_factor = 1.0
     # ==================================
 
     # create output folder for data set if not existing
@@ -219,7 +248,7 @@ def start_creating_problem():
                                                         len_movement_vector,
                                                         mpb_np_random_generator,
                                                         mpb_peaks_np_random_generator,
-                                                        path_to_file, noise)
+                                                        path_to_file, noise, correlation_factor)
 
 
 def __compute_mpb_fitness(x, height, width, position):
