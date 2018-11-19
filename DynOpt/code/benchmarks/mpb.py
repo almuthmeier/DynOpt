@@ -80,7 +80,8 @@ def __create_vector(dimensionality, len_vector, np_random_generator, noise=None,
         #
 
 
-def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement_vector,
+def __create_and_save_mpb_problem__(min_range, max_range,
+                                    n_chg_periods, n_dims, n_peaks, len_movement_vector,
                                     np_random_generator, mpb_peaks_np_random_generator,
                                     path_to_file, noise=None, correlation_factor=None):
     '''
@@ -103,9 +104,6 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
     heigth_severity = 7  # as in initial paper by Branke
     width_severity = 0.1  # as in initial paper by Branke
 
-    # bound for initialization of peak positions
-    min_bound = 0
-    max_bound = 100
     orig_global_opt_position = []
     # saves for each peak the previous position movement (required for
     # correlation-based MPB variant
@@ -120,7 +118,7 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
             best_position = None
             for peak in range(n_peaks):
                 init_position = np_random_generator.uniform(
-                    min_bound, max_bound, n_dims)
+                    min_range, max_range, n_dims)
                 heights.append([init_height])
                 widths.append([init_width])
                 positions.append([copy.deepcopy(init_position)])
@@ -143,16 +141,24 @@ def __create_and_save_mpb_problem__(n_chg_periods, n_dims, n_peaks, len_movement
                 old_position = positions[peak][chg_period - 1]
 
                 # compute parameter values of current change period
-                position_movement = __create_vector(
-                    n_dims, len_movement_vector, np_random_generator, noise, correlation_factor, old_movement=old_movement_per_peak[peak])
-                old_movement_per_peak[peak] = position_movement
+                # height
                 min_heigth = 1.0
                 curr_height = max(min_heigth, old_height + heigth_severity *
                                   mpb_peaks_np_random_generator.normal(loc=0.0, scale=1.0))
+                # width
                 min_width = 1.0  # should not become smaller than 0
                 curr_width = max(min_width, old_width + width_severity *
                                  mpb_peaks_np_random_generator.normal(loc=0.0, scale=1.0))
+                # position
+                position_movement = __create_vector(
+                    n_dims, len_movement_vector, np_random_generator, noise, correlation_factor, old_movement=old_movement_per_peak[peak])
                 curr_position = old_position + position_movement
+                # if position outside the range, move in opposite direction
+                too_small_idcs = curr_position < min_range
+                too_large_idcs = curr_position > max_range
+                position_movement[too_small_idcs] = position_movement[too_small_idcs] * -1
+                position_movement[too_large_idcs] = position_movement[too_large_idcs] * -1
+                old_movement_per_peak[peak] = position_movement
 
                 # update problem parameters
                 heights[peak].append(curr_height)
@@ -191,7 +197,8 @@ def start_creating_problem():
     # "EvoStar_2018" or "GECCO_2018" or "ESANN_2019" (must be equivalent to directory)
     conference = "ESANN_2019"
     func_name = "mpbcorr"  # "mpbnoisy" or "mpbrand" or "mpbcorr"
-
+    min_range = 0
+    max_range = 100
     if func_name == "mpbrand":
         # settings for experiments "mpbrand"
         chg_periods = [10000]
@@ -217,7 +224,7 @@ def start_creating_problem():
         peaks = [10]
         noise_strengths = [None]
         lens_movement_vector = [0.6]
-        correlation_factor = 1.0
+        correlation_factor = 0.99  # TODO adapt file name
     # ==================================
 
     # create output folder for data set if not existing
@@ -244,7 +251,8 @@ def start_creating_problem():
                             "_peaks-" + str(n_peaks) + "_noise-" + str(noise).lower() +\
                             "_" + day + "_" + time + ".npz"
                         path_to_file = folder_path + file_name
-                        __create_and_save_mpb_problem__(n_periods, n_dims, n_peaks,
+                        __create_and_save_mpb_problem__(min_range, max_range,
+                                                        n_periods, n_dims, n_peaks,
                                                         len_movement_vector,
                                                         mpb_np_random_generator,
                                                         mpb_peaks_np_random_generator,
