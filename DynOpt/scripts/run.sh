@@ -27,7 +27,7 @@ lenchgperiod=20				# number of generations per change period; has to be
 							# because lenchgperiod*chgperiods is the number of 
 							# generations. 
 ischgperiodrandom="False"	# True if the change occurs at a random time point.
-benchmarkfunction=rastrigin	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom
+benchmarkfunction=rastrigin	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
 benchmarkfunctionfolderpath=/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/GECCO_2019/ # parent directory path of the benchmark functions
