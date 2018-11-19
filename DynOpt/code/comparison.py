@@ -70,7 +70,13 @@ class PredictorComparator(object):
         self.neuronstype = None  # string
         self.epochs = None  # int
         self.batchsize = None  # int
+        self.n_layers = None  # int
         self.ngpus = None  # int
+
+        # transfer learning
+        self.apply_tl = None  # bool
+        self.tl_model_path = None  # string
+        self.n_tllayers = None  # int
 
         # runtime
         self.ncpus = None  # int
@@ -110,14 +116,18 @@ class PredictorComparator(object):
                             alg_np_rnd_generator, pred_np_rnd_generator,
                             self.mu, self.la, self.ro, self.mean, self.sigma,
                             self.trechenberg, self.tau, self.timesteps,
-                            n_neurons, self.epochs, self.batchsize)
+                            n_neurons, self.epochs, self.batchsize,
+                            self.n_layers, self.apply_tl, self.n_tllayers,
+                            self.tl_model_path)
         elif self.algorithm == "dynpso":
             alg = DynamicPSO(self.benchmarkfunction, dimensionality,
                              n_generations, self.experiment_data, self.predictor,
                              alg_np_rnd_generator, pred_np_rnd_generator,
                              self.c1, self.c2, self.c3, self.insertpred,
                              self.adaptivec3, self.nparticles, self.timesteps,
-                             n_neurons, self.epochs, self.batchsize)
+                             n_neurons, self.epochs, self.batchsize,
+                             self.n_layers, self.apply_tl, self.n_tllayers,
+                             self.tl_model_path)
         else:
             warnings.warn("unknown optimization algorithm")
             exit(1)

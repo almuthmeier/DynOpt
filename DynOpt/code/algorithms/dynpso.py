@@ -25,7 +25,8 @@ class DynamicPSO():
                  pso_np_rnd_generator, pred_np_rnd_generator,
                  c1, c2, c3, insert_pred_as_ind,
                  adaptive_c3, n_particles,
-                 timesteps, n_neurons, epochs, batchsize):
+                 timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
+                 n_tllayers, tl_model_path):
         '''
         Initialize a DynamicPSO object.
         @param benchmarkfunction: (string)
@@ -67,6 +68,10 @@ class DynamicPSO():
         self.n_neurons = n_neurons
         self.n_epochs = epochs
         self.batch_size = batchsize
+        self.n_layers = n_layers
+        self.apply_tl = apply_tl
+        self.tl_model_path = tl_model_path
+        self.n_tllayers = n_tllayers
 
         # ---------------------------------------------------------------------
         # for PSO (fixed values)

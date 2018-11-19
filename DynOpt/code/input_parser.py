@@ -79,6 +79,11 @@ def define_parser_arguments():
     parser.add_argument("-neuronstype", type=str)
     parser.add_argument("-epochs", type=int)
     parser.add_argument("-batchsize", type=int)
+    parser.add_argument("-nlayers", type=int)
+    # transfer learning
+    parser.add_argument("-applytl", type=str)
+    parser.add_argument("-tlmodelpath", type=str)
+    parser.add_argument("-ntllayers", type=int)
     # machine dependent
     parser.add_argument("-ngpus", type=int)
 
@@ -172,7 +177,7 @@ def initialize_comparator_manually(comparator):
         comparator.tau = 0.5
 
     # for predictor
-    comparator.predictor = "tltfrnn"  # "tfrnn"  # "tltfrnn"  # "no"
+    comparator.predictor = "tfrnn"  # "tfrnn"  # "tltfrnn"  # "no"
     comparator.timesteps = 7
 
     # for ANN predictor
@@ -180,6 +185,11 @@ def initialize_comparator_manually(comparator):
         comparator.neuronstype = "fixed20"
         comparator.epochs = 3
         comparator.batchsize = 1
+        comparator.n_layers = 2
+        comparator.apply_tl = True
+        comparator.tl_model_path = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/" + \
+            "tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"
+        comparator.n_tllayers = 1
         comparator.ngpus = 1
 
     # runtime
@@ -191,8 +201,8 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 33:
-        print("false number of inputs: ", n_current_inputs)
+    if n_current_inputs != 37:
+        print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
     # benchmark problem
@@ -240,6 +250,10 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.neuronstype = args.neuronstype
         comparator.epochs = args.epochs
         comparator.batchsize = args.batchsize
+        comparator.n_layers = args.nlayers
+        comparator.apply_tl = args.applytl == 'True'
+        comparator.tl_model_path = args.tlmodelpath
+        comparator.n_tllayers = args.ntllayers
         comparator.ngpus = args.ngpus
 
     # runtime

@@ -25,7 +25,8 @@ class DynamicEA():
                  n_generations, experiment_data, predictor_name,
                  ea_np_rnd_generator, pred_np_rnd_generator,
                  mu, la, ro, mean, sigma, trechenberg, tau,
-                 timesteps, n_neurons, epochs, batchsize):
+                 timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
+                 n_tllayers, tl_model_path):
         '''
         Initialize a DynamicEA object.
         @param benchmarkfunction: (string)
@@ -72,7 +73,15 @@ class DynamicEA():
         self.n_neurons = n_neurons
         self.n_epochs = epochs
         self.batch_size = batchsize
+        self.n_layers = n_layers
 
+        # transfer learning
+        self.apply_tl = apply_tl  # True if pre-trained model should be used
+        self.tl_model_path = tl_model_path  # path to the trained tl model
+        self.tl_rnn_type = "RNN"
+        self.n_tllayers = n_tllayers
+
+        # training/testing specifications
         self.use_all_train_data = True  # user all previous data to train with
         self.predict_diffs = True  # predict position differences, TODO insert into PSO
         self.return_seq = True  # return values for all time steps not only the last one
@@ -294,48 +303,37 @@ class DynamicEA():
         return my_pred_mode
 
     def optimize(self):
-        n_overall_layers = 2
-        apply_tl = False  # has to be False if predictor=="tfrnn"
-        if apply_tl:
-            ntllayers = 1  # TODO
-        else:
-            ntllayers = 0
-        rnn_type = "RNN"
-        tl_model_path = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/" + \
-            "tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"
+        #n_overall_layers = 2
+
+        # if apply_tl:
+        #    ntllayers = 1  # TODO
+        # else:
+        #    ntllayers = 0
+
         # ---------------------------------------------------------------------
         # local variables for predictor
         # ---------------------------------------------------------------------
-        train_data = []
         predictor = build_predictor(self.predictor_name, self.n_time_steps,
                                     self.dim, self.batch_size, self.n_neurons,
-                                    self.return_seq, apply_tl, n_overall_layers,
-                                    self.n_epochs, rnn_type, ntllayers)
+                                    self.return_seq, self.apply_tl, self.n_layers,
+                                    self.n_epochs, self.tl_rnn_type, self.n_tllayers)
         sess = None
-        print("1")
         if self.predictor_name == "tltfrnn" or self.predictor_name == "tfrnn":
             import tensorflow as tf
-            print("2")
             # if transfer leanring than load weights
-            if apply_tl:
-                print("3")
+            if self.apply_tl:
                 # instantiate saver to restore pre-trained weights/biases
                 tl_variables, _, _, _, _, _ = get_variables_and_names(
-                    ntllayers)
+                    self.n_tllayers)
                 saver = tf.train.Saver(tl_variables)
-                print("4")
             # start session
-            print("5")
             sess = tf.Session()
-            print("5.1")
             # initialize empty model (otherwise exception)
             sess.run(tf.global_variables_initializer())
-            print("6")
-            if apply_tl:
+            if self.apply_tl:
                 # overwrite initial values with pre-trained weights/biases
-                print("7")
-                saver.restore(sess, tl_model_path)
-        print("8")
+                saver.restore(sess, self.tl_model_path)
+
         # denotes whether the predictor has been trained or not
         trained_first_time = False
         scaler = prepare_scaler(self.lbound, self.ubound, self.dim)

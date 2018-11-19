@@ -27,19 +27,19 @@ lenchgperiod=20				# number of generations per change period; has to be
 							# because lenchgperiod*chgperiods is the number of 
 							# generations. 
 ischgperiodrandom="False"	# True if the change occurs at a random time point.
-benchmarkfunction=rastrigin	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+benchmarkfunction=sphere	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
-benchmarkfunctionfolderpath=/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/GECCO_2019/ # parent directory path of the benchmark functions
+benchmarkfunctionfolderpath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/ESANN_2019/" # parent directory path of the benchmark functions
 								   																				 # and child directory of the datasets folder
 								   																				 # of this project 
 
 # run only some experiments of all for the benchmark problem (the next four
 # parameters are lists)
-poschgtypes=linear,sine,circle	# position change type; comma-separated integers
-fitchgtypes=none				# fitness change type; comma-separated integers
-dims=2							# dimensionality of fitness function; comma-separated integers
-noises=0.0						# noise, required only for mpb-benchmarks; comma-separated floats
+poschgtypes=linear			#,sine,circle	# position change type; comma-separated integers
+fitchgtypes=none			# fitness change type; comma-separated integers
+dims=5						# dimensionality of fitness function; comma-separated integers
+noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 
 # PSO
 c1=1.496180					# influence of particle's best solution 
@@ -59,23 +59,27 @@ trechenberg=5				# number of generations during that the number of successful mu
 tau=0.5						# 0 < tau < 1, for Rechenberg
 
 # predictor
-predictor=no				# no, rnn, autoregressive, tltfrnn, tfrnn
+predictor=tfrnn				# no, rnn, autoregressive, tltfrnn, tfrnn
 							# prediciton model to predict the new optimum
 timesteps=7					# number of previous optima used for the predictions
 
 # ANN predictor
 neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model
 epochs=30					# number of training epochs for the RNN prediction model
-batchsize=1					# batch size for RNN model
+batchsize=128					# batch size for RNN model
+nlayers=2					# overall number of layers (incl. tl layers)
+applytl="True"				# use pre-trained transfer learning model
+tlmodelpath="/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"	# path to the pre-trained transfer learning model
+ntllayers=1					# number of layers in the transfer learning model
 ngpus=1    					# number of GPUs to use (for RNN model) 
 
 # runtime
 ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any experiment are run parallel)  
 
 # output: TODO adapt if necessary
-outputdirectory="c1c2c3_1.49/$algorithm""_""$predictor/" 				# name of the output directory. Necessary to separate results
+outputdirectory="scriptout/$algorithm""_""$predictor/" 				# name of the output directory. Necessary to separate results
 																		# for different algorithm settings.				
-outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/$benchmarkfunction/"		# path to output
+outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/ESANN_2019/$benchmarkfunction/"		# path to output
 																																	# folder
 
 #------------------------------------------------------------------------------
@@ -115,5 +119,9 @@ outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/Dy
 -neuronstype="$neuronstype" \
 -epochs="$epochs" \
 -batchsize="$batchsize" \
+-nlayers="$nlayers" \
+-applytl="$applytl" \
+-tlmodelpath="$tlmodelpath" \
+-ntllayers="$ntllayers" \
 -ngpus="$ngpus" \
 -ncpus="$ncpus"
