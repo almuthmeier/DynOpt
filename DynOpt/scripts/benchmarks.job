@@ -1,14 +1,12 @@
 #!/bin/bash
 
-jobname="benchmarks"
-
 #SBATCH --gres=gpu:0
-#SBATCH --job-name="$jobname"
+#SBATCH --job-name="benchmarks"
 #SBATCH --ntasks=5
 #SBATCH --mem=16G
 #SBATCH --time=2-00:00
-#SBATCH --output="slurm""_""$jobname.%j.out"
-#SBATCH --error="slurm""_""$jobname.%j.err"
+#SBATCH --output="slurm_benchmarks.%j.out"
+#SBATCH --error="slurm_benchmarks.%j.err"
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
