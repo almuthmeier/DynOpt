@@ -63,13 +63,16 @@ class TFRNNWithoutState():
 
         # example for placeholder found here:
         # https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/3_NeuralNetworks/dynamic_rnn.py
-        # None instead of b_size -> variable batch size
-        self.input_pl = tf.placeholder(
-            "float", [None, self.n_time_steps_to_use, self.n_features])
+        # format [batch_size, n_time_steps, n_features]
+        # None for b_size -> variable batch size
+        # None for n_time_steps -> variable sequence length (for dynamic_rnn)
+        self.input_pl = tf.placeholder("float", [None, None, self.n_features])
         if self.has_time_outputs:
+            # format [batch_size, n_time_steps, n_features]
             self.output_pl = tf.placeholder(
-                "float", [None, self.n_time_steps_to_use, self.n_features])
+                "float", [None, None, self.n_features])
         else:
+            # format [batch_size, n_features]
             self.output_pl = tf.placeholder("float", [None, self.n_features])
 
         self.loss = None  # is defined in build_architecture()
@@ -248,8 +251,8 @@ class TFRNNWithoutState():
             else:
                 validation_error = None
                 val_err_per_epoch = None
-            print("train(): train_error: ", train_error, flush=True)
-            print("train(): validation_error: ", validation_error, flush=True)
+            #print("train(): train_error: ", train_error, flush=True)
+            #print("train(): validation_error: ", validation_error, flush=True)
         # TODO which state should be returned (after training/evaluation)?
         # TODO iis train_error a list/array????
         return np.array(train_error), np.array(train_model_out), validation_error, train_err_per_epoch, val_err_per_epoch
