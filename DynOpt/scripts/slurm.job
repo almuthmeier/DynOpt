@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="step10"
-#SBATCH --ntasks=5
+#SBATCH --job-name="step10-2"
+#SBATCH --ntasks=4
 #SBATCH --mem=32G
 #SBATCH --time=3-00:00
-#SBATCH --output="slurm_step10.%j.out"
-#SBATCH --error="slurm_step10.%j.err"
+#SBATCH --output="slurm_step10-2.%j.out"
+#SBATCH --error="slurm_step10-2.%j.err"
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
@@ -78,9 +78,9 @@ ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any ex
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # Set 1
-benchmarkfunction=mpbcorr	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
-poschgtypes=none			# linear,sine,circle,mixture position change type; comma-separated integers
-noises=0.0,0.2,0.4			# noise, required only for mpb-benchmarks; comma-separated floats
+benchmarkfunction=rastrigin	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+poschgtypes=mixture			# linear,sine,circle,mixture position change type; comma-separated integers
+noises=0.0			# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
@@ -279,7 +279,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # Set 1
-benchmarkfunction=sphere	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+benchmarkfunction=griewank	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
 poschgtypes=mixture			# linear,sine,circle,mixture position change type; comma-separated integers
 noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
