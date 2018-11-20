@@ -21,7 +21,7 @@ lenchgperiod=20				# number of generations per change period; has to be
 ischgperiodrandom="False"	# True if the change occurs at a random time point.
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
-benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/data_2018-11-19/" # parent directory path of the benchmark functions
+benchmarkfunctionfolderpath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/data_2018-11-19/" # parent directory path of the benchmark functions
 								   																				 # and child directory of the datasets folder
 								   																				 # of this project 
 
@@ -48,14 +48,14 @@ trechenberg=5				# number of generations during that the number of successful mu
 tau=0.5						# 0 < tau < 1, for Rechenberg
 
 # predictor
-timesteps=100				# number of previous optima used for the predictions
+timesteps=10				# number of previous optima used for the predictions
 
 # ANN predictor
 neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
 epochs=5					# number of training epochs for the RNN prediction model
 batchsize=128					# batch size for RNN model
 nlayers=2					# overall number of layers (incl. tl layers)
-tlmodelpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/models_2018-11-19/"	# path to the pre-trained transfer learning model
+tlmodelpath=""				# path to the pre-trained transfer learning model
 ntllayers=1					# number of layers in the transfer learning model
 ngpus=1    					# number of GPUs to use (for RNN model) 
 
@@ -81,7 +81,7 @@ predictor=no				# no, rnn, autoregressive, tfrnn, tftlrnn
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
@@ -127,104 +127,8 @@ predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-# Command 3
-predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-# (There must always be a space between the argument and the backslash!)
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-# Command 4
-predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-# (There must always be a space between the argument and the backslash!)
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
@@ -282,7 +186,7 @@ predictor=no				# no, rnn, autoregressive, tfrnn, tftlrnn
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
@@ -328,7 +232,7 @@ predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
@@ -368,101 +272,6 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -ngpus="$ngpus" \
 -ncpus="$ncpus" &
 
-#------------------------------------------------------------------------------
-# Command 3
-predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-# (There must always be a space between the argument and the backslash!)
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-# Command 4
-predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-# (There must always be a space between the argument and the backslash!)
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
 
 # ==================================================================================================================================================
 # ==================================================================================================================================================
@@ -481,7 +290,7 @@ predictor=no				# no, rnn, autoregressive, tfrnn, tftlrnn
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
@@ -527,104 +336,8 @@ predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-# Command 3
-predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-# (There must always be a space between the argument and the backslash!)
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-# Command 4
-predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-# (There must always be a space between the argument and the backslash!)
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
@@ -682,7 +395,7 @@ predictor=no				# no, rnn, autoregressive, tfrnn, tftlrnn
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
@@ -721,6 +434,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -ntllayers="$ntllayers" \
 -ngpus="$ngpus" \
 -ncpus="$ncpus" &
+
 
 #------------------------------------------------------------------------------
 # Command 2
@@ -728,104 +442,8 @@ predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-# Command 3
-predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-# (There must always be a space between the argument and the backslash!)
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-# Command 4
-predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-# (There must always be a space between the argument and the backslash!)
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
