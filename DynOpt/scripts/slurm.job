@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="step100"
+#SBATCH --job-name="step10"
 #SBATCH --ntasks=8
 #SBATCH --mem=32G
 #SBATCH --time=3-00:00
-#SBATCH --output="slurm_step100.%j.out"
-#SBATCH --error="slurm_step100.%j.err"
+#SBATCH --output="slurm_step10.%j.out"
+#SBATCH --error="slurm_step10.%j.err"
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
@@ -59,7 +59,7 @@ trechenberg=5				# number of generations during that the number of successful mu
 tau=0.5						# 0 < tau < 1, for Rechenberg
 
 # predictor
-timesteps=100				# number of previous optima used for the predictions
+timesteps=10				# number of previous optima used for the predictions
 
 # ANN predictor
 neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
@@ -81,7 +81,7 @@ ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any ex
 # Set 1
 benchmarkfunction=mpbcorr	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
 poschgtypes=none			# linear,sine,circle,mixture position change type; comma-separated integers
-noises=0.0,0.2,0.4			# noise, required only for mpb-benchmarks; comma-separated floats
+noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
