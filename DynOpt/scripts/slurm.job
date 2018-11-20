@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="step50"
+#SBATCH --job-name="step100"
 #SBATCH --ntasks=8
-#SBATCH --mem=64G
+#SBATCH --mem=32G
 #SBATCH --time=3-00:00
-#SBATCH --output="slurm_step50.%j.out"
-#SBATCH --error="slurm_step50.%j.err"
+#SBATCH --output="slurm_step100.%j.out"
+#SBATCH --error="slurm_step100.%j.err"
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
