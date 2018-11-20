@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="step100"
+#SBATCH --job-name="step10"
 #SBATCH --ntasks=8
 #SBATCH --mem=32G
 #SBATCH --time=3-00:00
-#SBATCH --output="slurm_step100.%j.out"
-#SBATCH --error="slurm_step100.%j.err"
+#SBATCH --output="slurm_step10.%j.out"
+#SBATCH --error="slurm_step10.%j.err"
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
@@ -59,7 +59,7 @@ trechenberg=5				# number of generations during that the number of successful mu
 tau=0.5						# 0 < tau < 1, for Rechenberg
 
 # predictor
-timesteps=100				# number of previous optima used for the predictions
+timesteps=10				# number of previous optima used for the predictions
 
 # ANN predictor
 neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
@@ -86,97 +86,6 @@ noises=0.0,0.2,0.4			# noise, required only for mpb-benchmarks; comma-separated 
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 
-#------------------------------------------------------------------------------
-# Command 1
-predictor=no				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-# Command 2
-predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
 
 #------------------------------------------------------------------------------
 # Command 3
@@ -287,97 +196,6 @@ noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 
-#------------------------------------------------------------------------------
-# Command 1
-predictor=no				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-# Command 2
-predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
 
 #------------------------------------------------------------------------------
 # Command 3
@@ -486,97 +304,6 @@ noises=0.0			# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 
-#------------------------------------------------------------------------------
-# Command 1
-predictor=no				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-# Command 2
-predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
 
 #------------------------------------------------------------------------------
 # Command 3
@@ -687,97 +414,6 @@ noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 
-#------------------------------------------------------------------------------
-# Command 1
-predictor=no				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-# Command 2
-predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
 
 #------------------------------------------------------------------------------
 # Command 3
