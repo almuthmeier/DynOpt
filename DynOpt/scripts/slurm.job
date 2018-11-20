@@ -73,11 +73,6 @@ ngpus=1    					# number of GPUs to use (for RNN model)
 # runtime
 ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any experiment are run parallel)  
 
-# output: TODO adapt if necessary
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 				# name of the output directory. Necessary to separate results
-																		# for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output
-																																	# folder
 
 # ==================================================================================================================================================
 # ==================================================================================================================================================
@@ -94,6 +89,10 @@ noises=0.0,0.2,0.4			# noise, required only for mpb-benchmarks; comma-separated 
 # Command 1
 predictor=no				# no, rnn, autoregressive, tfrnn
 applytl="False"				# use pre-trained transfer learning model
+
+# static
+outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
@@ -138,6 +137,10 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # Command 2
 predictor=autoregressive	# no, rnn, autoregressive, tfrnn
 applytl="False"				# use pre-trained transfer learning model
+
+# static
+outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
@@ -182,6 +185,10 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # Command 3
 predictor=tfrnn				# no, rnn, autoregressive, tfrnn
 applytl="False"				# use pre-trained transfer learning model
+
+# static
+outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
@@ -228,6 +235,10 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # Command 4
 predictor=tfrnn				# no, rnn, autoregressive, tfrnn
 applytl="True"				# use pre-trained transfer learning model
+
+# static
+outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
@@ -287,6 +298,10 @@ noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 # Command 1
 predictor=no				# no, rnn, autoregressive, tfrnn
 applytl="False"				# use pre-trained transfer learning model
+
+# static
+outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
@@ -331,6 +346,10 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # Command 2
 predictor=autoregressive	# no, rnn, autoregressive, tfrnn
 applytl="False"				# use pre-trained transfer learning model
+
+# static
+outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
@@ -375,6 +394,10 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # Command 3
 predictor=tfrnn				# no, rnn, autoregressive, tfrnn
 applytl="False"				# use pre-trained transfer learning model
+
+# static
+outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
@@ -421,6 +444,10 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # Command 4
 predictor=tfrnn				# no, rnn, autoregressive, tfrnn
 applytl="True"				# use pre-trained transfer learning model
+
+# static
+outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
