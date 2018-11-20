@@ -70,7 +70,7 @@ def define_parser_arguments():
     parser.add_argument("-tau", type=float)
 
     # for predictor
-    # no, rnn, autoregressive, tfrnn
+    # no, rnn, autoregressive, tfrnn, tftlrnn
     parser.add_argument("-predictor", type=str)
     parser.add_argument("-timesteps", type=int)
 
@@ -81,7 +81,6 @@ def define_parser_arguments():
     parser.add_argument("-batchsize", type=int)
     parser.add_argument("-nlayers", type=int)
     # transfer learning
-    parser.add_argument("-applytl", type=str)
     parser.add_argument("-tlmodelpath", type=str)
     parser.add_argument("-ntllayers", type=int)
     # machine dependent
@@ -177,16 +176,17 @@ def initialize_comparator_manually(comparator):
         comparator.tau = 0.5
 
     # for predictor
-    comparator.predictor = "tfrnn"  # "tfrnn"  # "no"
+    comparator.predictor = "tftlrnn"  # "tfrnn"  # "no", "tftlrnn"
     comparator.timesteps = 7
 
     # for ANN predictor
-    if comparator.predictor == "rnn" or comparator.predictor == "tfrnn":
+    if comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or comparator.predictor == "tftlrnn":
         comparator.neuronstype = "fixed20"
         comparator.epochs = 3
         comparator.batchsize = 1
         comparator.n_layers = 2
-        comparator.apply_tl = True
+        # apply transfer learning only for tftlrnn
+        comparator.apply_tl = comparator.predictor == "tftlrnn"
         comparator.tl_model_path = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/"  # + \
         #"tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"
         comparator.n_tllayers = 1
@@ -246,12 +246,13 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.timesteps = args.timesteps
 
     # for ANN predictor
-    if args.predictor == "rnn" or args.predictor == "tfrnn":
+    if args.predictor == "rnn" or args.predictor == "tfrnn" or args.predictor == "tftlrnn":
         comparator.neuronstype = args.neuronstype
         comparator.epochs = args.epochs
         comparator.batchsize = args.batchsize
         comparator.n_layers = args.nlayers
-        comparator.apply_tl = args.applytl == 'True'
+        # apply transfer learning only for tftlrnn
+        comparator.apply_tl = args.predictor == 'tftlrnn'
         comparator.tl_model_path = args.tlmodelpath
         comparator.n_tllayers = args.ntllayers
         comparator.ngpus = args.ngpus

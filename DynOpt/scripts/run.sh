@@ -36,9 +36,9 @@ benchmarkfunctionfolderpath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimiz
 
 # run only some experiments of all for the benchmark problem (the next four
 # parameters are lists)
-poschgtypes=linear			#,sine,circle	# position change type; comma-separated integers
+poschgtypes=mixture			# linear,sine,circle,mixture position change type; comma-separated integers
 fitchgtypes=none			# fitness change type; comma-separated integers
-dims=5						# dimensionality of fitness function; comma-separated integers
+dims=1,5,10,50				# dimensionality of fitness function; comma-separated integers
 noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 
 # PSO
@@ -59,16 +59,15 @@ trechenberg=5				# number of generations during that the number of successful mu
 tau=0.5						# 0 < tau < 1, for Rechenberg
 
 # predictor
-predictor=tfrnn				# no, rnn, autoregressive, tfrnn
+predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
 							# prediciton model to predict the new optimum
-timesteps=7					# number of previous optima used for the predictions
+timesteps=10					# number of previous optima used for the predictions
 
 # ANN predictor
 neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
-epochs=30					# number of training epochs for the RNN prediction model
+epochs=5					# number of training epochs for the RNN prediction model
 batchsize=128					# batch size for RNN model
 nlayers=2					# overall number of layers (incl. tl layers)
-applytl="True"				# use pre-trained transfer learning model
 tlmodelpath="/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"	# path to the pre-trained transfer learning model
 ntllayers=1					# number of layers in the transfer learning model
 ngpus=1    					# number of GPUs to use (for RNN model) 
@@ -120,7 +119,6 @@ outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/Dy
 -epochs="$epochs" \
 -batchsize="$batchsize" \
 -nlayers="$nlayers" \
--applytl="$applytl" \
 -tlmodelpath="$tlmodelpath" \
 -ntllayers="$ntllayers" \
 -ngpus="$ngpus" \
