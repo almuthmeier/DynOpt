@@ -21,7 +21,7 @@
 
 # benchmark problem
 algorithm="dynea" 			# dynea or dynpso
-repetitions=20				# number runs for each experiment
+repetitions=5				# number runs for each experiment
 chgperiods=500				# number of change periods 
 lenchgperiod=20				# number of generations per change period; has to be
 							# set even if chgperiod==1 (is then number of 
