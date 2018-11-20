@@ -67,7 +67,7 @@ epochs=5					# number of training epochs for the RNN prediction model
 batchsize=128					# batch size for RNN model
 nlayers=2					# overall number of layers (incl. tl layers)
 tlmodelpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/models_2018-11-19/"	# path to the pre-trained transfer learning model
-ntllayers=2					# number of layers in the transfer learning model
+ntllayers=1					# number of layers in the transfer learning model
 ngpus=1    					# number of GPUs to use (for RNN model) 
 
 # runtime
