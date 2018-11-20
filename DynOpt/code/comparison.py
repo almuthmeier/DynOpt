@@ -380,3 +380,4 @@ class PredictorComparator(object):
             self.run_runs_parallel()
             # save results
             # (plot results)6
+        print("completed all experiments", flush=True)
