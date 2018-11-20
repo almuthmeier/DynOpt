@@ -201,7 +201,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 37:
+    if n_current_inputs != 36:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
