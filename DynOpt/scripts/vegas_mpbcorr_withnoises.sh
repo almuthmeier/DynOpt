@@ -70,7 +70,8 @@ ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any ex
 # Set 1
 benchmarkfunction=mpbcorr	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
 poschgtypes=none			# linear,sine,circle,mixture position change type; comma-separated integers
-noises=0.0,0.2,0.4			# noise, required only for mpb-benchmarks; comma-separated floats
+timesteps=10				# number of previous optima used for the predictions
+noises=0.2					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
@@ -173,9 +174,10 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # Set 2
-benchmarkfunction=sphere	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
-poschgtypes=mixture			# linear,sine,circle,mixture position change type; comma-separated integers
-noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
+benchmarkfunction=mpbcorr	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+poschgtypes=none			# linear,sine,circle,mixture position change type; comma-separated integers
+timesteps=10				# number of previous optima used for the predictions
+noises=0.4					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
@@ -277,58 +279,13 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # Set 3
-benchmarkfunction=rastrigin	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
-poschgtypes=mixture			# linear,sine,circle,mixture position change type; comma-separated integers
-noises=0.0			# noise, required only for mpb-benchmarks; comma-separated floats
+benchmarkfunction=mpbcorr	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+poschgtypes=none			# linear,sine,circle,mixture position change type; comma-separated integers
+timesteps=50				# number of previous optima used for the predictions
+noises=0.2					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
-
-#------------------------------------------------------------------------------
-# Command 1
-predictor=no				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
 
 #------------------------------------------------------------------------------
 # Command 2
@@ -382,58 +339,13 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # Set 4
-benchmarkfunction=griewank	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
-poschgtypes=mixture			# linear,sine,circle,mixture position change type; comma-separated integers
-noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
+benchmarkfunction=mpbcorr	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+poschgtypes=none			# linear,sine,circle,mixture position change type; comma-separated integers
+timesteps=50				# number of previous optima used for the predictions
+noises=0.4					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
-
-#------------------------------------------------------------------------------
-# Command 1
-predictor=no				# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
 
 
 #------------------------------------------------------------------------------
@@ -484,5 +396,124 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 
 #------------------------------------------------------------------------------
 
+# ==================================================================================================================================================
+# ==================================================================================================================================================
+# ==================================================================================================================================================
+# Set 5
+benchmarkfunction=mpbcorr	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+poschgtypes=none			# linear,sine,circle,mixture position change type; comma-separated integers
+timesteps=100				# number of previous optima used for the predictions
+noises=0.2					# noise, required only for mpb-benchmarks; comma-separated floats
+# ==================================================================================================================================================
+# ==================================================================================================================================================
+# ==================================================================================================================================================
 
+
+#------------------------------------------------------------------------------
+# Command 2
+predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
+
+# static
+outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
+#------------------------------------------------------------------------------
+
+python3.5 ../code/input_parser.py -algorithm="$algorithm" \
+-repetitions="$repetitions" \
+-chgperiods="$chgperiods" \
+-lenchgperiod="$lenchgperiod" \
+-ischgperiodrandom="$ischgperiodrandom" \
+-benchmarkfunction="$benchmarkfunction" \
+-benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
+-outputdirectory="$outputdirectory" \
+-outputdirectorypath="$outputdirectorypath" \
+-poschgtypes="$poschgtypes" \
+-fitchgtypes="$fitchgtypes" \
+-dims="$dims" \
+-noises="$noises" \
+-c1="$c1" \
+-c2="$c2" \
+-c3="$c3" \
+-insertpred="$insertpred" \
+-adaptivec3="$adaptivec3" \
+-nparticles="$nparticles" \
+-mu="$mu" \
+-la="$la" \
+-ro="$ro" \
+-mean="$mean" \
+-sigma="$sigma" \
+-trechenberg="$trechenberg" \
+-tau="$tau" \
+-predictor="$predictor" \
+-timesteps="$timesteps" \
+-neuronstype="$neuronstype" \
+-epochs="$epochs" \
+-batchsize="$batchsize" \
+-nlayers="$nlayers" \
+-tlmodelpath="$tlmodelpath" \
+-ntllayers="$ntllayers" \
+-ngpus="$ngpus" \
+-ncpus="$ncpus" &
+#------------------------------------------------------------------------------
+
+# ==================================================================================================================================================
+# ==================================================================================================================================================
+# ==================================================================================================================================================
+# Set 4
+benchmarkfunction=mpbcorr	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+poschgtypes=none			# linear,sine,circle,mixture position change type; comma-separated integers
+timesteps=100				# number of previous optima used for the predictions
+noises=0.4					# noise, required only for mpb-benchmarks; comma-separated floats
+# ==================================================================================================================================================
+# ==================================================================================================================================================
+# ==================================================================================================================================================
+
+
+#------------------------------------------------------------------------------
+# Command 2
+predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
+
+# static
+outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
+#------------------------------------------------------------------------------
+
+python3.5 ../code/input_parser.py -algorithm="$algorithm" \
+-repetitions="$repetitions" \
+-chgperiods="$chgperiods" \
+-lenchgperiod="$lenchgperiod" \
+-ischgperiodrandom="$ischgperiodrandom" \
+-benchmarkfunction="$benchmarkfunction" \
+-benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
+-outputdirectory="$outputdirectory" \
+-outputdirectorypath="$outputdirectorypath" \
+-poschgtypes="$poschgtypes" \
+-fitchgtypes="$fitchgtypes" \
+-dims="$dims" \
+-noises="$noises" \
+-c1="$c1" \
+-c2="$c2" \
+-c3="$c3" \
+-insertpred="$insertpred" \
+-adaptivec3="$adaptivec3" \
+-nparticles="$nparticles" \
+-mu="$mu" \
+-la="$la" \
+-ro="$ro" \
+-mean="$mean" \
+-sigma="$sigma" \
+-trechenberg="$trechenberg" \
+-tau="$tau" \
+-predictor="$predictor" \
+-timesteps="$timesteps" \
+-neuronstype="$neuronstype" \
+-epochs="$epochs" \
+-batchsize="$batchsize" \
+-nlayers="$nlayers" \
+-tlmodelpath="$tlmodelpath" \
+-ntllayers="$ntllayers" \
+-ngpus="$ngpus" \
+-ncpus="$ncpus" &
+
+#------------------------------------------------------------------------------
 wait
