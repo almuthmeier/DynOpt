@@ -1,6 +1,6 @@
 '''
 Contains functionality to create the dynamic variants of the  sphere, 
-rosenbrock, and rastrigin function.
+rosenbrock, rastrigin, and griewank function.
 
 The data set values are stored per change. 
 
@@ -200,6 +200,8 @@ def original_fitness(x, problem):
         return rosenbrock(x)
     elif problem == "rastrigin":
         return rastrigin(x)
+    elif problem == "griewank":
+        return griewank(x)
     else:
         msg = "original_fitness(): unknown problem " + problem
         warnings.warn(msg)
@@ -211,7 +213,7 @@ def compute_fitness(x, gen, problem, global_opt_pos_per_gen, orig_opt_pos):
     generation.
     @param x: individual
     @param gen: current generation
-    @param problem: name of fitness function: sphere, rosenbrock, rastrigin
+    @param problem: name of fitness function: sphere, rosenbrock, rastrigin, griewank
     @param global_opt_pos_per_gen: 2d numpy array, contains the global optimum
     position for each generation
     @param orig_opt_pos: global optimum position of unmoved fitness landscape 

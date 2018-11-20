@@ -36,7 +36,7 @@ class MetricCalculator():
 
         self.algorithms = []
         self.benchmarkfunctions = ["rosenbrock",
-                                   "sphere"]  # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy
+                                   "sphere"]  # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy,griewank
         self.benchmark_folder_path = path_to_datasets + "ESANN_2019/"
         self.output_dir_path = path_to_output + "ESANN_2019/"
         # ["linear", "sine", "circle"]

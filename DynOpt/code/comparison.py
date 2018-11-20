@@ -311,9 +311,10 @@ class PredictorComparator(object):
                            'global_opt_pos_per_chgperiod': global_opt_pos_per_chgperiod,
                            'orig_global_opt_pos': orig_global_opt_pos}
 
-        # additional data for some benchmark functions
+        # additional data for some benchmark functions # TODO(dev)
         if self.benchmarkfunction == "sphere" or self.benchmarkfunction == \
-                "rastrigin" or self.benchmarkfunction == "rosenbrock":
+                "rastrigin" or self.benchmarkfunction == "rosenbrock" or \
+                self.benchmarkfunction == "griewank":
             pass
         if self.benchmarkfunction == "mpbnoisy" or \
                 self.benchmarkfunction == "mpbrand" or \

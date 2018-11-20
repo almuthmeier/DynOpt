@@ -60,7 +60,7 @@ class Test(unittest.TestCase):
                     # by testing whether same positions appear successively
 
                     if "sphere" in abs_file_path or "rosenbrock" in abs_file_path \
-                            or "rastrigin" in abs_file_path:
+                            or "rastrigin" in abs_file_path or "griewank" in abs_file_path:
                         for i in range(1, len(global_opt_pos)):
                             are_not_equal = np.any(np.not_equal(
                                 global_opt_pos[i - 1], global_opt_pos[i]))

@@ -18,7 +18,7 @@ import numpy as np
 def fitness(problem, individual, curr_gen, problem_data):
     '''
     Compute fitness for one individual.
-    @param problem: string: sphere, rastrigin, rosenbrock, mpbnoisy, mpbrand, mpbcorr
+    @param problem: string: sphere, rastrigin, rosenbrock,griewank, mpbnoisy, mpbrand, mpbcorr
     @param individual: individual for that the fitness is computed
     @param curr_gen: number of current generation as fitness is time-dependent
     @param problem_data: containing all the information required to compute the
@@ -29,7 +29,7 @@ def fitness(problem, individual, curr_gen, problem_data):
     if problem == "mpbnoisy" or problem == "mpbrand" or problem == "mpbcorr":
         return mpb.compute_fitness(individual, curr_gen, problem_data['heights'],
                                    problem_data['widths'], problem_data['positions'])
-    elif problem == "sphere" or problem == "rastrigin" or problem == "rosenbrock":
+    elif problem == "sphere" or problem == "rastrigin" or problem == "rosenbrock" or problem == "griewank":
         return dynposbenchmark.compute_fitness(individual, curr_gen, problem,
                                                problem_data['global_opt_pos_per_gen'],
                                                problem_data['orig_global_opt_pos'])
@@ -48,7 +48,7 @@ def environment_changed(curr_gen, individuals_from_last_gen, fitness_from_last_g
     @param individuals_from_last_gen: population (generated in last generation)
     @param fitness_from_last_gen: populations fitness (computed in last generation), 
     2d numpy array (for each individual one row)
-    @param problem: string: mpb, sphere, rastrigin or rosenbrock
+    @param problem: string: mpb, sphere, rastrigin or rosenbrock, griewank
     @param problem_data: containing all the information required to compute the
     fitness (loaded from file)
     @param alg_np_rnd_generator: random generator of the optimization algorithm

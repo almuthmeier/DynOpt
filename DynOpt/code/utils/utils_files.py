@@ -160,7 +160,8 @@ def get_sorted_array_file_names_for_experiment_file_name(exp_file_name, arrays_p
     dim = splitted_benchmark_file_name[1].split('-')[1]
     #chgperiods = splitted_benchmark_file_name[2].split('-')[1]
 
-    if function == "sphere" or function == "rastrigin" or function == "rosenbrock":
+    if function == "sphere" or function == "rastrigin" or function == "rosenbrock" or \
+            function == "griewank":
         pch = splitted_benchmark_file_name[3].split('-')[1]
         fch = splitted_benchmark_file_name[4].split('-')[1]
         selected_files = [f for f in listdir(arrays_path) if (isfile(join(
@@ -197,7 +198,8 @@ def select_experiment_files(benchmark_path, benchmarkfunction, poschgtypes,
     selected_exp_files = None
     if benchmarkfunction == "sphere" or \
             benchmarkfunction == "rastrigin" or \
-            benchmarkfunction == "rosenbrock":
+            benchmarkfunction == "rosenbrock" or \
+            benchmarkfunction == "griewank":
         selected_exp_files = [f for f in all_experiment_files if (
                               any(("_d-" + str(dim) + "_") in f for dim in dims) and
                               any(("_pch-" + poschgtype + "_") in f for poschgtype in poschgtypes) and

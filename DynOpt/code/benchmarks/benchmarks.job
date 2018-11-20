@@ -22,7 +22,7 @@ python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -ben
 
 
 # -----------------------------------------------------------------------------
-# shpere, rastrigin, rosenbrock
+# shpere, rastrigin, rosenbrock, griewank
 benchmarkfunction="srr"
 
 python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
