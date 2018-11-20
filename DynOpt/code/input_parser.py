@@ -187,8 +187,8 @@ def initialize_comparator_manually(comparator):
         comparator.batchsize = 1
         comparator.n_layers = 2
         comparator.apply_tl = True
-        comparator.tl_model_path = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/" + \
-            "tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"
+        comparator.tl_model_path = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/"  # + \
+        #"tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"
         comparator.n_tllayers = 1
         comparator.ngpus = 1
 
@@ -318,9 +318,9 @@ def run_parser():
     orig_stderr = sys.stderr
     f = open(
         log_file_name, 'w')
-    # sys.stdout = f # TODO(exe) in-comment this
-    # sys.stderr = f
-
+    sys.stdout = f  # TODO(exe) in-comment this
+    sys.stderr = f
+    #
     # =======================================================================
     # run experiments
     # =======================================================================

@@ -356,7 +356,8 @@ class DynamicEA():
                 self.reset_parameters()
                 # count change
                 self.detected_n_changes += 1
-                print("detected change ", self.detected_n_changes, flush=True)
+                print("detected change ", self.detected_n_changes,
+                      " in generation ", i, flush=True)
                 # store best found solution during change period as training data for predictor
                 # TODO(dev) works only for plus-selection (not for
                 # comma-selection)

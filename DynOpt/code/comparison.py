@@ -17,7 +17,7 @@ from algorithms.dynea import DynamicEA
 from algorithms.dynpso import DynamicPSO
 import numpy as np
 from utils.utils_files import get_current_day_time, select_experiment_files, \
-    convert_exp_to_arrays_file_name
+    convert_exp_to_arrays_file_name, get_full_tl_model_name
 
 
 class PredictorComparator(object):
@@ -108,8 +108,11 @@ class PredictorComparator(object):
         n_generations = self.get_n_generations()
         if self.predictor == "no" or self.predictor == "autoregressive":
             n_neurons = None
+            full_tl_model_name = None
         else:
             n_neurons = get_n_neurons(self.neuronstype, dimensionality)
+            full_tl_model_name = get_full_tl_model_name(
+                self.tl_model_path, dimensionality)
         if self.algorithm == "dynea":
             alg = DynamicEA(self.benchmarkfunction, dimensionality,
                             n_generations, self.experiment_data, self.predictor,
@@ -118,7 +121,7 @@ class PredictorComparator(object):
                             self.trechenberg, self.tau, self.timesteps,
                             n_neurons, self.epochs, self.batchsize,
                             self.n_layers, self.apply_tl, self.n_tllayers,
-                            self.tl_model_path)
+                            full_tl_model_name)
         elif self.algorithm == "dynpso":
             alg = DynamicPSO(self.benchmarkfunction, dimensionality,
                              n_generations, self.experiment_data, self.predictor,
@@ -127,7 +130,7 @@ class PredictorComparator(object):
                              self.adaptivec3, self.nparticles, self.timesteps,
                              n_neurons, self.epochs, self.batchsize,
                              self.n_layers, self.apply_tl, self.n_tllayers,
-                             self.tl_model_path)
+                             full_tl_model_name)
         else:
             warnings.warn("unknown optimization algorithm")
             exit(1)
@@ -268,6 +271,8 @@ class PredictorComparator(object):
             elif key == "orig_global_opt_pos":
                 pass
             else:
+                # is called sometimes for "global_opt_fit_per_gen" because
+                # key is changed inline and therefore condition holds again?!
                 msg = "unknown property: " + key
                 warnings.warn(msg)
 

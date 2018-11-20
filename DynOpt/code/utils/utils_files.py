@@ -209,3 +209,20 @@ def select_experiment_files(benchmark_path, benchmarkfunction, poschgtypes,
                               any(("_d-" + str(dim) + "_") in f for dim in dims) and
                               any(("_noise-" + str(noise) + "_") in f for noise in noises))]
     return selected_exp_files
+
+
+def get_full_tl_model_name(path_to_parent_dir, dim):
+    '''
+    @returns full path to saved pre-trained tl model for desired dimensionality
+    '''
+    model_file = [f for f in listdir(path_to_parent_dir) if
+                  (isfile(join(path_to_parent_dir, f)) and
+                   f.endswith('.ckpt.meta') and
+                   "dim-" + str(dim) + "_" in f)]
+    assert len(model_file) == 1, "false number of files: " + \
+        str(len(model_file))
+
+    # clip ".meta" from the end
+    model_file = model_file[0].replace(".meta", "")
+    full_path = path_to_parent_dir + model_file
+    return full_path
