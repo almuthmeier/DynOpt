@@ -119,35 +119,68 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
     return predictor
 
 
-def predict_with_autoregressive(new_train_data, scaler):
+def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler):
     '''
     Predicts next optimum position with autoregressive model.
     @param new_train_data: 
 
     Throws ValueError (if training data consists data which are nearly zero) 
-    '''
-    from statsmodels.tsa.vector_ar.var_model import VAR
 
+    http://www.statsmodels.org/devel/tsa.html#univariate-autogressive-processes-ar (overview)
+    http://www.statsmodels.org/devel/generated/statsmodels.tsa.ar_model.AR.html#statsmodels.tsa.ar_model.AR (AR)
+    http://www.statsmodels.org/devel/vector_ar.html#var (VAR)
+    http://www.statsmodels.org/devel/generated/statsmodels.tsa.vector_ar.var_model.VAR.html#statsmodels.tsa.vector_ar.var_model.VAR (VAR)
+
+    https://qiita.com/vinyip918/items/583ac76b9b05cdcc2dde (example for AR)
+    '''
     # number of time steps to predict (1 because only next optimum)
     n_prediction_steps = 1
-    # train autoregression
-    model = VAR(new_train_data)
-    # throws exception:  "ValueError: x already contains a constant" if the
-    # training data contain values similar to zero
-    try:
-        model_fit = model.fit()
-    except ValueError:
-        raise
+    # maximum number of time steps to use for prediction
+    # -1 for VAR, otherwise exception (perhaps because otherwise each column has only one value
+    # https://datascience.stackexchange.com/questions/38203/var-model-valueerror-x-already-contains-a-constant
+    max_lag = n_time_steps - 1
+    n_train_data = len(new_train_data)
+    if n_features == 1:
+        from statsmodels.tsa.ar_model import AR
+        # train autoregression
+        new_train_data = new_train_data.flatten()
+        model = AR(new_train_data)
+        # throws exception:  "ValueError: x already contains a constant" if the
+        # training data contain values similar to zero
+        try:
+            model_fit = model.fit(maxlag=max_lag)
+        except ValueError:
+            # "ValueError: shapes (4,) and (5,) not aligned: 4 (dim 0) != 5 (dim 0)"
+            # if max_lag = n_time_steps
+            raise
 
-    lag_order = model_fit.k_ar
-    #print('Lag: %s' % lag_order)
-    #print('Coefficients: %s' % model_fit.params)
+        predictions = model_fit.predict(start=n_train_data,
+                                        end=n_train_data + n_prediction_steps - 1)
+    else:
+        # for multivariate data, the VAR type does not work for univariate data
+        from statsmodels.tsa.vector_ar.var_model import VAR
 
-    # make prediction, idea for "forecast" instead of "predict" from here:
-    # http://www.statsmodels.org/0.6.1/vector_ar.html (7.10.17)
-    # http://www.statsmodels.org/dev/vector_ar.html
-    predictions = model_fit.forecast(
-        new_train_data[-lag_order:], n_prediction_steps)
+        # train autoregression
+        model = VAR(new_train_data)
+        # throws exception:  "ValueError: x already contains a constant" if the
+        # training data contain values similar to zero
+        try:
+            model_fit = model.fit(maxlags=max_lag)
+        except ValueError:
+            # "ValueError: x already contains a constant"
+            # if max_lag = n_time_steps
+            raise
+
+        lag_order = model_fit.k_ar
+        #print('Lag: %s' % lag_order)
+        #print('Coefficients: %s' % model_fit.params)
+
+        # make prediction, idea for "forecast" instead of "predict" from here:
+        # http://www.statsmodels.org/0.6.1/vector_ar.html (7.10.17)
+        # http://www.statsmodels.org/dev/vector_ar.html
+        predictions = model_fit.forecast(
+            new_train_data[-lag_order:], n_prediction_steps)
+
     if n_prediction_steps == 1:
         # make 1d numpy array from 2d array if only one prediction is done
         prediction = predictions.flatten()
@@ -275,7 +308,8 @@ def predict_next_optimum_position(mode, sess, new_train_data, n_epochs, batch_si
                                       n_time_steps, n_features, scaler, predictor)
     elif mode == "autoregressive":
         try:
-            prediction = predict_with_autoregressive(new_train_data, scaler)
+            prediction = predict_with_autoregressive(
+                new_train_data, n_features, n_time_steps, scaler)
         except ValueError:
             raise
     elif mode == "no":

@@ -141,19 +141,19 @@ def initialize_comparator_manually(comparator):
     comparator.chgperiods = 50
     comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = False
-    comparator.benchmarkfunction = "rosenbrock"
+    comparator.benchmarkfunction = "sphere"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "ESANN_2019/"
     # attention: naming should be consistent to predictor/other params
     comparator.outputdirectory = "ersterTest/ea_no/"
     comparator.outputdirectorypath = path_to_dynoptim + \
-        "/DynOpt/output/" + "ESANN_2019/" + "rosenbrock/"
+        "/DynOpt/output/" + "ESANN_2019/" + "sphere/"
 
     # run only some experiments of all for the benchmark problem
     # ["linear", "sine", "circle"])
-    comparator.poschgtypes = np.array(["mixture", "linear"])
+    comparator.poschgtypes = np.array(["mixture"])  # , "linear"])
     comparator.fitchgtypes = np.array(["none"])
-    comparator.dims = np.array([5])
+    comparator.dims = np.array([1])
     comparator.noises = np.array([0.0])
 
     # PSO
@@ -176,8 +176,9 @@ def initialize_comparator_manually(comparator):
         comparator.tau = 0.5
 
     # for predictor
-    comparator.predictor = "tftlrnn"  # "tfrnn"  # "no", "tftlrnn"
-    comparator.timesteps = 7
+    # "tftlrnn"  # "tfrnn"  # "no", "tftlrnn"
+    comparator.predictor = "autoregressive"
+    comparator.timesteps = 50
 
     # for ANN predictor
     if comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or comparator.predictor == "tftlrnn":
@@ -320,8 +321,8 @@ def run_parser():
     orig_stderr = sys.stderr
     f = open(
         log_file_name, 'w')
-    sys.stdout = f  # TODO(exe) in-comment this
-    sys.stderr = f
+    # sys.stdout = f  # TODO(exe) in-comment this
+    #sys.stderr = f
     #
     # =======================================================================
     # run experiments
