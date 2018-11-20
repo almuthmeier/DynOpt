@@ -96,7 +96,7 @@ predictor=no				# no, rnn, autoregressive, tfrnn
 applytl="False"				# use pre-trained transfer learning model
 #------------------------------------------------------------------------------
 
-~/.virtualenvs/promotion/prototype/bin/python3.5 ../code/input_parser.py -algorithm="$algorithm" \
+python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
 -chgperiods="$chgperiods" \
 -lenchgperiod="$lenchgperiod" \
@@ -140,7 +140,7 @@ predictor=autoregressive	# no, rnn, autoregressive, tfrnn
 applytl="False"				# use pre-trained transfer learning model
 #------------------------------------------------------------------------------
 
-~/.virtualenvs/promotion/prototype/bin/python3.5 ../code/input_parser.py -algorithm="$algorithm" \
+python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
 -chgperiods="$chgperiods" \
 -lenchgperiod="$lenchgperiod" \
@@ -186,7 +186,7 @@ applytl="False"				# use pre-trained transfer learning model
 
 # (There must always be a space between the argument and the backslash!)
 
-~/.virtualenvs/promotion/prototype/bin/python3.5 ../code/input_parser.py -algorithm="$algorithm" \
+python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
 -chgperiods="$chgperiods" \
 -lenchgperiod="$lenchgperiod" \
@@ -232,7 +232,7 @@ applytl="True"				# use pre-trained transfer learning model
 
 # (There must always be a space between the argument and the backslash!)
 
-~/.virtualenvs/promotion/prototype/bin/python3.5 ../code/input_parser.py -algorithm="$algorithm" \
+python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
 -chgperiods="$chgperiods" \
 -lenchgperiod="$lenchgperiod" \
@@ -289,7 +289,7 @@ predictor=no				# no, rnn, autoregressive, tfrnn
 applytl="False"				# use pre-trained transfer learning model
 #------------------------------------------------------------------------------
 
-~/.virtualenvs/promotion/prototype/bin/python3.5 ../code/input_parser.py -algorithm="$algorithm" \
+python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
 -chgperiods="$chgperiods" \
 -lenchgperiod="$lenchgperiod" \
@@ -333,7 +333,7 @@ predictor=autoregressive	# no, rnn, autoregressive, tfrnn
 applytl="False"				# use pre-trained transfer learning model
 #------------------------------------------------------------------------------
 
-~/.virtualenvs/promotion/prototype/bin/python3.5 ../code/input_parser.py -algorithm="$algorithm" \
+python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
 -chgperiods="$chgperiods" \
 -lenchgperiod="$lenchgperiod" \
@@ -379,7 +379,7 @@ applytl="False"				# use pre-trained transfer learning model
 
 # (There must always be a space between the argument and the backslash!)
 
-~/.virtualenvs/promotion/prototype/bin/python3.5 ../code/input_parser.py -algorithm="$algorithm" \
+python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
 -chgperiods="$chgperiods" \
 -lenchgperiod="$lenchgperiod" \
@@ -425,7 +425,7 @@ applytl="True"				# use pre-trained transfer learning model
 
 # (There must always be a space between the argument and the backslash!)
 
-~/.virtualenvs/promotion/prototype/bin/python3.5 ../code/input_parser.py -algorithm="$algorithm" \
+python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
 -chgperiods="$chgperiods" \
 -lenchgperiod="$lenchgperiod" \
