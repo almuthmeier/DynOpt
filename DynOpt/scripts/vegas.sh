@@ -70,7 +70,7 @@ ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any ex
 # Set 1
 benchmarkfunction=mpbcorr	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
 poschgtypes=none			# linear,sine,circle,mixture position change type; comma-separated integers
-noises=0.0,0.2,0.4			# noise, required only for mpb-benchmarks; comma-separated floats
+noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
@@ -279,7 +279,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # Set 3
 benchmarkfunction=rastrigin	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
 poschgtypes=mixture			# linear,sine,circle,mixture position change type; comma-separated integers
-noises=0.0			# noise, required only for mpb-benchmarks; comma-separated floats
+noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
