@@ -48,9 +48,10 @@ def get_metrics_file_name(metrics_file_path, predictor_name, benchmarkfunction, 
         day + '_' + time + ".csv"
 
 
-def get_logs_file_name(logs_file_path, predictor_name, benchmarkfunction, day, time):
+def get_logs_file_name(logs_file_path, predictor_name, benchmarkfunction, day, time, noise):
     return logs_file_path + predictor_name + "_" + benchmarkfunction + "_" + \
-        day + '_' + time + ".txt"
+        "noise-" + "{:.1f}".format(noise) + "_" + \
+        day + '_' + time.replace(":", "-") + ".txt" % noise
 
 
 def convert_exp_to_arrays_file_name(predictor, exp_file_name, day, time,

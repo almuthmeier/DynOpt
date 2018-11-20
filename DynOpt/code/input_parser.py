@@ -312,7 +312,8 @@ def run_parser():
     log_file_name = get_logs_file_name(comparator.logs_file_path,
                                        comparator.predictor,
                                        comparator.benchmarkfunction,
-                                       comparator.day, comparator.time)
+                                       comparator.day, comparator.time,
+                                       comparator.noises[0])  # TODO assumes that only one noise value is in the array
     print(log_file_name)
     print("Write log and errors to file ", log_file_name, flush=True)
     orig_stdout = sys.stdout
