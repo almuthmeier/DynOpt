@@ -24,7 +24,7 @@ from utils.utils_files import select_experiment_files,\
 class MetricCalculator():
     def __init__(self, path_to_datasets=None, path_to_output=None,
                  benchmarkfunctions=None, poschgtypes=None, fitchgtypes=None,
-                 dims=None, noises=None, path_addition=None):
+                 dims=None, noises=None, path_addition=None, metric_filename=None):
         '''
         Initialize paths, properties of the experiments, etc.
         '''
@@ -48,6 +48,7 @@ class MetricCalculator():
             self.dims = [2]
             self.noises = [0.0]
             self.path_addition = ""
+            self.metric_filename = "metric_db.csv"
         else:
             self.output_dir_path = path_to_output
             self.benchmark_folder_path = path_to_datasets
@@ -57,6 +58,7 @@ class MetricCalculator():
             self.dims = dims
             self.noises = noises
             self.path_addition = path_addition  # for further subdirectories
+            self.metric_filename = metric_filename
 
     def compute_metrics(self, best_found_fit_per_gen,
                         global_opt_fit_per_chgperiod, gens_of_chgperiods):
@@ -221,18 +223,18 @@ class MetricCalculator():
                             df.loc[(df['arrayfilename'] == array_file_names_per_run_and_alg[alg][run]),
                                    ['rcs']] = rcs_per_alg[alg]
         # save data frame into file
-        df.to_csv(self.output_dir_path + "metric_db.csv")
+        df.to_csv(self.output_dir_path + self.metric_filename)
 
 
 def start_computing_metrics(benchmarkfunctionfolderpath=None, outputpath=None,
                             benchmarkfunctions=None, poschgtypes=None,
                             fitchgtypes=None, dims=None, noises=None,
-                            path_addition=None):
+                            path_addition=None, metric_filename=None):
     calculator = MetricCalculator(benchmarkfunctionfolderpath, outputpath,
                                   benchmarkfunctions, poschgtypes, fitchgtypes,
-                                  dims, noises, path_addition)
+                                  dims, noises, path_addition, metric_filename)
     calculator.compute_and_save_all_metrics()
-    print("saved metric_db.csv", flush=True)
+    print("saved metric database", flush=True)
 
 
 if __name__ == '__main__':

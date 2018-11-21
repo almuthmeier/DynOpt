@@ -19,6 +19,8 @@ fitchgtypes=none
 dims=1,5,10,50
 noises=0.0,0.2,0.4
 pathaddition="stepevaluation/"
+metricfilename="metric_db_stepevaluation.csv"
+
 # -----------------------------------------------------------------------------
 
 python3.5 metrics_input_parser.py -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
@@ -28,7 +30,8 @@ python3.5 metrics_input_parser.py -benchmarkfunctionfolderpath="$benchmarkfuncti
 -fitchgtypes="$fitchgtypes" \
 -dims="$dims" \
 -noises="$noises" \
--pathaddition="$pathaddition" &
+-pathaddition="$pathaddition" \
+-metricfilename="$metricfilename" &
 
 
 # -----------------------------------------------------------------------------

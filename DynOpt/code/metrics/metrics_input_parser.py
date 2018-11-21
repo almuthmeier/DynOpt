@@ -51,6 +51,7 @@ def define_parser_arguments():
     parser.add_argument("-dims", type=int_list_type)
     parser.add_argument("-noises", type=float_list_type)
     parser.add_argument("-pathaddition", type=str)
+    parser.add_argument("-metricfilename", type=str)
     return parser
 
 
@@ -63,7 +64,8 @@ def read_input_values(parser):
             args.fitchgtypes,
             args.dims,
             args.noises,
-            args.pathaddition)
+            args.pathaddition,
+            args.metricfilename)
 
 
 def run_parser():
