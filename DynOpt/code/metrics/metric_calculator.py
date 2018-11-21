@@ -126,7 +126,7 @@ class MetricCalculator():
 
                 # algorithm parameter settings, e.g. "c1c2c3_1.49"
                 for subdir in direct_cild_dirs:
-                    print("        subdir: ", flush=True)
+                    print("        subdir: ", subdir, flush=True)
                     subdir_path = output_dir_for_benchmark_funct + subdir + "/"
                     # different alg types/predictors
                     alg_types = [d for d in listdir(subdir_path) if (
