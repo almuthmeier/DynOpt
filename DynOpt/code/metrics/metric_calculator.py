@@ -92,15 +92,15 @@ class MetricCalculator():
         for benchmarkfunction in self.benchmarkfunctions:
             # load experiment files for the benchmark function to get
             # information about real global optimum
-            print()
-            print("benchmark: ", benchmarkfunction)
+            print("", flush=True)
+            print("benchmark: ", benchmarkfunction, flush=True)
             experiment_files = select_experiment_files(self.benchmark_folder_path + benchmarkfunction,
                                                        benchmarkfunction,
                                                        self.poschgtypes,
                                                        self.fitchgtypes,
                                                        self.dims, self.noises)
             for exp_file_name in experiment_files:
-
+                print("exp_file_name: ", exp_file_name, flush=True)
                 # load experiment data from file
                 exp_file_path = self.benchmark_folder_path + \
                     benchmarkfunction + "/" + exp_file_name
@@ -117,14 +117,16 @@ class MetricCalculator():
                 # get output
                 output_dir_for_benchmark_funct = self.output_dir_path + \
                     benchmarkfunction + "/" + self.path_addition
-                print(output_dir_for_benchmark_funct)
+                print("    output_dir_for_benchmark_funct:",
+                      output_dir_for_benchmark_funct, flush=True)
                 # different alg settings
                 direct_cild_dirs = [d for d in listdir(output_dir_for_benchmark_funct) if (
                     isdir(join(output_dir_for_benchmark_funct, d)) and not listdir(output_dir_for_benchmark_funct + d) == [])]
-                print("direct_child_dirs: ", direct_cild_dirs)
+                print("    direct_child_dirs: ", direct_cild_dirs, flush=True)
 
                 # algorithm parameter settings, e.g. "c1c2c3_1.49"
                 for subdir in direct_cild_dirs:
+                    print("        subdir: ", flush=True)
                     subdir_path = output_dir_for_benchmark_funct + subdir + "/"
                     # different alg types/predictors
                     alg_types = [d for d in listdir(subdir_path) if (
@@ -135,13 +137,15 @@ class MetricCalculator():
                         key: [] for key in alg_types}
                     array_file_names_per_run_and_alg = {
                         key: [] for key in alg_types}
+                    print("        alg_types: ", alg_types, flush=True)
                     # algorithms with predictor types, e.g. "ea_no"
                     for alg in alg_types:
-                        print("    alg: ", alg)
+                        print("            alg: ", alg, flush=True)
                         # read all array files for the runs of the experiment
                         arrays_path = subdir_path + alg + "/arrays/"
                         array_names = get_sorted_array_file_names_for_experiment_file_name(exp_file_name,
                                                                                            arrays_path)
+                        print("array_names: ", array_names, flush=True)
 
                         # get general info from one arbitrary array file
                         (predictor, benchmark, d, chgperiods, lenchgperiod,
@@ -183,8 +187,8 @@ class MetricCalculator():
                                     'poschg': poschg, 'fitchg': fitchg, 'run': run,
                                     'bog-for-run': bog_for_run, 'bebc': bebc, 'rcs': None, 'arr': arr_value}
                             df.at[len(df)] = data
-                            print("len: ", len(df))
-                            print(df.columns)
+                            print("len: ", len(df), flush=True)
+                            print(df.columns, flush=True)
                             # store data for bog and rcs
                             best_found_fit_per_gen_and_run_and_alg[alg].append(
                                 best_found_fit_per_gen)
@@ -193,7 +197,7 @@ class MetricCalculator():
                         # bog (as defined)
                         # bog_avg, bog_dev = avg_best_of_generation(
                         #    best_found_fit_per_gen_and_run_and_alg[alg])
-                        #print("bog: ", bog_avg)
+                        #print("bog: ", bog_avg,flush=True)
 
                     # rcs
                     keys = list(best_found_fit_per_gen_and_run_and_alg.keys())
@@ -210,7 +214,7 @@ class MetricCalculator():
 
                         rcs_per_alg = rel_conv_speed(
                             gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict)
-                        print("rcs_per_alg ", rcs_per_alg)
+                        print("rcs_per_alg ", rcs_per_alg, flush=True)
 
                         # store RCS data
                         for alg in keys:
@@ -228,6 +232,7 @@ def start_computing_metrics(benchmarkfunctionfolderpath=None, outputpath=None,
                                   benchmarkfunctions, poschgtypes, fitchgtypes,
                                   dims, noises, path_addition)
     calculator.compute_and_save_all_metrics()
+    print("saved metric_db.csv", flush=True)
 
 
 if __name__ == '__main__':
