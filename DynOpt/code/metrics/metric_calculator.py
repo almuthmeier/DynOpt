@@ -22,28 +22,41 @@ from utils.utils_files import select_experiment_files,\
 
 
 class MetricCalculator():
-    def __init__(self):
+    def __init__(self, path_to_datasets=None, path_to_output=None,
+                 benchmarkfunctions=None, poschgtypes=None, fitchgtypes=None,
+                 dims=None, noises=None, path_addition=None):
         '''
         Initialize paths, properties of the experiments, etc.
         '''
         # TODO(exp) set parameters as required
 
-        # path to "..../DynOpt/code"
-        path_to_code = os.path.abspath(os.pardir)
-        path_to_datasets = '/'.join(path_to_code.split('/')
-                                    [:-1]) + "/datasets/"
-        path_to_output = '/'.join(path_to_code.split('/')[:-1]) + "/output/"
-
-        self.algorithms = []
-        self.benchmarkfunctions = ["rosenbrock",
-                                   "sphere"]  # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy,griewank
-        self.benchmark_folder_path = path_to_datasets + "ESANN_2019/"
-        self.output_dir_path = path_to_output + "ESANN_2019/"
-        # ["linear", "sine", "circle"]
-        self.poschgtypes = ["mixture", "linear"]
-        self.fitchgtypes = ["none"]
-        self.dims = [2]
-        self.noises = [0.0]
+        # output and benchmark path
+        if path_to_output is None:  # assumes that  all input arguments are none
+            # path to "..../DynOpt/code"
+            path_to_code = os.path.abspath(os.pardir)
+            path_to_datasets = '/'.join(path_to_code.split('/')
+                                        [:-1]) + "/datasets/"
+            path_to_output = '/'.join(path_to_code.split('/')
+                                      [:-1]) + "/output/"
+            self.output_dir_path = path_to_output + "ESANN_2019/"
+            self.benchmark_folder_path = path_to_datasets + "ESANN_2019/"
+            # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy,griewank
+            self.benchmarkfunctions = ["rosenbrock", "sphere"]
+            # ["linear", "sine", "circle"]
+            self.poschgtypes = ["mixture", "linear"]
+            self.fitchgtypes = ["none"]
+            self.dims = [2]
+            self.noises = [0.0]
+            self.path_addition = ""
+        else:
+            self.output_dir_path = path_to_output
+            self.benchmark_folder_path = path_to_datasets
+            self.benchmarkfunctions = benchmarkfunctions
+            self.poschgtypes = poschgtypes
+            self.fitchgtypes = fitchgtypes
+            self.dims = dims
+            self.noises = noises
+            self.path_addition = path_addition  # for further subdirectories
 
     def compute_metrics(self, best_found_fit_per_gen,
                         global_opt_fit_per_chgperiod, gens_of_chgperiods):
@@ -102,7 +115,8 @@ class MetricCalculator():
                 # find output files of all algorithms for this experiment
 
                 # get output
-                output_dir_for_benchmark_funct = self.output_dir_path + benchmarkfunction + "/"
+                output_dir_for_benchmark_funct = self.output_dir_path + \
+                    benchmarkfunction + "/" + self.path_addition
                 print(output_dir_for_benchmark_funct)
                 # different alg settings
                 direct_cild_dirs = [d for d in listdir(output_dir_for_benchmark_funct) if (
@@ -206,6 +220,15 @@ class MetricCalculator():
         df.to_csv(self.output_dir_path + "metric_db.csv")
 
 
-if __name__ == '__main__':
-    calculator = MetricCalculator()
+def start_computing_metrics(benchmarkfunctionfolderpath=None, outputpath=None,
+                            benchmarkfunctions=None, poschgtypes=None,
+                            fitchgtypes=None, dims=None, noises=None,
+                            path_addition=None):
+    calculator = MetricCalculator(benchmarkfunctionfolderpath, outputpath,
+                                  benchmarkfunctions, poschgtypes, fitchgtypes,
+                                  dims, noises, path_addition)
     calculator.compute_and_save_all_metrics()
+
+
+if __name__ == '__main__':
+    start_computing_metrics()

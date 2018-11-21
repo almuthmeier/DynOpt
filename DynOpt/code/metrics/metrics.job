@@ -1,0 +1,38 @@
+#!/bin/bash
+
+#SBATCH --gres=gpu:0
+#SBATCH --job-name="benchmarks"
+#SBATCH --ntasks=5
+#SBATCH --mem=16G
+#SBATCH --time=2-00:00
+#SBATCH --output="slurm_benchmarks.%j.out"
+#SBATCH --error="slurm_benchmarks.%j.err"
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=almuth.meier@uni-oldenburg.de
+
+
+benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/data_2018-11-19/"
+outputpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-19/"
+benchmarkfunctions=mpbcorr,griewank,rastrigin,sphere
+poschgtypes=mixture
+fitchgtypes=none
+dims=1,5,10,50
+noises=0.0,0.2,0.4
+pathaddition="stepevaluation/"
+# -----------------------------------------------------------------------------
+# mpbcorr
+benchmarkfunction="mpbcorr"
+
+python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+
+
+# -----------------------------------------------------------------------------
+# shpere, rastrigin, rosenbrock, griewank
+benchmarkfunction="srr"
+
+python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+
+# -----------------------------------------------------------------------------
+#
+#
+wait
