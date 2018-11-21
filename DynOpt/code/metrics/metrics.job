@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --gres=gpu:0
-#SBATCH --job-name="benchmarks"
-#SBATCH --ntasks=5
-#SBATCH --mem=16G
+#SBATCH --job-name="metrics"
+#SBATCH --ntasks=1
+#SBATCH --mem=8G
 #SBATCH --time=2-00:00
-#SBATCH --output="slurm_benchmarks.%j.out"
-#SBATCH --error="slurm_benchmarks.%j.err"
+#SBATCH --output="slurm_metrics.%j.out"
+#SBATCH --error="slurm_metrics.%j.err"
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
@@ -20,17 +20,16 @@ dims=1,5,10,50
 noises=0.0,0.2,0.4
 pathaddition="stepevaluation/"
 # -----------------------------------------------------------------------------
-# mpbcorr
-benchmarkfunction="mpbcorr"
 
-python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+python3.5 metrics_input_parser.py -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
+-outputpath="$outputpath" \
+-benchmarkfunctions="$benchmarkfunctions" \
+-poschgtypes="$poschgtypes" \
+-fitchgtypes="$fitchgtypes" \
+-dims="$dims" \
+-noises="$noises" \
+-pathaddition="$pathaddition" &
 
-
-# -----------------------------------------------------------------------------
-# shpere, rastrigin, rosenbrock, griewank
-benchmarkfunction="srr"
-
-python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
 
 # -----------------------------------------------------------------------------
 #
