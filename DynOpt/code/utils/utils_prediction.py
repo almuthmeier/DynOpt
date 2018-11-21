@@ -153,7 +153,7 @@ def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler
             # "ValueError: shapes (4,) and (5,) not aligned: 4 (dim 0) != 5 (dim 0)"
             # if max_lag = n_time_steps
             raise
-
+        # https://stackoverflow.com/questions/31665256/python-statsmodels-params-parameter-for-predict-function-of-arima-models
         predictions = model_fit.predict(start=n_train_data,
                                         end=n_train_data + n_prediction_steps - 1)
     else:
@@ -169,7 +169,8 @@ def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler
         except ValueError:
             # "ValueError: x already contains a constant"
             # if max_lag = n_time_steps
-            raise
+            model_fit = model.fit()
+            print("ARR prediction: catched Exception", flush=True)
 
         lag_order = model_fit.k_ar
         #print('Lag: %s' % lag_order)
