@@ -222,8 +222,8 @@ class MetricCalculator():
                         for alg in keys:
                             df.loc[(df['arrayfilename'] == array_file_names_per_run_and_alg[alg][run]),
                                    ['rcs']] = rcs_per_alg[alg]
-        # save data frame into file
-        df.to_csv(self.output_dir_path + self.metric_filename)
+        # save data frame into file (index=False --> no row indices)
+        df.to_csv(self.output_dir_path + self.metric_filename, index=False)
 
 
 def start_computing_metrics(benchmarkfunctionfolderpath=None, outputpath=None,
