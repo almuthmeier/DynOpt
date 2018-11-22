@@ -12,7 +12,7 @@
 
 
 benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/data_2018-11-19/"
-outputpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-20/"
+outputpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-20_ohneDrop_mitNOundARR/"
 benchmarkfunctions=mpbcorr,griewank,rastrigin,sphere
 poschgtypes=mixture
 fitchgtypes=none
