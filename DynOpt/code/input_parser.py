@@ -83,7 +83,6 @@ def define_parser_arguments():
     # transfer learning
     parser.add_argument("-tlmodelpath", type=str)
     parser.add_argument("-ntllayers", type=int)
-    parser.add_argument("-withdensefirst", type=str)  # boolean as string
     # machine dependent
     parser.add_argument("-ngpus", type=int)
 
@@ -326,8 +325,8 @@ def run_parser():
     orig_stderr = sys.stderr
     f = open(
         log_file_name, 'w')
-    # sys.stdout = f  # TODO(exe) in-comment this
-    #sys.stderr = f
+    sys.stdout = f  # TODO(exe) in-comment this
+    sys.stderr = f
     #
     # =======================================================================
     # run experiments
