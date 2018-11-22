@@ -11,14 +11,14 @@
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
 
-benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/data_2018-11-19/"
+benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/data_2018-11-22/"
 
 
 # -----------------------------------------------------------------------------
 # mpbcorr
 benchmarkfunction="mpbcorr"
 
-python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+# python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
 
 
 # -----------------------------------------------------------------------------

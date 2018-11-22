@@ -45,8 +45,9 @@ def create_problems(output_dir_path=None):
     n_chg_periods = 10000
     dims = [1, 5, 10, 50]
     functions = [sphere, rastrigin, griewank]  # , rastrigin]
+    functions = [sphere, rastrigin]  # , rastrigin]
     pos_chng_types = ['pch-linear', 'pch-sine', 'pch-circle', 'pch-mixture']
-    pos_chng_types = ['pch-mixture']
+    pos_chng_types = ['pch-sine']
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "ESANN_2019"
