@@ -262,7 +262,7 @@ def predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
     #========================
     # train regressor
     # TODO save model? report training error?
-    train_error, _, _, train_err_per_epoch, _ = predictor.train(sess, train_in_data, train_out_data, in_keep_prob=1.0, out_keep_prob=1.0, st_keep_prob=1.0,
+    train_error, _, _, train_err_per_epoch, _ = predictor.train(sess, train_in_data, train_out_data, in_keep_prob=0.95, out_keep_prob=0.95, st_keep_prob=0.95,
                                                                 shuffle_between_epochs=True, saver=None, saver_path=None, model_name=None,
                                                                 do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None)
 
