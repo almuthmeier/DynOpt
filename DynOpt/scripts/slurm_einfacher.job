@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="step50"
+#SBATCH --job-name="step100"
 #SBATCH --ntasks=8
 #SBATCH --mem=16G
 #SBATCH --time=3-00:00
-#SBATCH --output="slurm_step50.%j.out"
-#SBATCH --error="slurm_step50.%j.err"
+#SBATCH --output="slurm_step100.%j.out"
+#SBATCH --error="slurm_step100.%j.err"
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
@@ -60,7 +60,7 @@ trechenberg=5				# number of generations during that the number of successful mu
 tau=0.5						# 0 < tau < 1, for Rechenberg
 
 # predictor
-timesteps=50				# number of previous optima used for the predictions
+timesteps=100				# number of previous optima used for the predictions
 
 # ANN predictor
 neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
