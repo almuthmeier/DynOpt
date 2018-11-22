@@ -413,6 +413,7 @@ class DynamicEA():
                 self.population_fitness[min_fitness_index])
             self.best_found_pos_per_gen[i] = copy.copy(
                 self.population[min_fitness_index])
-        if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn":
+        if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
+                self.predictor_name == "tftlrnndense":
             sess.close()
             tf.reset_default_graph()

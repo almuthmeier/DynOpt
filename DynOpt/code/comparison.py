@@ -179,6 +179,7 @@ class PredictorComparator(object):
 
         # make tensorflow deterministic
         import tensorflow as tf
+        tf.reset_default_graph()
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True  # prevent using whole GPU
         tf.Session(config=config)
