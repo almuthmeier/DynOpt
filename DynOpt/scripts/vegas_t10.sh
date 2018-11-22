@@ -39,8 +39,8 @@ adaptivec3="False"			# True if c3 should be changed adaptively
 nparticles=200				# swarm size
 
 # EA
-mu=5						# number parents
-la=10						# number offsprings
+mu=50						# number parents
+la=100						# number offsprings
 ro=2						# number parents for recombination
 mean=0.0					# mutation mean
 sigma=1.0					# mutation strength
