@@ -26,7 +26,8 @@ class TFRNNWithoutState():
                  custom_reset=False,
                  n_rnn_layers=1,
                  n_neurons_per_layer=[10],
-                 rnn_type="LSTM"):
+                 rnn_type="LSTM",
+                 with_dense_first=False):
         import tensorflow as tf
         # TODO: n_neurons als Liste mit einem Eintrag pro Schicht
 
@@ -37,6 +38,7 @@ class TFRNNWithoutState():
         self.n_rnn_layers = n_rnn_layers
         self.act_func = tf.tanh
         self.n_time_steps_to_use = n_time_steps_to_use
+        self.with_dense_first = with_dense_first
 
         # true if the RNN has for each time slice one output
         self.has_time_outputs = has_time_outputs
@@ -91,6 +93,11 @@ class TFRNNWithoutState():
 
     def __build_architecture(self):
         import tensorflow as tf
+        if self.with_dense_first:
+            rnn_input = tf.keras.layers.TimeDistributed(
+                tf.layers.Dense(units=self.n_features))(self.input_pl)
+        else:
+            rnn_input = self.input_pl
         # RNN layers
 
         # create own cells for the layers (5.10.18)
@@ -148,7 +155,7 @@ class TFRNNWithoutState():
             cell=cells,
             dtype=self.data_type,
             sequence_length=s_length,  # separately for batch
-            inputs=self.input_pl)
+            inputs=rnn_input)
 
         # linear output layer (if only next step is predicted, than use
         # (outputs[:, -1, :]) instead)

@@ -80,6 +80,7 @@ class DynamicEA():
         self.tl_model_path = tl_model_path  # path to the trained tl model
         self.tl_rnn_type = "RNN"
         self.n_tllayers = n_tllayers
+        self.with_dense_first = None
 
         # training/testing specifications
         self.use_all_train_data = True  # user all previous data to train with
@@ -182,7 +183,8 @@ class DynamicEA():
             immigrants = random_immigrants
 
         elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive" or \
-                my_pred_mode == "tfrnn" or my_pred_mode == "tftlrnn":
+                my_pred_mode == "tfrnn" or my_pred_mode == "tftlrnn" or \
+                my_pred_mode == "tftlrnndense":
             # last predicted optimum
             pred_optimum_position = self.pred_opt_pos_per_chgperiod[-1]
             # insert predicted optimum into immigrants
@@ -316,9 +318,11 @@ class DynamicEA():
         predictor = build_predictor(self.predictor_name, self.n_time_steps,
                                     self.dim, self.batch_size, self.n_neurons,
                                     self.return_seq, self.apply_tl, self.n_layers,
-                                    self.n_epochs, self.tl_rnn_type, self.n_tllayers)
+                                    self.n_epochs, self.tl_rnn_type, self.n_tllayers,
+                                    self.with_dense_first)
         sess = None
-        if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn":
+        if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
+                self.predictor_name == "tftlrnndense":
             import tensorflow as tf
             # if transfer leanring than load weights
             if self.apply_tl:

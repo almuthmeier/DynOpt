@@ -65,17 +65,18 @@ def get_variables_and_names(ntllayers):
 
 
 def build_tl_model(rnn_type, ntllayers, ntimesteps,
-                   epochs, dims, returnseq, test_b_size):
+                   epochs, dims, returnseq, test_b_size, with_dense_first):
     from utils.tensorflow_rnnclass_withoutstate import TFRNNWithoutState
     # build transfer learning network
     return TFRNNWithoutState(dims, n_time_steps_to_use=ntimesteps,
                              test_b_size=test_b_size, n_epochs=epochs, has_time_outputs=returnseq,
-                             custom_reset=False, n_rnn_layers=ntllayers, n_neurons_per_layer=None, rnn_type=rnn_type)
+                             custom_reset=False, n_rnn_layers=ntllayers, n_neurons_per_layer=None,
+                             rnn_type=rnn_type, with_dense_first=with_dense_first)
 
 
 def build_tl_rnn_predictor(rnn_type, ntllayers, n_overall_layers,
                            ntimesteps, epochs, dims,
-                           returnseq, test_b_size, apply_tl):
+                           returnseq, test_b_size, apply_tl, with_dense_first):
     '''
     Builds the prediction model.
 
@@ -92,7 +93,7 @@ def build_tl_rnn_predictor(rnn_type, ntllayers, n_overall_layers,
     import tensorflow as tf
     # build completely new network with all layers
     pred_model = build_tl_model(rnn_type, n_overall_layers, ntimesteps,
-                                epochs, dims, returnseq, test_b_size)
+                                epochs, dims, returnseq, test_b_size, with_dense_first)
 
     if apply_tl:
         # set learning rates for tl and prediction layers separately (8.11.18)

@@ -89,7 +89,7 @@ noises=0.2					# noise, required only for mpb-benchmarks; comma-separated floats
 
 #------------------------------------------------------------------------------
 # Command 3
-predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
@@ -137,7 +137,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 
 #------------------------------------------------------------------------------
 # Command 4
-predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
@@ -200,7 +200,7 @@ noises=0.4					# noise, required only for mpb-benchmarks; comma-separated floats
 
 #------------------------------------------------------------------------------
 # Command 3
-predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
@@ -248,7 +248,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 
 #------------------------------------------------------------------------------
 # Command 4
-predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
@@ -309,7 +309,7 @@ noises=0.2					# noise, required only for mpb-benchmarks; comma-separated floats
 
 #------------------------------------------------------------------------------
 # Command 3
-predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
@@ -357,7 +357,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 
 #------------------------------------------------------------------------------
 # Command 4
-predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
@@ -420,7 +420,7 @@ noises=0.4					# noise, required only for mpb-benchmarks; comma-separated floats
 
 #------------------------------------------------------------------------------
 # Command 3
-predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
@@ -468,7 +468,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 
 #------------------------------------------------------------------------------
 # Command 4
-predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
@@ -531,7 +531,7 @@ noises=0.2					# noise, required only for mpb-benchmarks; comma-separated floats
 
 #------------------------------------------------------------------------------
 # Command 3
-predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
@@ -579,7 +579,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 
 #------------------------------------------------------------------------------
 # Command 4
-predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
@@ -642,7 +642,7 @@ noises=0.4					# noise, required only for mpb-benchmarks; comma-separated floats
 
 #------------------------------------------------------------------------------
 # Command 3
-predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
@@ -690,7 +690,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 
 #------------------------------------------------------------------------------
 # Command 4
-predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn
+predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				

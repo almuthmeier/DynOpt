@@ -50,4 +50,4 @@ Further explanations about the usage of the modules can be found in the [impleme
 
 ## Update November 2018
 
-- returnseq=True only possible with tftlrnn and tfrnn
+- returnseq=True only possible with tftlrnn and tfrnn and tftlrnndense

@@ -70,7 +70,7 @@ def define_parser_arguments():
     parser.add_argument("-tau", type=float)
 
     # for predictor
-    # no, rnn, autoregressive, tfrnn, tftlrnn
+    # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
     parser.add_argument("-predictor", type=str)
     parser.add_argument("-timesteps", type=int)
 
@@ -83,6 +83,7 @@ def define_parser_arguments():
     # transfer learning
     parser.add_argument("-tlmodelpath", type=str)
     parser.add_argument("-ntllayers", type=int)
+    parser.add_argument("-withdensefirst", type=str)  # boolean as string
     # machine dependent
     parser.add_argument("-ngpus", type=int)
 
@@ -153,7 +154,7 @@ def initialize_comparator_manually(comparator):
     # ["linear", "sine", "circle"])
     comparator.poschgtypes = np.array(["mixture"])  # , "linear"])
     comparator.fitchgtypes = np.array(["none"])
-    comparator.dims = np.array([1])
+    comparator.dims = np.array([5])
     comparator.noises = np.array([0.0])
 
     # PSO
@@ -176,21 +177,23 @@ def initialize_comparator_manually(comparator):
         comparator.tau = 0.5
 
     # for predictor
-    # "tftlrnn"  # "tfrnn"  # "no", "tftlrnn"
-    comparator.predictor = "autoregressive"
+    # "tftlrnn"  # "tfrnn"  # "no", "tftlrnn" "autoregressive" "tftlrnndense"
+    comparator.predictor = "tftlrnndense"
     comparator.timesteps = 50
 
     # for ANN predictor
-    if comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or comparator.predictor == "tftlrnn":
+    if (comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or
+            comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense"):
         comparator.neuronstype = "fixed20"
         comparator.epochs = 3
         comparator.batchsize = 1
         comparator.n_layers = 2
         # apply transfer learning only for tftlrnn
-        comparator.apply_tl = comparator.predictor == "tftlrnn"
+        comparator.apply_tl = comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense"
         comparator.tl_model_path = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/"  # + \
         #"tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"
         comparator.n_tllayers = 1
+        comparator.withdensefirst = comparator.predictor == "tftlrnndense"
         comparator.ngpus = 1
 
     # runtime
@@ -247,15 +250,17 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.timesteps = args.timesteps
 
     # for ANN predictor
-    if args.predictor == "rnn" or args.predictor == "tfrnn" or args.predictor == "tftlrnn":
+    if (args.predictor == "rnn" or args.predictor == "tfrnn" or
+            args.predictor == "tftlrnn" or args.predictor == "tftlrnndense"):
         comparator.neuronstype = args.neuronstype
         comparator.epochs = args.epochs
         comparator.batchsize = args.batchsize
         comparator.n_layers = args.nlayers
         # apply transfer learning only for tftlrnn
-        comparator.apply_tl = args.predictor == 'tftlrnn'
+        comparator.apply_tl = args.predictor == 'tftlrnn' or args.predictor == "tftlrnndense"
         comparator.tl_model_path = args.tlmodelpath
         comparator.n_tllayers = args.ntllayers
+        comparator.withdensefirst = args.predictor == 'tftlrnndense'
         comparator.ngpus = args.ngpus
 
     # runtime
@@ -321,8 +326,8 @@ def run_parser():
     orig_stderr = sys.stderr
     f = open(
         log_file_name, 'w')
-    sys.stdout = f  # TODO(exe) in-comment this
-    sys.stderr = f
+    # sys.stdout = f  # TODO(exe) in-comment this
+    #sys.stderr = f
     #
     # =======================================================================
     # run experiments

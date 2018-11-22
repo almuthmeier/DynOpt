@@ -84,10 +84,11 @@ def shuffle_split_output(samples, returnseq, ntimesteps, n_features, shuffle):
 
 
 def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
-                    returnseq, apply_tl, n_overall_layers, epochs, rnn_type, ntllayers):
+                    returnseq, apply_tl, n_overall_layers, epochs, rnn_type,
+                    ntllayers, with_dense_first):
     '''
     Creates the desired prediction model.
-    @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn
+    @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense
     @param batch_size: batch size for the RNN
     @param n_time_steps: number of time steps to use for prediction/training
     @param n_features: dimensionality of the solution space
@@ -108,11 +109,11 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
         # no object required since the AR model is created every time a
         # prediction is needed
         predictor = None
-    elif mode == "tfrnn" or mode == "tftlrnn":
+    elif mode == "tfrnn" or mode == "tftlrnn" or mode == "tftlrnndense":
         from utils.utils_transferlearning import build_tl_rnn_predictor
         predictor = build_tl_rnn_predictor(rnn_type, ntllayers,
                                            n_overall_layers, n_time_steps, epochs, n_features,
-                                           returnseq, batch_size, apply_tl)
+                                           returnseq, batch_size, apply_tl, with_dense_first)
     else:
         msg = "unknown prediction mode " + mode
         warnings.warn(msg)
@@ -315,7 +316,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, n_epochs, batch_si
             raise
     elif mode == "no":
         prediction = None
-    elif mode == "tfrnn" or mode == "tftlrnn":
+    elif mode == "tfrnn" or mode == "tftlrnn" or mode == "tftlrnndense":
         prediction, train_error, train_err_per_epoch = predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
                                                                           n_features, scaler, predictor, returnseq, shuffle)
     return prediction, train_error, train_err_per_epoch
