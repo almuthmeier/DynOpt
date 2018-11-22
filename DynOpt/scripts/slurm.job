@@ -18,6 +18,7 @@
 #------------------------------------------------------------------------------
 # Parameters
 #------------------------------------------------------------------------------
+pathaddition="stepevaluation"	# "stepevaluation"
 
 # benchmark problem
 algorithm="dynea" 			# dynea or dynpso
@@ -92,7 +93,7 @@ noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
 outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
@@ -140,7 +141,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
 outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
@@ -202,7 +203,7 @@ noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
 outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
@@ -250,7 +251,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
 outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
@@ -310,7 +311,7 @@ noises=0.0			# noise, required only for mpb-benchmarks; comma-separated floats
 predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
 outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
@@ -358,7 +359,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
 outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
@@ -420,7 +421,7 @@ noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
 outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
@@ -468,7 +469,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
+outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
 outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
