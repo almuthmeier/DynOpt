@@ -5,7 +5,10 @@ Created on Nov 21, 2018
 
 @author: ameier
 '''
+import copy
 import os
+
+import numpy as np
 import pandas as pd
 
 
@@ -17,6 +20,8 @@ class MetricTransformer():
         Initialize paths, properties of the experiments, etc.
         '''
         # TODO(exp) set parameters as required
+
+        self.metrics = ["bog-for-run", "bebc", "rcs", "arr"]
 
         # output and benchmark path
         if path_to_output is None:  # assumes that  all input arguments are none
@@ -48,8 +53,102 @@ class MetricTransformer():
             self.metric_filename = metric_filename
             self.output_file_name = output_file_name
 
+    def make_table_with_selected_data(self):
+        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20_ohneDrop_mitNOundARR/"
+        full_input_name = path_transformed_db + "avg_metric_db.csv"
+        all_data = pd.read_csv(full_input_name)
+
+        # functions that are combined into one file
+        # , "tftlrnndense"]
+        preds = ["no", "autoregressive", "tfrnn", "tftlrnn"]
+        functions = ["sphere", "mpbcorr"]
+        dims = [1, 5, 10, 50]
+        noises = [0.0, 0.2]
+        steps = 10
+        metric = "arr"  # "bog-for-run"  # , "bebc", "rcs", "arr"]
+
+        full_output_file_name = path_transformed_db + "selection_fcts-" + \
+            str(functions) + "_steps-" + str(steps) + \
+            "_metric-" + str(metric) + ".csv"
+
+        # column names for average metric values (element-wise string
+        # concatenation)
+        avg_cols = list(np.core.defchararray.add(preds, ["_avg"] * len(preds)))
+        std_cols = list(np.core.defchararray.add(preds, ["_std"] * len(preds)))
+        header_line = ["function", "dim", "noise"] + avg_cols + std_cols
+
+        # get values for experiments
+        data = []
+        for f in functions:
+            for d in dims:
+                for noise in noises:
+                    # TODO noise is None? for sphere
+                    all_data
+                    row_prefix = [f, d, noise]
+                    avg_values = []
+                    std_values = []
+                    for p in preds:
+                        if f == "mpbcorr":
+                            v = all_data.loc[(all_data["function"] == f) &
+                                             (all_data["dim"] == d) &
+                                             (all_data["noise"] == noise) &
+                                             (all_data["predictor"] == p) &
+                                             (all_data["algparams"] == "steps_" + str(steps)), metric]
+                        elif f == "sphere" or f == "rastrigin":  # no noise available
+                            v = all_data.loc[(all_data["function"] == f) &
+                                             (all_data["dim"] == d) &
+                                             (all_data["predictor"] == p) &
+                                             (all_data["algparams"] == "steps_" + str(steps)), metric]
+                        #h1 = v.loc[v["run"] == "avg"]
+                        #h2 = v.loc[v["run"] == "std"]
+                        # requires that the avg row is before the std row!!
+                        avg_values.append(v.iloc[0])
+                        std_values.append(v.iloc[1])
+                    row = row_prefix + avg_values + std_values
+                    data.append(row)
+                    if not self.function_has_noise_param(f):
+                        # do not execute again otherwise duplicate rows would
+                        # appear
+                        break
+        df = pd.DataFrame(data, columns=header_line)
+        df.to_csv(full_output_file_name, index=False)
+
+    def convert_buffer_to_rows(self, buffer, all_cols, col_idx_exp_filename,
+                               col_idx_run, col_idx_metrics_dict, data, line):
+        print("predictor: ", buffer[-1][1])
+        buffered_df = pd.DataFrame(buffer, columns=all_cols)
+        # compute average/stddev column-wise
+        averages = buffered_df[self.metrics].mean(axis=0)
+        print("avg: ", averages[0])
+        stddevs = buffered_df[self.metrics].std(axis=0)
+        # cut experiment and array file name
+        avg_row = copy.deepcopy(buffer[-1][:col_idx_exp_filename])
+        std_row = copy.deepcopy(buffer[-1][:col_idx_exp_filename])
+        # insert label
+        avg_row[col_idx_run] = "avg"
+        std_row[col_idx_run] = "std"
+        # insert average/stddev values
+        for m in self.metrics:
+            avg_row[col_idx_metrics_dict[m]] = averages[m]
+            std_row[col_idx_metrics_dict[m]] = stddevs[m]
+
+        # empty the buffer and start filling it again
+        data.append(avg_row)
+        data.append(std_row)
+
+        # last time the function is called line is None
+        if line is not None:
+            buffer = []
+            buffer.append(line.values.flatten())
+            return buffer
+
     def compute_avg_and_stddev(self):
-        metrics = ["bog-for-run", "bebc", "rcs", "arr"]
+        '''
+        Step 1)
+
+        Transforms metric_db into file containing avg and std as rows.
+        '''
+
         full_path = self.output_dir_path + self.metric_filename
         whole_file = pd.read_csv(full_path)
         all_cols = list(whole_file.columns.values)
@@ -57,7 +156,7 @@ class MetricTransformer():
         col_idx_exp_filename = whole_file.columns.get_loc('expfilename')
         col_idx_run = whole_file.columns.get_loc('run')
         col_idx_metrics_dict = {
-            m: whole_file.columns.get_loc(m) for m in metrics}
+            m: whole_file.columns.get_loc(m) for m in self.metrics}
 
         data = []
         # rows for all repetitions of one experiment for one algorithm
@@ -81,29 +180,16 @@ class MetricTransformer():
                 if curr_array_f_name == prev_array_f_name:  # further run for exp
                     buffer.append(line.values.flatten())
                 else:  # all repetitions saved, so compute average + stddev
-                    buffered_df = pd.DataFrame(buffer, columns=all_cols)
-                    # compute average/stddev column-wise
-                    averages = buffered_df[metrics].mean(axis=0)
-                    stddevs = buffered_df[metrics].std(axis=0)
-                    # cut experiment and array file name
-                    avg_row = line.values[0][:col_idx_exp_filename]
-                    std_row = line.values[0][:col_idx_exp_filename]
-                    # insert label
-                    avg_row[col_idx_run] = "avg"
-                    std_row[col_idx_run] = "std"
-                    # insert average/stddev values
-                    for m in metrics:
-                        avg_row[col_idx_metrics_dict[m]] = averages[m]
-                        std_row[col_idx_metrics_dict[m]] = stddevs[m]
+                    buffer = self.convert_buffer_to_rows(buffer, all_cols, col_idx_exp_filename,
+                                                         col_idx_run, col_idx_metrics_dict, data, line)
 
-                    # empty the buffer and start filling it again
-                    data.append(avg_row)
-                    data.append(std_row)
-                    buffer = []
-                    buffer.append(line.values.flatten())
-
+        self.convert_buffer_to_rows(buffer, all_cols, col_idx_exp_filename,
+                                    col_idx_run, col_idx_metrics_dict, data, None)
         df = pd.DataFrame(data, columns=all_cols[:col_idx_exp_filename])
         df.to_csv(self.output_dir_path + self.output_file_name, index=False)
+
+    def function_has_noise_param(self, f):
+        return f == "mpbcorr"
 
 
 def start_computing_avgs_stddevs(path_to_output=None,
@@ -112,8 +198,12 @@ def start_computing_avgs_stddevs(path_to_output=None,
                                  output_file_name=None):
     calculator = MetricTransformer(path_to_output, benchmarkfunctions, poschgtypes, fitchgtypes,
                                    dims, noises, metric_filename, output_file_name)
-    calculator.compute_avg_and_stddev()
-    print("saved metric database", flush=True)
+    # Step 1)
+    # calculator.compute_avg_and_stddev()
+    #print("saved metric database", flush=True)
+
+    # Step 2)
+    calculator.make_table_with_selected_data()
 
 
 if __name__ == '__main__':
