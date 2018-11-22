@@ -21,7 +21,7 @@ lenchgperiod=20				# number of generations per change period; has to be
 ischgperiodrandom="False"	# True if the change occurs at a random time point.
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
-benchmarkfunctionfolderpath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/data_2018-11-19/" # parent directory path of the benchmark functions
+benchmarkfunctionfolderpath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/data_2018-11-22/" # parent directory path of the benchmark functions
 								   																				 # and child directory of the datasets folder
 								   																				 # of this project 
 
@@ -82,7 +82,7 @@ predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-22/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
@@ -129,7 +129,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # ==================================================================================================================================================
 # Set 2
 benchmarkfunction=sphere	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
-poschgtypes=mixture			# linear,sine,circle,mixture position change type; comma-separated integers
+poschgtypes=sine			# linear,sine,circle,mixture position change type; comma-separated integers
 noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
@@ -143,7 +143,7 @@ predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-22/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
@@ -189,7 +189,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 # ==================================================================================================================================================
 # Set 3
 benchmarkfunction=rastrigin	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
-poschgtypes=mixture			# linear,sine,circle,mixture position change type; comma-separated integers
+poschgtypes=sine			# linear,sine,circle,mixture position change type; comma-separated integers
 noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
@@ -202,66 +202,7 @@ predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
 
 # static
 outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
-#------------------------------------------------------------------------------
-
-python3.5 ../code/input_parser.py -algorithm="$algorithm" \
--repetitions="$repetitions" \
--chgperiods="$chgperiods" \
--lenchgperiod="$lenchgperiod" \
--ischgperiodrandom="$ischgperiodrandom" \
--benchmarkfunction="$benchmarkfunction" \
--benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
--outputdirectory="$outputdirectory" \
--outputdirectorypath="$outputdirectorypath" \
--poschgtypes="$poschgtypes" \
--fitchgtypes="$fitchgtypes" \
--dims="$dims" \
--noises="$noises" \
--c1="$c1" \
--c2="$c2" \
--c3="$c3" \
--insertpred="$insertpred" \
--adaptivec3="$adaptivec3" \
--nparticles="$nparticles" \
--mu="$mu" \
--la="$la" \
--ro="$ro" \
--mean="$mean" \
--sigma="$sigma" \
--trechenberg="$trechenberg" \
--tau="$tau" \
--predictor="$predictor" \
--timesteps="$timesteps" \
--neuronstype="$neuronstype" \
--epochs="$epochs" \
--batchsize="$batchsize" \
--nlayers="$nlayers" \
--tlmodelpath="$tlmodelpath" \
--ntllayers="$ntllayers" \
--ngpus="$ngpus" \
--ncpus="$ncpus" &
-
-#------------------------------------------------------------------------------
-
-# ==================================================================================================================================================
-# ==================================================================================================================================================
-# ==================================================================================================================================================
-# Set 4
-benchmarkfunction=griewank	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
-poschgtypes=mixture			# linear,sine,circle,mixture position change type; comma-separated integers
-noises=0.0					# noise, required only for mpb-benchmarks; comma-separated floats
-# ==================================================================================================================================================
-# ==================================================================================================================================================
-# ==================================================================================================================================================
-
-#------------------------------------------------------------------------------
-# Command 2
-predictor=autoregressive	# no, rnn, autoregressive, tfrnn, tftlrnn
-
-# static
-outputdirectory="stepevaluation/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-22/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 python3.5 ../code/input_parser.py -algorithm="$algorithm" \
