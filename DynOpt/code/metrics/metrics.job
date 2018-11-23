@@ -19,7 +19,7 @@ fitchgtypes=none
 dims=1,5,10,50
 noises=0.0,0.2
 pathaddition="stepevaluation/"
-metricfilename="metric_db_stepevaluation_2018-11-22.csv"
+metricfilename="metric_db_stepevaluation_2018-11-22_rmses.csv"
 
 # -----------------------------------------------------------------------------
 

@@ -12,7 +12,7 @@ from os.path import isdir, join
 from posix import listdir
 
 from metrics.metrics_dynea import best_error_before_change, arr,\
-    rel_conv_speed, avg_bog_for_one_run
+    rel_conv_speed, avg_bog_for_one_run, rmse
 import numpy as np
 import pandas as pd
 from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
@@ -61,7 +61,9 @@ class MetricCalculator():
             self.metric_filename = metric_filename
 
     def compute_metrics(self, best_found_fit_per_gen,
-                        global_opt_fit_per_chgperiod, gens_of_chgperiods):
+                        global_opt_fit_per_chgperiod, gens_of_chgperiods,
+                        global_opt_pos_per_chgperiod,
+                        pred_opt_pos_per_chgperiod, best_found_pos_per_chgperiod):
         '''
         Computes BEBC and ARR
         '''
@@ -75,7 +77,30 @@ class MetricCalculator():
         arr_value = arr(gens_of_chgperiods,
                         global_opt_fit_per_chgperiod, best_found_fit_per_gen)
         print("arr: ", arr_value)
-        return bebc, arr_value
+
+        # RMSEs (do not compute it when prediction is None (e.g, for "no")
+        ea_rmse = rmse(global_opt_pos_per_chgperiod,
+                       best_found_pos_per_chgperiod)
+        print("ea_rmse: ", ea_rmse)
+        if not None in pred_opt_pos_per_chgperiod:
+            # assume that all changes are detected
+            n_found = len(best_found_pos_per_chgperiod)
+            n_chgperiods = len(global_opt_pos_per_chgperiod)
+            n_predictions = len(pred_opt_pos_per_chgperiod)
+            assert n_found == n_chgperiods, "n_found: " + \
+                str(n_found) + " n_chgperiods: " + str(n_chgperiods)
+            # compute rmse only for chgperiods where something was predicted
+            assert n_predictions <= n_chgperiods, "n_predictions: " + \
+                str(n_predictions) + "  n_chgperiods: " + str(n_chgperiods)
+            assert n_predictions <= n_found, "n_predictions: " + \
+                str(n_predictions) + " n_found:" + str(n_found)
+            foundpred_rmse = rmse(best_found_pos_per_chgperiod[-n_predictions:],
+                                  pred_opt_pos_per_chgperiod)
+            truepred_rmse = rmse(global_opt_pos_per_chgperiod[-n_predictions:],
+                                 pred_opt_pos_per_chgperiod)
+            print("truepred_rmse: ", truepred_rmse)
+            print("foundpred_rmse: ", foundpred_rmse)
+        return bebc, arr_value, ea_rmse, foundpred_rmse, truepred_rmse
 
     def compute_and_save_all_metrics(self):
         '''
@@ -87,6 +112,7 @@ class MetricCalculator():
                         'algparams', 'alg', 'dim', 'chgperiods', 'len_c_p',
                         'ischgperiodrandom', 'veclen', 'peaks', 'noise',
                         'poschg', 'fitchg', 'run', 'bog-for-run', 'bebc', 'rcs', 'arr',
+                        'ea_rmse', 'foundpred_rmse', 'truepred_rmse',
                         'expfilename', 'arrayfilename']
 
         df = pd.DataFrame(columns=column_names)
@@ -169,14 +195,19 @@ class MetricCalculator():
                             file = np.load(arrays_path + array_file_name)
                             best_found_fit_per_gen = file['best_found_fit_per_gen']
                             real_chgperiods_for_gens = file['real_chgperiods_for_gens']
+                            pred_opt_pos_per_chgperiod = file['pred_opt_pos_per_chgperiod']
+                            best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
                             file.close()
                             gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
                                 real_chgperiods_for_gens)
 
                             # arr, bebc
-                            bebc, arr_value = self.compute_metrics(best_found_fit_per_gen,
-                                                                   global_opt_fit_per_chgperiod,
-                                                                   gens_of_chgperiods)
+                            bebc, arr_value, ea_rmse, foundpred_rmse, truepred_rmse = self.compute_metrics(best_found_fit_per_gen,
+                                                                                                           global_opt_fit_per_chgperiod,
+                                                                                                           gens_of_chgperiods,
+                                                                                                           global_opt_pos_per_chgperiod,
+                                                                                                           pred_opt_pos_per_chgperiod,
+                                                                                                           best_found_pos_per_chgperiod)
                             # averaged bog for this run (not the average bog as
                             # defined) (should not be used other than as average
                             # over all runs)
@@ -190,7 +221,8 @@ class MetricCalculator():
                                     'ischgperiodrandom': ischgperiodrandom,
                                     'veclen': veclen, 'peaks': peaks, 'noise': noise,
                                     'poschg': poschg, 'fitchg': fitchg, 'run': run,
-                                    'bog-for-run': bog_for_run, 'bebc': bebc, 'rcs': None, 'arr': arr_value}
+                                    'bog-for-run': bog_for_run, 'bebc': bebc, 'rcs': None, 'arr': arr_value,
+                                    'ea_rmse': ea_rmse, 'foundpred_rmse': foundpred_rmse, 'truepred_rmse': truepred_rmse}
                             df.at[len(df)] = data
                             print("len: ", len(df), flush=True)
                             print(df.columns, flush=True)

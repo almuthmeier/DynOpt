@@ -7,7 +7,14 @@ Created on Oct 6, 2017
 @author: ameier
 '''
 import sys
+
+import sklearn.metrics
+
 import numpy as np
+
+
+def rmse(true_vals, current_vals):
+    return np.sqrt(sklearn.metrics.mean_squared_error(true_vals, current_vals))
 
 
 def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen):
