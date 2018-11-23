@@ -79,24 +79,20 @@ class MetricCalculator():
         print("arr: ", arr_value)
 
         # RMSEs (do not compute it when prediction is None (e.g, for "no")
-        ea_rmse = rmse(global_opt_pos_per_chgperiod,
+        n_found = len(best_found_pos_per_chgperiod)
+        relevant_glob_opt_pos_per_chgperiod = global_opt_pos_per_chgperiod[:n_found]
+        ea_rmse = rmse(relevant_glob_opt_pos_per_chgperiod,
                        best_found_pos_per_chgperiod)
         print("ea_rmse: ", ea_rmse)
         if not None in pred_opt_pos_per_chgperiod:
             # assume that all changes are detected
-            n_found = len(best_found_pos_per_chgperiod)
-            n_chgperiods = len(global_opt_pos_per_chgperiod)
             n_predictions = len(pred_opt_pos_per_chgperiod)
-            assert n_found == n_chgperiods, "n_found: " + \
-                str(n_found) + " n_chgperiods: " + str(n_chgperiods)
             # compute rmse only for chgperiods where something was predicted
-            assert n_predictions <= n_chgperiods, "n_predictions: " + \
-                str(n_predictions) + "  n_chgperiods: " + str(n_chgperiods)
             assert n_predictions <= n_found, "n_predictions: " + \
                 str(n_predictions) + " n_found:" + str(n_found)
             foundpred_rmse = rmse(best_found_pos_per_chgperiod[-n_predictions:],
                                   pred_opt_pos_per_chgperiod)
-            truepred_rmse = rmse(global_opt_pos_per_chgperiod[-n_predictions:],
+            truepred_rmse = rmse(relevant_glob_opt_pos_per_chgperiod[-n_predictions:],
                                  pred_opt_pos_per_chgperiod)
             print("truepred_rmse: ", truepred_rmse)
             print("foundpred_rmse: ", foundpred_rmse)
