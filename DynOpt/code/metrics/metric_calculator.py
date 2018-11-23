@@ -83,7 +83,7 @@ class MetricCalculator():
         relevant_glob_opt_pos_per_chgperiod = global_opt_pos_per_chgperiod[:n_found]
         ea_rmse = rmse(relevant_glob_opt_pos_per_chgperiod,
                        best_found_pos_per_chgperiod)
-        print("ea_rmse: ", ea_rmse)
+        print("ea-rmse: ", ea_rmse)
         foundpred_rmse = None
         truepred_rmse = None
         if not len(pred_opt_pos_per_chgperiod) == 0:
@@ -96,8 +96,8 @@ class MetricCalculator():
                                   pred_opt_pos_per_chgperiod)
             truepred_rmse = rmse(relevant_glob_opt_pos_per_chgperiod[-n_predictions:],
                                  pred_opt_pos_per_chgperiod)
-        print("truepred_rmse: ", truepred_rmse)
-        print("foundpred_rmse: ", foundpred_rmse)
+        print("truepred-rmse: ", truepred_rmse)
+        print("foundpred-rmse: ", foundpred_rmse)
         return bebc, arr_value, ea_rmse, foundpred_rmse, truepred_rmse
 
     def compute_and_save_all_metrics(self):
@@ -110,7 +110,7 @@ class MetricCalculator():
                         'algparams', 'alg', 'dim', 'chgperiods', 'len_c_p',
                         'ischgperiodrandom', 'veclen', 'peaks', 'noise',
                         'poschg', 'fitchg', 'run', 'bog-for-run', 'bebc', 'rcs', 'arr',
-                        'ea_rmse', 'foundpred_rmse', 'truepred_rmse',
+                        'ea-rmse', 'foundpred-rmse', 'truepred-rmse',
                         'expfilename', 'arrayfilename']
 
         df = pd.DataFrame(columns=column_names)
@@ -220,7 +220,7 @@ class MetricCalculator():
                                     'veclen': veclen, 'peaks': peaks, 'noise': noise,
                                     'poschg': poschg, 'fitchg': fitchg, 'run': run,
                                     'bog-for-run': bog_for_run, 'bebc': bebc, 'rcs': None, 'arr': arr_value,
-                                    'ea_rmse': ea_rmse, 'foundpred_rmse': foundpred_rmse, 'truepred_rmse': truepred_rmse}
+                                    'ea-rmse': ea_rmse, 'foundpred-rmse': foundpred_rmse, 'truepred-rmse': truepred_rmse}
                             df.at[len(df)] = data
                             print("len: ", len(df), flush=True)
                             print(df.columns, flush=True)

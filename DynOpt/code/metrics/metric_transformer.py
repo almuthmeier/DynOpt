@@ -21,7 +21,8 @@ class MetricTransformer():
         '''
         # TODO(exp) set parameters as required
 
-        self.metrics = ["bog-for-run", "bebc", "rcs", "arr"]
+        self.metrics = ["bog-for-run", "bebc", "rcs", "arr",
+                        "ea-rmse", "foundpred-rmse", "truepred-rmse"]
 
         # output and benchmark path
         if path_to_output is None:  # assumes that  all input arguments are none
@@ -42,8 +43,8 @@ class MetricTransformer():
             self.fitchgtypes = ["none"]
             self.dims = [1, 5, 10, 50]
             self.noises = [0.0, 0.2]
-            self.metric_filename = "metric_db_stepevaluation_2018-11-22.csv"
-            self.output_file_name = "avg_metric_db_2018-11-22.csv"
+            self.metric_filename = "metric_db_stepevaluation_2018-11-22_rmses.csv"
+            self.output_file_name = "avg_metric_db_2018-11-22_rmses.csv"
         else:
             self.output_dir_path = path_to_output
             self.benchmarkfunctions = benchmarkfunctions
@@ -56,7 +57,7 @@ class MetricTransformer():
 
     def make_table_with_selected_data(self):
         path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-22/"
-        full_input_name = path_transformed_db + "avg_metric_db_2018-11-22.csv"
+        full_input_name = path_transformed_db + "avg_metric_db_2018-11-22_rmses.csv"
         all_data = pd.read_csv(full_input_name)
 
         # functions that are combined into one file
@@ -65,12 +66,13 @@ class MetricTransformer():
         functions = ["sphere", "mpbcorr"]  # , "rastrigin"]
         dims = [1, 5, 10, 50]
         noises = [0.0, 0.2]
-        steps = 50
-        metric = "bebc"  # "bog-for-run"  # , "bebc", "rcs", "arr"]
+        steps = 10
+        # "bog-for-run"  # , "bebc", "rcs", "arr" "ea_rmse","foundpred-rmse","truepred-rmse"
+        metric = "truepred-rmse"
 
         full_output_file_name = path_transformed_db + "selection_fcts-" + \
             str(functions) + "_steps-" + str(steps) + \
-            "_metric-" + str(metric) + ".csv"
+            "_metric-" + str(metric) + "_rmses.csv"
 
         # column names for average metric values (element-wise string
         # concatenation)
@@ -126,6 +128,7 @@ class MetricTransformer():
         averages = buffered_df[self.metrics].mean(axis=0)
         print("avg: ", averages[0])
         stddevs = buffered_df[self.metrics].std(axis=0)
+        print("stddev: ", stddevs[0])
         # cut experiment and array file name
         avg_row = copy.deepcopy(buffer[-1][:col_idx_exp_filename])
         std_row = copy.deepcopy(buffer[-1][:col_idx_exp_filename])

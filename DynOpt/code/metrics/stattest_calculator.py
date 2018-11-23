@@ -113,7 +113,8 @@ class StatisticalTestsCalculator():
         Creates for each algorithm pair one file with test results for all 
         experiments.
         '''
-        metric_names = ['bog-for-run', 'bebc', 'rcs', 'arr']
+        metric_names = ['bog-for-run', 'bebc', 'rcs', 'arr',
+                        'ea-rmse', 'foundpred-rmse', 'truepred-rmse']
 
         # load result file containing results for all algorithms and problems
         df = pd.read_csv(self.metric_file_path, ',')
@@ -162,7 +163,10 @@ class StatisticalTestsCalculator():
                                           props1["noise"], props1["poschg"],
                                           props1["fitchg"], p_values["bog-for-run"],
                                           p_values["bebc"], p_values["rcs"],
-                                          p_values["arr"], props1["expfilename"]]
+                                          p_values["arr"], p_values["ea-rmse"],
+                                          p_values["foundpred-rmse"],
+                                          p_values["truepred-rmse"],
+                                          props1["expfilename"]],
                 print_to_file(result_file_name, metric_values_to_print)
 
 
