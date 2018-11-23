@@ -84,7 +84,7 @@ class MetricCalculator():
         ea_rmse = rmse(relevant_glob_opt_pos_per_chgperiod,
                        best_found_pos_per_chgperiod)
         print("ea_rmse: ", ea_rmse)
-        if not None in pred_opt_pos_per_chgperiod:
+        if not len(pred_opt_pos_per_chgperiod) == 0:
             # assume that all changes are detected
             n_predictions = len(pred_opt_pos_per_chgperiod)
             # compute rmse only for chgperiods where something was predicted
