@@ -113,6 +113,8 @@ class MetricCalculator():
                 exp_file.close()
 
                 dim = len(orig_global_opt_pos)
+                if dim == 1:
+                    continue
                 # =============================================================
                 # find output files of all algorithms for this experiment
 
