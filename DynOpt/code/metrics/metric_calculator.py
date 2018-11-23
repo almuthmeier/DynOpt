@@ -113,8 +113,7 @@ class MetricCalculator():
                 exp_file.close()
 
                 dim = len(orig_global_opt_pos)
-                if dim == 1:
-                    continue
+
                 # =============================================================
                 # find output files of all algorithms for this experiment
 
@@ -131,6 +130,8 @@ class MetricCalculator():
                 # algorithm parameter settings, e.g. "c1c2c3_1.49"
                 for subdir in direct_cild_dirs:
                     print("        subdir: ", subdir, flush=True)
+                    if subdir == "steps_100":
+                        continue
                     subdir_path = output_dir_for_benchmark_funct + subdir + "/"
                     # different alg types/predictors
                     alg_types = [d for d in listdir(subdir_path) if (
