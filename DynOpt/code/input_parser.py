@@ -186,13 +186,14 @@ def initialize_comparator_manually(comparator):
         comparator.neuronstype = "fixed20"
         comparator.epochs = 3
         comparator.batchsize = 1
-        comparator.n_layers = 2
+        comparator.n_layers = 1
         # apply transfer learning only for tftlrnn
         comparator.apply_tl = comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense"
         comparator.tl_model_path = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/"  # + \
         #"tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"
         comparator.n_tllayers = 1
         comparator.withdensefirst = comparator.predictor == "tftlrnndense"
+        comparator.tl_learn_rate = 0.0001 if comparator.n_layers > 1 else 0.001
         comparator.ngpus = 1
 
     # runtime
@@ -260,6 +261,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.tl_model_path = args.tlmodelpath
         comparator.n_tllayers = args.ntllayers
         comparator.withdensefirst = args.predictor == 'tftlrnndense'
+        comparator.tl_learn_rate = 0.0001 if comparator.n_layers > 1 else 0.001
         comparator.ngpus = args.ngpus
 
     # runtime

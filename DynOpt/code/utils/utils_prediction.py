@@ -85,7 +85,7 @@ def shuffle_split_output(samples, returnseq, ntimesteps, n_features, shuffle):
 
 def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                     returnseq, apply_tl, n_overall_layers, epochs, rnn_type,
-                    ntllayers, with_dense_first):
+                    ntllayers, with_dense_first, tl_learn_rate):
     '''
     Creates the desired prediction model.
     @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense
@@ -113,7 +113,8 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
         from utils.utils_transferlearning import build_tl_rnn_predictor
         predictor = build_tl_rnn_predictor(rnn_type, ntllayers,
                                            n_overall_layers, n_time_steps, epochs, n_features,
-                                           returnseq, batch_size, apply_tl, with_dense_first)
+                                           returnseq, batch_size, apply_tl, with_dense_first,
+                                           tl_learn_rate)
     else:
         msg = "unknown prediction mode " + mode
         warnings.warn(msg)

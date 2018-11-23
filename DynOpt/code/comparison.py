@@ -121,7 +121,7 @@ class PredictorComparator(object):
                             self.trechenberg, self.tau, self.timesteps,
                             n_neurons, self.epochs, self.batchsize,
                             self.n_layers, self.apply_tl, self.n_tllayers,
-                            full_tl_model_name)
+                            full_tl_model_name, self.tl_learn_rate)
         elif self.algorithm == "dynpso":
             alg = DynamicPSO(self.benchmarkfunction, dimensionality,
                              n_generations, self.experiment_data, self.predictor,

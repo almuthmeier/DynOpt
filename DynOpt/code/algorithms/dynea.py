@@ -26,7 +26,7 @@ class DynamicEA():
                  ea_np_rnd_generator, pred_np_rnd_generator,
                  mu, la, ro, mean, sigma, trechenberg, tau,
                  timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
-                 n_tllayers, tl_model_path):
+                 n_tllayers, tl_model_path, tl_learn_rate):
         '''
         Initialize a DynamicEA object.
         @param benchmarkfunction: (string)
@@ -81,6 +81,7 @@ class DynamicEA():
         self.tl_rnn_type = "RNN"
         self.n_tllayers = n_tllayers
         self.with_dense_first = None
+        self.tl_learn_rate = tl_learn_rate
 
         # training/testing specifications
         self.use_all_train_data = True  # user all previous data to train with
@@ -319,7 +320,7 @@ class DynamicEA():
                                     self.dim, self.batch_size, self.n_neurons,
                                     self.return_seq, self.apply_tl, self.n_layers,
                                     self.n_epochs, self.tl_rnn_type, self.n_tllayers,
-                                    self.with_dense_first)
+                                    self.with_dense_first, self.tl_learn_rate)
         sess = None
         if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
                 self.predictor_name == "tftlrnndense":
