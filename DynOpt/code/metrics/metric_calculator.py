@@ -84,6 +84,8 @@ class MetricCalculator():
         ea_rmse = rmse(relevant_glob_opt_pos_per_chgperiod,
                        best_found_pos_per_chgperiod)
         print("ea_rmse: ", ea_rmse)
+        foundpred_rmse = None
+        truepred_rmse = None
         if not len(pred_opt_pos_per_chgperiod) == 0:
             # assume that all changes are detected
             n_predictions = len(pred_opt_pos_per_chgperiod)
@@ -94,8 +96,8 @@ class MetricCalculator():
                                   pred_opt_pos_per_chgperiod)
             truepred_rmse = rmse(relevant_glob_opt_pos_per_chgperiod[-n_predictions:],
                                  pred_opt_pos_per_chgperiod)
-            print("truepred_rmse: ", truepred_rmse)
-            print("foundpred_rmse: ", foundpred_rmse)
+        print("truepred_rmse: ", truepred_rmse)
+        print("foundpred_rmse: ", foundpred_rmse)
         return bebc, arr_value, ea_rmse, foundpred_rmse, truepred_rmse
 
     def compute_and_save_all_metrics(self):
