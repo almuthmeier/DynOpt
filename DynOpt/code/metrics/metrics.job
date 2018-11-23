@@ -11,15 +11,15 @@
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
 
-benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/data_2018-11-19/"
-outputpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-20_ohneDrop_mitNOundARR/"
-benchmarkfunctions=mpbcorr,griewank,rastrigin,sphere
-poschgtypes=mixture
+benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/data_2018-11-12/"
+outputpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-22/"
+benchmarkfunctions=mpbcorr,rastrigin,sphere
+poschgtypes=sine
 fitchgtypes=none
 dims=1,5,10,50
-noises=0.0,0.2,0.4
+noises=0.0,0.2
 pathaddition="stepevaluation/"
-metricfilename="metric_db_stepevaluation.csv"
+metricfilename="metric_db_stepevaluation_2018-11-22.csv"
 
 # -----------------------------------------------------------------------------
 
