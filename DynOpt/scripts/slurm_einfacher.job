@@ -66,7 +66,7 @@ timesteps=100				# number of previous optima used for the predictions
 neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
 epochs=5					# number of training epochs for the RNN prediction model
 batchsize=128					# batch size for RNN model
-nlayers=2					# overall number of layers (incl. tl layers)
+nlayers=1					# overall number of layers (incl. tl layers)
 tlmodelpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/models_2018-11-19/"	# path to the pre-trained transfer learning model
 ntllayers=1					# number of layers in the transfer learning model
 ngpus=1    					# number of GPUs to use (for RNN model) 
@@ -94,7 +94,7 @@ predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-22/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-23/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
@@ -142,7 +142,7 @@ predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-22/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-23/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
@@ -204,7 +204,7 @@ predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-22/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-23/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
@@ -252,7 +252,7 @@ predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-22/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-23/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
@@ -312,7 +312,7 @@ predictor=tfrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-22/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-23/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
@@ -360,7 +360,7 @@ predictor=tftlrnn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 outputdirectory="$pathaddition/steps""_""$timesteps/$algorithm""_""$predictor/" 									# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-22/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-23/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
