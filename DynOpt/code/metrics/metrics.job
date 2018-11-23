@@ -11,7 +11,7 @@
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
 
-benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/data_2018-11-12/"
+benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/data_2018-11-22/"
 outputpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-22/"
 benchmarkfunctions=mpbcorr,rastrigin,sphere
 poschgtypes=sine
