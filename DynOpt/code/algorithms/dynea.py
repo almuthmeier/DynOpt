@@ -142,6 +142,19 @@ class DynamicEA():
         self.train_error_per_chgperiod = []
         # training error per epoch for each chgperiod (if prediction was done)
         self.train_error_for_epochs_per_chgperiod = []
+
+        # ---------------------------------------------------------------------
+        # for EA (evaluation of variance) (repetitions of change periods
+        # ---------------------------------------------------------------------
+        # number repetitions of the single change periods (at least 1 -> 1 run)
+        self.max_n_chgperiod_reps = 30
+        # population for last generation of change period (for each run)
+        # used for determining the EAs variance for change periods
+        # 4d list [runs, chgperiods, parents, dims]
+        # TODO insert into PSO
+        self.final_pop_per_chgperiodrun_per_chgperiod = [
+            None] * self.max_n_chgperiod_reps
+
 # =============================================================================
 # for (static) EA
 
@@ -304,6 +317,30 @@ class DynamicEA():
             self.train_error_for_epochs_per_chgperiod.append(
                 train_err_per_epoch)
         return my_pred_mode
+# =============================================================================
+# for evaluating variance in change period runs
+
+    def delete_entries_for_last_chgperiod_run(self):
+        self.detected_n_changes -= 1
+        # delete last element
+        del self.best_found_pos_per_chgperiod[-1]
+        del self.best_found_fit_per_chgperiod[-1]
+
+        self.population = None
+        self.population_fitness = None
+        # ---------------------------------------------------------------------
+        # for EA (prediction and evaluation)
+        # ---------------------------------------------------------------------
+        # number of changes detected by the EA
+        self.detected_n_changes = 0
+        # for each detected change the corresponding generation numbers
+        self.detected_chgperiods_for_gens = []
+        # best found individual for each generation (2d numpy array)
+        self.best_found_pos_per_gen = np.zeros((self.n_generations, self.dim))
+        # fitness of best found individual for each generation (1d numpy array)
+        self.best_found_fit_per_gen = np.zeros(self.n_generations)
+
+# =============================================================================
 
     def optimize(self):
         #n_overall_layers = 2
@@ -351,12 +388,57 @@ class DynamicEA():
         t_all = 0
 
         # ---------------------------------------------------------------------
-        for i in range(self.n_generations):
+        generations = range(self.n_generations)
+        i = 0
+        chgperiod_run_idx = 0  # first run
+        # generations for that the repetitions are executed (is initialized
+        # first time: all generations until a change is detected are appended)
+        gens_for_rep = []
+        store_gen = True  # is set to false when gens_for_rep is filled
+        # ---------------------------------------------------------------------
+        while i in generations:
+            # TODO fitness/population-Arrays enthalten jetzt zu viele Werte
+            # (für jede Wiederholung)!
+            i += 1
+            if store_gen:
+                gens_for_rep.append(i)
             # test for environment change
             env_changed = environment_changed(i, self.population, self.population_fitness,
                                               self.benchmarkfunction, self.experiment_data, self.ea_np_rnd_generator)
+
             # test for environment change (but not in first generation)
             if env_changed and i != 0:
+                # -------------------------------------------
+                # for repetitions of chgperiods
+                self.final_pop_per_chgperiodrun_per_chgperiod[chgperiod_run_idx] = copy.deepcopy(
+                    self.population)
+
+                # -------------------------------------------
+                # only for experiments with repetitions of change periods
+                if self.max_n_chgperiod_reps > 1:
+                    store_gen = False  # do not change the stored generation idxs
+                    chgperiod_run_idx += 1  # finished one run
+                    # TODO store old state of predictor
+
+                    if chgperiod_run_idx != self.max_n_chgperiod_reps:
+                        generations = gens_for_rep  # repeat the same generations
+
+                        if chgperiod_run_idx > 1:  # one run has already been executed
+                            # delete entries from data structures since another run
+                            # will take place
+                            self.delete_entries_for_last_chgperiod_run()
+                    else:
+                        # go to next change period, use population of last (i.e.
+                        # current change period)
+
+                        # reset indices for repetitions
+                        chgperiod_run_idx = 0  # first run
+                        # all remaining generations for optimizer
+                        generations = range(self.n_generations)[i + 1:]
+
+                    i = generations[0]
+
+                # -------------------------------------------
                 # reset sigma to initial value
                 self.reset_parameters()
                 # count change
