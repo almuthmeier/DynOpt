@@ -153,7 +153,7 @@ class DynamicEA():
         # 4d list [runs, chgperiods, parents, dims]
         # TODO insert into PSO
         self.final_pop_per_chgperiodrun_per_chgperiod = [
-            None] * self.max_n_chgperiod_reps
+            [] for _ in range(self.max_n_chgperiod_reps)]
 
 # =============================================================================
 # for (static) EA
@@ -317,28 +317,7 @@ class DynamicEA():
             self.train_error_for_epochs_per_chgperiod.append(
                 train_err_per_epoch)
         return my_pred_mode
-# =============================================================================
-# for evaluating variance in change period runs
 
-    def delete_entries_for_last_chgperiod_run(self):
-        self.detected_n_changes -= 1
-        # delete last element
-        del self.best_found_pos_per_chgperiod[-1]
-        del self.best_found_fit_per_chgperiod[-1]
-
-        self.population = None
-        self.population_fitness = None
-        # ---------------------------------------------------------------------
-        # for EA (prediction and evaluation)
-        # ---------------------------------------------------------------------
-        # number of changes detected by the EA
-        self.detected_n_changes = 0
-        # for each detected change the corresponding generation numbers
-        self.detected_chgperiods_for_gens = []
-        # best found individual for each generation (2d numpy array)
-        self.best_found_pos_per_gen = np.zeros((self.n_generations, self.dim))
-        # fitness of best found individual for each generation (1d numpy array)
-        self.best_found_fit_per_gen = np.zeros(self.n_generations)
 
 # =============================================================================
 
@@ -388,20 +367,16 @@ class DynamicEA():
         t_all = 0
 
         # ---------------------------------------------------------------------
-        generations = range(self.n_generations)
-        i = 0
-        chgperiod_run_idx = 0  # first run
         # generations for that the repetitions are executed (is initialized
         # first time: all generations until a change is detected are appended)
         gens_for_rep = []
-        store_gen = True  # is set to false when gens_for_rep is filled
         # ---------------------------------------------------------------------
-        while i in generations:
+        start_pop_for_curr_chgperiod = self.population
+        start_pops_fit_for_curr_chgperiod = self.population_fitness
+        for i in range(self.n_generations):
             # TODO fitness/population-Arrays enthalten jetzt zu viele Werte
             # (für jede Wiederholung)!
-            i += 1
-            if store_gen:
-                gens_for_rep.append(i)
+            gens_for_rep.append(i)
             # test for environment change
             env_changed = environment_changed(i, self.population, self.population_fitness,
                                               self.benchmarkfunction, self.experiment_data, self.ea_np_rnd_generator)
@@ -410,33 +385,18 @@ class DynamicEA():
             if env_changed and i != 0:
                 # -------------------------------------------
                 # for repetitions of chgperiods
-                self.final_pop_per_chgperiodrun_per_chgperiod[chgperiod_run_idx] = copy.deepcopy(
-                    self.population)
+                # save population for first run of current chgperiod
+                self.final_pop_per_chgperiodrun_per_chgperiod[0].append(copy.deepcopy(
+                    self.population))
 
                 # -------------------------------------------
                 # only for experiments with repetitions of change periods
                 if self.max_n_chgperiod_reps > 1:
-                    store_gen = False  # do not change the stored generation idxs
-                    chgperiod_run_idx += 1  # finished one run
-                    # TODO store old state of predictor
-
-                    if chgperiod_run_idx != self.max_n_chgperiod_reps:
-                        generations = gens_for_rep  # repeat the same generations
-
-                        if chgperiod_run_idx > 1:  # one run has already been executed
-                            # delete entries from data structures since another run
-                            # will take place
-                            self.delete_entries_for_last_chgperiod_run()
-                    else:
-                        # go to next change period, use population of last (i.e.
-                        # current change period)
-
-                        # reset indices for repetitions
-                        chgperiod_run_idx = 0  # first run
-                        # all remaining generations for optimizer
-                        generations = range(self.n_generations)[i + 1:]
-
-                    i = generations[0]
+                    run_indices = range(1, self.max_n_chgperiod_reps)
+                    self.repeat_selected_generations(gens_for_rep, run_indices,
+                                                     start_pop_for_curr_chgperiod,
+                                                     start_pops_fit_for_curr_chgperiod)
+                    gens_for_rep = []
 
                 # -------------------------------------------
                 # reset sigma to initial value
@@ -459,6 +419,10 @@ class DynamicEA():
 
                 # adapt population to environment change
                 self.adapt_population(i, my_pred_mode)
+                # store population
+                start_pop_for_curr_chgperiod = copy.deepcopy(self.population)
+                start_pops_fit_for_curr_chgperiod = copy.deepcopy(
+                    self.population_fitness)
 
             self.detected_chgperiods_for_gens.append(self.detected_n_changes)
 
@@ -501,10 +465,14 @@ class DynamicEA():
             sess.close()
             tf.reset_default_graph()
 
-    def optimize_selection(selfs, generations, n_runs):
+    def repeat_selected_generations(self, generation_idcs, run_idcs, original_pop, original_pops_fit):
         '''
-        @param generations: contains indices of generations that are repeated
+        @param generation_idcs: contains indices of generations that are repeated
+        @param run_idcs: contains indices of runs that are repeated (begin with
+        1 since one run already is run before)
+        @param original_pop: population 
         '''
+
         # ---------------------------------------------------------------------
         # local variables for EA
         # ---------------------------------------------------------------------
@@ -514,37 +482,16 @@ class DynamicEA():
         t_all = 0
 
         # ---------------------------------------------------------------------
-        for r in range(n_runs):
-            for i in generations:
-                # test for environment change
-                env_changed = environment_changed(i, self.population, self.population_fitness,
-                                                  self.benchmarkfunction, self.experiment_data, self.ea_np_rnd_generator)
-                # test for environment change (but not in first generation)
-                if env_changed and i != 0:
-                    # reset sigma to initial value
-                    self.reset_parameters()
-                    # count change
-                    self.detected_n_changes += 1
-                    print("(chg/gen)-(" + str(self.detected_n_changes) +
-                          "/" + str(i) + ") ", end="", flush=True)
-                    # store best found solution during change period as training data for predictor
-                    # TODO(dev) works only for plus-selection (not for
-                    # comma-selection)
-                    self.best_found_pos_per_chgperiod.append(
-                        copy.copy(self.best_found_pos_per_gen[i - 1]))
-                    self.best_found_fit_per_chgperiod.append(
-                        copy.copy(self.best_found_fit_per_gen[i - 1]))
+        # store old values of class variables
+        old_pop = copy.deepcopy(self.population)
+        old_pop_fit = copy.deepcopy(self.population_fitness)
+        # ---------------------------------------------------------------------
+        for r in run_idcs:
+            # set new values to class variables
+            self.population = copy.deepcopy(original_pop)
+            self.population_fitness = copy.deepcopy(original_pops_fit)
 
-                    # prepare data and predict optimum
-                    my_pred_mode = self.prepare_data_train_and_predict(sess, i, trained_first_time, scaler,
-                                                                       self.dim, predictor)
-
-                    # adapt population to environment change
-                    self.adapt_population(i, my_pred_mode)
-
-                self.detected_chgperiods_for_gens.append(
-                    self.detected_n_changes)
-
+            for i in generation_idcs:
                 # create la offsprings
                 offspring_population = np.zeros((self.la, self.dim))
                 offspring_pop_fitness = np.zeros((self.la, 1))
@@ -574,8 +521,11 @@ class DynamicEA():
                         t_s += 1
                 # select new population
                 self.select(offspring_population, offspring_pop_fitness)
-                min_fitness_index = np.argmin(self.population_fitness)
-                self.best_found_fit_per_gen[i] = copy.copy(
-                    self.population_fitness[min_fitness_index])
-                self.best_found_pos_per_gen[i] = copy.copy(
-                    self.population[min_fitness_index])
+            # save final population of this run
+            self.final_pop_per_chgperiodrun_per_chgperiod[r].append(copy.deepcopy(
+                self.population))
+        # ---------------------------------------------------------------------
+        # restore old values
+        # ---------------------------------------------------------------------
+        self.population = old_pop
+        self.population_fitness = old_pop_fit

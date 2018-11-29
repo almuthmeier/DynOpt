@@ -160,7 +160,8 @@ class PredictorComparator(object):
                  # because it is a general file for 10000 change periods)
                  real_chgperiods_for_gens=self.chgperiods_for_gens,
                  train_error_per_chgperiod=alg.train_error_per_chgperiod,
-                 train_error_for_epochs_per_chgperiod=alg.train_error_for_epochs_per_chgperiod
+                 train_error_for_epochs_per_chgperiod=alg.train_error_for_epochs_per_chgperiod,
+                 final_pop_per_chgperiodrun_per_chgperiod=alg.final_pop_per_chgperiodrun_per_chgperiod
                  )
 
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):
