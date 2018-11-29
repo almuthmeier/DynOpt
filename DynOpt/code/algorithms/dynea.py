@@ -500,3 +500,82 @@ class DynamicEA():
                 self.predictor_name == "tftlrnndense":
             sess.close()
             tf.reset_default_graph()
+
+    def optimize_selection(selfs, generations, n_runs):
+        '''
+        @param generations: contains indices of generations that are repeated
+        '''
+        # ---------------------------------------------------------------------
+        # local variables for EA
+        # ---------------------------------------------------------------------
+        # number of successful mutations during t_rechenberg generations
+        t_s = 0
+        # overall number of mutations
+        t_all = 0
+
+        # ---------------------------------------------------------------------
+        for r in range(n_runs):
+            for i in generations:
+                # test for environment change
+                env_changed = environment_changed(i, self.population, self.population_fitness,
+                                                  self.benchmarkfunction, self.experiment_data, self.ea_np_rnd_generator)
+                # test for environment change (but not in first generation)
+                if env_changed and i != 0:
+                    # reset sigma to initial value
+                    self.reset_parameters()
+                    # count change
+                    self.detected_n_changes += 1
+                    print("(chg/gen)-(" + str(self.detected_n_changes) +
+                          "/" + str(i) + ") ", end="", flush=True)
+                    # store best found solution during change period as training data for predictor
+                    # TODO(dev) works only for plus-selection (not for
+                    # comma-selection)
+                    self.best_found_pos_per_chgperiod.append(
+                        copy.copy(self.best_found_pos_per_gen[i - 1]))
+                    self.best_found_fit_per_chgperiod.append(
+                        copy.copy(self.best_found_fit_per_gen[i - 1]))
+
+                    # prepare data and predict optimum
+                    my_pred_mode = self.prepare_data_train_and_predict(sess, i, trained_first_time, scaler,
+                                                                       self.dim, predictor)
+
+                    # adapt population to environment change
+                    self.adapt_population(i, my_pred_mode)
+
+                self.detected_chgperiods_for_gens.append(
+                    self.detected_n_changes)
+
+                # create la offsprings
+                offspring_population = np.zeros((self.la, self.dim))
+                offspring_pop_fitness = np.zeros((self.la, 1))
+                for j in range(self.la):
+                    # adapt sigma after t_rechenberg mutations
+                    if t_all % self.t_rechenberg == 0 and t_all != 0:
+                        adapt_sigma(
+                            self.sigma, self.t_rechenberg, self.tau, t_s)
+                        # reset counters
+                        t_all = 0
+                        t_s = 0
+                    # recombination
+                    offspring = self.recombinate()
+                    # mutation
+                    mutated_offspring = self.mutate(offspring)
+                    t_all += 1
+                    # evaluate offspring
+                    offspring_fitness = utils_dynopt.fitness(self.benchmarkfunction,
+                                                             mutated_offspring, i, self.experiment_data)
+
+                    # add offspring to offspring population
+                    offspring_population[j] = copy.copy(mutated_offspring)
+                    offspring_pop_fitness[j][0] = offspring_fitness
+
+                    # mutation successful?
+                    if offspring_fitness < utils_dynopt.fitness(self.benchmarkfunction, offspring, i, self.experiment_data):
+                        t_s += 1
+                # select new population
+                self.select(offspring_population, offspring_pop_fitness)
+                min_fitness_index = np.argmin(self.population_fitness)
+                self.best_found_fit_per_gen[i] = copy.copy(
+                    self.population_fitness[min_fitness_index])
+                self.best_found_pos_per_gen[i] = copy.copy(
+                    self.population[min_fitness_index])
