@@ -34,7 +34,7 @@ class MetricTransformer():
                                       [:-1]) + "/output/"
             #self.output_dir_path = path_to_output + "ESANN_2019/"
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20_ohneDrop_mitNOundARR/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-22/"
+            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-23/"
             # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy,griewank
             self.benchmarkfunctions = [
                 "rastrigin", "sphere", "mpbcorr"]
@@ -44,7 +44,7 @@ class MetricTransformer():
             self.dims = [1, 5, 10, 50]
             self.noises = [0.0, 0.2]
             self.metric_filename = "metric_db_stepevaluation_2018-11-22_rmses.csv"
-            self.output_file_name = "avg_metric_db_2018-11-22_rmses.csv"
+            self.output_file_name = "avg_metric_db_2018-11-23_rmses.csv"
         else:
             self.output_dir_path = path_to_output
             self.benchmarkfunctions = benchmarkfunctions
@@ -56,19 +56,19 @@ class MetricTransformer():
             self.output_file_name = output_file_name
 
     def make_table_with_selected_data(self):
-        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-22/"
-        full_input_name = path_transformed_db + "avg_metric_db_2018-11-22_rmses.csv"
+        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-23/"
+        full_input_name = path_transformed_db + "avg_metric_db_2018-11-23_rmses.csv"
         all_data = pd.read_csv(full_input_name)
 
         # functions that are combined into one file
         # , "tftlrnndense"]
         preds = ["no", "autoregressive", "tfrnn", "tftlrnn", "tftlrnndense"]
-        functions = ["sphere", "mpbcorr"]  # , "rastrigin"]
+        functions = ["sphere", "mpbcorr", "rastrigin"]
         dims = [1, 5, 10, 50]
         noises = [0.0, 0.2]
-        steps = 10
+        steps = 50
         # "bog-for-run"  # , "bebc", "rcs", "arr" "ea_rmse","foundpred-rmse","truepred-rmse"
-        metric = "truepred-rmse"
+        metric = "ea-rmse"
 
         full_output_file_name = path_transformed_db + "selection_fcts-" + \
             str(functions) + "_steps-" + str(steps) + \
