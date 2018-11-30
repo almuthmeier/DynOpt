@@ -14,7 +14,7 @@
 # Python Cache files
 *.pyc
 
-# Benchmarks
+# Benchmarks (do not ignore "MyTests"-folders since required for tests)
 *.npz
 !**/MyTest/**
 
