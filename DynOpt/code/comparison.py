@@ -31,6 +31,7 @@ class PredictorComparator(object):
         # benchmark problem
         self.algorithm = None  # string
         self.repetitions = None  # int
+        self.chgperiodrepetitions = None  # int
         self.chgperiods = None  # int
         self.lenchgperiod = None  # int
         self.ischgperiodrandom = None  # bool
@@ -121,7 +122,8 @@ class PredictorComparator(object):
                             self.trechenberg, self.tau, self.timesteps,
                             n_neurons, self.epochs, self.batchsize,
                             self.n_layers, self.apply_tl, self.n_tllayers,
-                            full_tl_model_name, self.tl_learn_rate)
+                            full_tl_model_name, self.tl_learn_rate,
+                            self.chgperiodrepetitions)
         elif self.algorithm == "dynpso":
             alg = DynamicPSO(self.benchmarkfunction, dimensionality,
                              n_generations, self.experiment_data, self.predictor,
@@ -130,7 +132,8 @@ class PredictorComparator(object):
                              self.adaptivec3, self.nparticles, self.timesteps,
                              n_neurons, self.epochs, self.batchsize,
                              self.n_layers, self.apply_tl, self.n_tllayers,
-                             full_tl_model_name)
+                             full_tl_model_name, self.tl_learn_rate,
+                             self.chgperiodrepetitions)
         else:
             warnings.warn("unknown optimization algorithm")
             exit(1)
@@ -161,7 +164,8 @@ class PredictorComparator(object):
                  real_chgperiods_for_gens=self.chgperiods_for_gens,
                  train_error_per_chgperiod=alg.train_error_per_chgperiod,
                  train_error_for_epochs_per_chgperiod=alg.train_error_for_epochs_per_chgperiod,
-                 final_pop_per_chgperiodrun_per_chgperiod=alg.final_pop_per_chgperiodrun_per_chgperiod
+                 final_pop_per_run_per_chgperiod=alg.final_pop_per_run_per_chgperiod,
+                 final_pop_fitness_per_run_per_changeperiod=alg.final_pop_fitness_per_run_per_changeperiod
                  )
 
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):

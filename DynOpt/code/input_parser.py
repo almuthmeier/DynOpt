@@ -29,6 +29,7 @@ def define_parser_arguments():
     # "dynea" or "dynpso"
     parser.add_argument("-algorithm", type=str)
     parser.add_argument("-repetitions", type=int)
+    parser.add_argument("-chgperiodrepetitions", type=int)
     parser.add_argument("-chgperiods", type=int)  # n_chgs = chgperiods - 1
     parser.add_argument("-lenchgperiod", type=int)
     # true, if changes occur at random time points
@@ -138,20 +139,21 @@ def initialize_comparator_manually(comparator):
     # benchmark problem
     comparator.algorithm = "dynea"
     comparator.repetitions = 1
+    comparator.chgperiodrepetitions = 3
     comparator.chgperiods = 50
     comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
-        "/DynOpt/datasets/" + "ESANN_2019/"
+        "/DynOpt/datasets/" + "GECCO_2019/"
     # attention: naming should be consistent to predictor/other params
     comparator.outputdirectory = "ersterTest/ea_no/"
     comparator.outputdirectorypath = path_to_dynoptim + \
-        "/DynOpt/output/" + "ESANN_2019/" + "sphere/"
+        "/DynOpt/output/" + "GECCO_2019/" + "sphere/"
 
     # run only some experiments of all for the benchmark problem
     # ["linear", "sine", "circle"])
-    comparator.poschgtypes = np.array(["mixture"])  # , "linear"])
+    comparator.poschgtypes = np.array(["sine"])  # , "linear"])
     comparator.fitchgtypes = np.array(["none"])
     comparator.dims = np.array([5])
     comparator.noises = np.array([0.0])
@@ -177,7 +179,7 @@ def initialize_comparator_manually(comparator):
 
     # for predictor
     # "tftlrnn"  # "tfrnn"  # "no", "tftlrnn" "autoregressive" "tftlrnndense"
-    comparator.predictor = "tftlrnndense"
+    comparator.predictor = "tfrnn"
     comparator.timesteps = 50
 
     # for ANN predictor
@@ -205,13 +207,14 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 36:
+    if n_current_inputs != 37:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
     # benchmark problem
     comparator.algorithm = args.algorithm
     comparator.repetitions = args.repetitions
+    comparator.chgperiodrepetitions = args.chgperiodrepetitions
     comparator.chgperiods = args.chgperiods
     comparator.lenchgperiod = args.lenchgperiod
     comparator.ischgperiodrandom = args.ischgperiodrandom == 'True'  # convert str to bool

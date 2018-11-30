@@ -19,6 +19,7 @@
 # benchmark problem
 algorithm="dynea" 			# dynea or dynpso
 repetitions=1				# number runs for each experiment
+chgperiodrepetitions=1			# number runs for each change period
 chgperiods=10				# number of change periods 
 lenchgperiod=20				# number of generations per change period; has to be
 							# set even if chgperiod==1 (is then number of 
@@ -68,7 +69,7 @@ neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RN
 epochs=5					# number of training epochs for the RNN prediction model
 batchsize=128					# batch size for RNN model
 nlayers=2					# overall number of layers (incl. tl layers)
-tlmodelpath="/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"	# path to the pre-trained transfer learning model
+tlmodelpath="/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/"	# path to the pre-trained transfer learning model
 ntllayers=1					# number of layers in the transfer learning model
 ngpus=1    					# number of GPUs to use (for RNN model) 
 
@@ -89,6 +90,7 @@ outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/Dy
 
 ~/.virtualenvs/promotion/prototype/bin/python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
+-chgperiodrepetitions="$chgperiodrepetitions" \
 -chgperiods="$chgperiods" \
 -lenchgperiod="$lenchgperiod" \
 -ischgperiodrandom="$ischgperiodrandom" \

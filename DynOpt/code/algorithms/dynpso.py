@@ -26,7 +26,7 @@ class DynamicPSO():
                  c1, c2, c3, insert_pred_as_ind,
                  adaptive_c3, n_particles,
                  timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
-                 n_tllayers, tl_model_path):
+                 n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps):
         '''
         Initialize a DynamicPSO object.
         @param benchmarkfunction: (string)

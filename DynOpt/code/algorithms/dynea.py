@@ -26,7 +26,7 @@ class DynamicEA():
                  ea_np_rnd_generator, pred_np_rnd_generator,
                  mu, la, ro, mean, sigma, trechenberg, tau,
                  timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
-                 n_tllayers, tl_model_path, tl_learn_rate):
+                 n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps):
         '''
         Initialize a DynamicEA object.
         @param benchmarkfunction: (string)
@@ -147,13 +147,19 @@ class DynamicEA():
         # for EA (evaluation of variance) (repetitions of change periods
         # ---------------------------------------------------------------------
         # number repetitions of the single change periods (at least 1 -> 1 run)
-        self.max_n_chgperiod_reps = 30
+        # TODO insert into PSO
+        self.max_n_chgperiod_reps = max_n_chperiod_reps
         # population for last generation of change period (for each run)
         # used for determining the EAs variance for change periods
         # 4d list [runs, chgperiods, parents, dims]
         # TODO insert into PSO
-        self.final_pop_per_chgperiodrun_per_chgperiod = [
+        self.final_pop_per_run_per_chgperiod = [
             [] for _ in range(self.max_n_chgperiod_reps)]
+        # fitness of final population per run of each chgperiod
+        # 3d list [runs, chgperiods, parents]
+        # TODO insert into PSO
+        self.final_pop_fitness_per_run_per_changeperiod = [
+            []for _ in range(self.max_n_chgperiod_reps)]
 
 # =============================================================================
 # for (static) EA
@@ -386,7 +392,7 @@ class DynamicEA():
                 # -------------------------------------------
                 # for repetitions of chgperiods
                 # save population for first run of current chgperiod
-                self.final_pop_per_chgperiodrun_per_chgperiod[0].append(copy.deepcopy(
+                self.final_pop_per_run_per_chgperiod[0].append(copy.deepcopy(
                     self.population))
 
                 # -------------------------------------------
@@ -398,6 +404,7 @@ class DynamicEA():
                                                      start_pops_fit_for_curr_chgperiod)
                     gens_for_rep = []
 
+                # in the following the population of the first run is used (for prediction,...)
                 # -------------------------------------------
                 # reset sigma to initial value
                 self.reset_parameters()
@@ -486,7 +493,9 @@ class DynamicEA():
         old_pop = copy.deepcopy(self.population)
         old_pop_fit = copy.deepcopy(self.population_fitness)
         # ---------------------------------------------------------------------
+        print("repeat chgperiod", flush=True)
         for r in run_idcs:
+            print("    repetition: ", r, flush=True)
             # set new values to class variables
             self.population = copy.deepcopy(original_pop)
             self.population_fitness = copy.deepcopy(original_pops_fit)
@@ -521,9 +530,11 @@ class DynamicEA():
                         t_s += 1
                 # select new population
                 self.select(offspring_population, offspring_pop_fitness)
-            # save final population of this run
-            self.final_pop_per_chgperiodrun_per_chgperiod[r].append(copy.deepcopy(
+            # save final population of this run and its fitness values
+            self.final_pop_per_run_per_chgperiod[r].append(copy.deepcopy(
                 self.population))
+            self.final_pop_fitness_per_run_per_changeperiod[r].append(
+                copy.deepcopy(self.population_fitness))
         # ---------------------------------------------------------------------
         # restore old values
         # ---------------------------------------------------------------------
