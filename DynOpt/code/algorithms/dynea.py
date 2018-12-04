@@ -394,6 +394,8 @@ class DynamicEA():
                 # save population for first run of current chgperiod
                 self.final_pop_per_run_per_chgperiod[0].append(copy.deepcopy(
                     self.population))
+                self.final_pop_fitness_per_run_per_changeperiod[0].append(
+                    copy.deepcopy(self.population_fitness))
 
                 # -------------------------------------------
                 # only for experiments with repetitions of change periods

@@ -73,6 +73,7 @@ class PredictorComparator(object):
         self.batchsize = None  # int
         self.n_layers = None  # int
         self.ngpus = None  # int
+        self.tl_learn_rate = None  # float
 
         # transfer learning
         self.apply_tl = None  # bool
