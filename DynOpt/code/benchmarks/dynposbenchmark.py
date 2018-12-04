@@ -34,7 +34,7 @@ from utils.utils_files import get_current_day_time
 sys.path.append(os.path.abspath(os.pardir))
 
 
-def create_problems(output_dir_path=None):
+def create_problems(output_parent_dir_path=None):
     '''
     Computes for each change the global optimum position. The new position
     is computed by adding a movement vector that depends on the change number.
@@ -43,11 +43,11 @@ def create_problems(output_dir_path=None):
     # -------------------------------------------------------------------------
     # TODO(exp) parameters to adjust
     n_chg_periods = 10000
-    dims = [1, 2, 5]  # , 10, 50]
+    dims = [1, 2, 10]  # [1, 2, 5]  # , 10, 50]
     functions = [sphere, rastrigin, griewank]  # , rastrigin]
     functions = [sphere, rastrigin]  # , rastrigin]
     pos_chng_types = ['pch-linear', 'pch-sine', 'pch-circle', 'pch-mixture']
-    pos_chng_types = ['pch-sine']
+    pos_chng_types = ['pch-mixture']
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "GECCO_2019"
@@ -69,7 +69,7 @@ def create_problems(output_dir_path=None):
     else:
         warnings.warn("unknown conference type")
 
-    if output_dir_path is None:
+    if output_parent_dir_path is None:
         # path to data set directory to store data sets there
         # ".../DynOptimization/DynOpt/code"
         splitted_path = os.path.abspath(os.pardir).split('/')
@@ -77,17 +77,24 @@ def create_problems(output_dir_path=None):
         path_to_dynopt = '/'.join(splitted_path[:-1])
     # create data sets
     for func in functions:
+        func_name = func.__name__
+        print("func_name: ", func_name)
+        if output_parent_dir_path is None:
+            output_dir_path = path_to_dynopt + "/datasets/" + \
+                conference + "/" + func_name + "/"
+            print("folder_path: ", output_dir_path)
+            if not os.path.exists(output_dir_path):
+                os.makedirs(output_dir_path)
+            #output_dir_path = folder_path + "/"
+        else:
+            output_dir_path = output_parent_dir_path + "/" + func_name + "/"
+
         for dim in dims:
             # same seed for different functions so that the movement is same
             np_rand_gen = np.random.RandomState(234012)
-            func_name = func.__name__
+
             orig_global_opt_position, _ = get_original_global_opt_pos_and_fit(
                 func, dim)
-            if output_dir_path is None:
-                folder_path = path_to_dynopt + "/datasets/" + conference + "/" + func_name
-                if not os.path.exists(folder_path):
-                    os.makedirs(folder_path)
-                output_dir_path = folder_path + "/"
 
             if fit_chng_type == "fch-none":
                 # store global optimum fitness (stays same for all changes
