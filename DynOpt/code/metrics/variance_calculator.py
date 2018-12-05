@@ -90,6 +90,16 @@ def compute_variance_between_runs(in_full_name, out_full_name):
     #benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
     #benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
 
+    # new (with right original position
+    # sine
+    benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-sine_fch-none_2018-12-05_09:31.npz"
+
+    # mixture
+    benchmark_file = "sphere/sphere_d-2_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+    benchmark_file = "sphere/sphere_d-10_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+    benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+    #benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+
     benchmark_full_name = benchmark_folder + benchmark_file
     b_file = np.load(benchmark_full_name)
     global_opt_pos_per_chgperiod = b_file['global_opt_pos_per_chgperiod']
@@ -154,6 +164,15 @@ def main():
     in_file_name = "no_sphere_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-04_16:02_00.npz"
     #in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-11-30_12:40_00.npz"
     #in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-11-30_12:40_00.npz"
+
+    # new (with right original position
+    # sine
+    in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-12-05_09:32_00.npz"
+    # mixture
+    in_file_name = "no_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    in_file_name = "no_sphere_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    #in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
 
     in_full_name = in_path + in_file_name
     out_path = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/sphere/ersterTest/ea_no/metrics/"

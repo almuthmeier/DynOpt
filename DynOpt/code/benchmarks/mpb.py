@@ -107,6 +107,7 @@ def __create_and_save_mpb_problem__(min_range, max_range,
     heigth_severity = 7  # as in initial paper by Branke
     width_severity = 0.1  # as in initial paper by Branke
 
+    # (unequal to dynposbenchmark.py) position of first global optimum
     orig_global_opt_position = []
     # saves for each peak the previous position movement (required for
     # correlation-based MPB variant

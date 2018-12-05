@@ -17,7 +17,10 @@ sys.path.append(os.path.abspath(os.pardir))
 from benchmarks.dynposbenchmark import compute_fitness
 import matplotlib.pyplot as plt
 import numpy as np
-from utils.fitnessfunctions import rosenbrock
+from utils.fitnessfunctions import rosenbrock, sphere, rastrigin
+
+
+
 
 
 class Test(unittest.TestCase):
@@ -123,26 +126,45 @@ class Test(unittest.TestCase):
         '''
         Tests whether the fitness is computed correctly
         '''
-        ff = rosenbrock
-        f_name = "rosenbrock"
-        file_name1 = "rosenbrock_d-2_chgperiods-10000_pch-sine_fch-none_2018-05-09_11:13.npz"
-        f1 = np.load(self.path_test_problems +
-                     "EvoStar_2018/rosenbrock/" + file_name1)
+        # ---------------------------------------------------------------------
+        # prepare data
+        # ---------------------------------------------------------------------
+
+        ff = rastrigin
+        f_name = "rastrigin"
+        file_name = "rastrigin_d-10_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+        file_path = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/code/tests/test_datasets/"
+        f1 = np.load(file_path + file_name)
         global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
         orig_opt_pos1 = f1['orig_global_opt_pos']
+        global_opt_fit_per_chgperiod = f1['global_opt_fit_per_chgperiod']
         f1.close()
 
         # assume following data
-        ind = np.array([4.2, 56789])
-        dim = 2
+        dim = 10
         gen = 34
-        current_change_period = 3  # beginning with 0, every 10th generation a change
+        current_change_period = 0  # beginning with 0, every 10th generation a change
 
         # mock the following array
-        global_opt_pos_per_gen = np.zeros((50, dim))
+        n_gens = 50
+        global_opt_pos_per_gen = np.zeros((n_gens, dim))
         global_opt_pos_per_gen[gen] = global_opt_pos1[current_change_period]
 
+        # ---------------------------------------------------------------------
+        # check whether fitness of global best solution always is 0 (the global
+        # best fitness)
+        # ---------------------------------------------------------------------
+
+        # first change period (fitness)
+        ind = global_opt_pos1[current_change_period]
+        exp_fit = global_opt_fit_per_chgperiod[current_change_period]
+        act_fit = compute_fitness(ind, gen, f_name,
+                                  global_opt_pos_per_gen, orig_opt_pos1)
+        self.assertEqual(exp_fit, act_fit)
+
+        # ---------------------------------------------------------------------
         # compute fitness manually
+        ind = np.array([4.2, 56789, 23, 12, 6, 4.4, 5, 3, 2, 10])
         moved_ind = ind - (global_opt_pos_per_gen[gen] - orig_opt_pos1)
         exp_fit = ff(moved_ind)
 

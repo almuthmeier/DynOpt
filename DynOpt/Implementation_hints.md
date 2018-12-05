@@ -36,7 +36,9 @@ Since information will be read out from the file name its structure must be like
 Every .npz file contains the following entries:  
     - 'global_opt_fit_per_chgperiod' (global optimum fitness per change; 1d numpy array: for each change period the optimum fitness)  
 	- 'global_opt_pos_per_chgperiod' (global optimum position per change; 2d numpy array: for each change period the position corresponding to the optimum fitness)  
-	- 'orig_global_opt_pos' (original (unmoved) optimum position (is the same as the first entry in 'global_opt_pos_per_chgperiod'))  
+	- 'orig_global_opt_pos' (original (unmoved) optimum position:
+		- in case of Sphere, Rastrigin, Rosenbrock,... as base functions it is the position of the global optimum in the unmoved base function (there fore not necessarily equal to first entry in 'global_opt_pos_per_chgperiod' (e.g. for position change type "mixture" not equal)
+		- for the MPB variants it is the same as the first entry in 'global_opt_pos_per_chgperiod'  
 The first two listed keys must have "_per_chgperiod" at the end because they are automatically renamed to "_per_gen" in comparison.convert_data_to_per_generation().  
 
 Note that it is important that the properties are stored "per change" and not "per generation" as they are converted to "per generation" in comparison.py during runtime.

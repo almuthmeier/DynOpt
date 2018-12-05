@@ -48,8 +48,10 @@ class Test(unittest.TestCase):
 
                     # test whether the first global optimum is the same as in
                     # the array storing the global optimum for each change
-                    np.testing.assert_array_almost_equal(
-                        orig_pos, global_opt_pos[0], 2)  # accuracy 2
+                    # no longer implemented like this: orig_pos stores now the
+                    # global optimum position in the unmoved base function
+                    # np.testing.assert_array_almost_equal(
+                    #    orig_pos, global_opt_pos[0], 2)  # accuracy 2
 
                     # =========================================================
                     # test array lengths

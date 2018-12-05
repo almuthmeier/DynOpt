@@ -47,7 +47,7 @@ def create_problems(output_parent_dir_path=None):
     functions = [sphere, rastrigin, griewank]  # , rastrigin]
     functions = [sphere, rastrigin]  # , rastrigin]
     pos_chng_types = ['pch-linear', 'pch-sine', 'pch-circle', 'pch-mixture']
-    pos_chng_types = ['pch-mixture']
+    pos_chng_types = ['pch-mixture', 'pch-sine', 'pch-linear']
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "GECCO_2019"
@@ -182,9 +182,6 @@ def create_problems(output_parent_dir_path=None):
                     opts = start_mixture(
                         dims=dim, seed=np_rand_gen.randint(974))
                     opts = opts[:n_chg_periods]
-                    # re-set orig_global_opt_position (is differently for the
-                    # other pos-change-types)
-                    orig_global_opt_position = opts[0]
                 else:
                     warnings.warn("unknown position change type")
                 opts = np.array(opts)

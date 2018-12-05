@@ -133,6 +133,8 @@ class MetricCalculator():
                 exp_file = np.load(exp_file_path)
                 global_opt_fit_per_chgperiod = exp_file['global_opt_fit_per_chgperiod']
                 global_opt_pos_per_chgperiod = exp_file['global_opt_pos_per_chgperiod']
+                # position of unmoved base function (not necessarily the global
+                # optimum in first change period)
                 orig_global_opt_pos = exp_file['orig_global_opt_pos']
                 exp_file.close()
 
