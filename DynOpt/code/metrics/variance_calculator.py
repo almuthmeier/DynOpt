@@ -9,6 +9,8 @@ Created on Nov 30, 2018
 
 import copy
 
+from matplotlib import cm
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -73,16 +75,39 @@ def compute_variance_between_runs(in_full_name, out_full_name):
         final_pop_per_run_per_chgperiod, axis=2)
 
     # -------------------------------------------------------------------------
+    # real optima
+    # -------------------------------------------------------------------------
+    # plot real values of optimum per change period
+    benchmark_folder = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/GECCO_2019/"
+    benchmark_file = "sphere/sphere_d-2_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
+    #benchmark_file = "sphere/sphere_d-10_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
+    #benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
+    #benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
+
+    # mixture
+    benchmark_file = "sphere/sphere_d-2_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
+    benchmark_file = "sphere/sphere_d-10_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
+    #benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
+    #benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
+
+    benchmark_full_name = benchmark_folder + benchmark_file
+    b_file = np.load(benchmark_full_name)
+    global_opt_pos_per_chgperiod = b_file['global_opt_pos_per_chgperiod']
+    b_file.close()
+    # -------------------------------------------------------------------------
     # plot (https://stackoverflow.com/questions/7744697/how-to-show-two-figures-using-matplotlib)
     # -------------------------------------------------------------------------
 
-    dims = 2
+    dims = [0]
+    #dims = range(10)
+
     plot_shade = True
-    # variance between runs
+    # variance between runs (around mean) and real optimum
     f1 = plt.figure(1)
-    for d in range(dims):
+    for d in dims:
         stddev = stddev_among_runs_per_chgp[:, d]
         # plt.plot(stddev)
+        plt.plot(global_opt_pos_per_chgperiod[:n_change_periods, d])
         if plot_shade:
             mean_val = mean_among_runs_per_chgp[:, d]
             min_val = min_val_among_runs_per_chgp[:, d]
@@ -91,45 +116,24 @@ def compute_variance_between_runs(in_full_name, out_full_name):
             x = np.arange(len(stddev_among_runs_per_chgp))
             plt.fill_between(x, mean_val + stddev,
                              mean_val - stddev, alpha=0.4)
-            plt.fill_between(x, max_val, min_val, alpha=0.2)
-    plt.title("stddev among runs")
+            #plt.fill_between(x, max_val, min_val, alpha=0.2)
+    plt.title("real opt, mean & stddev of found")
     f1.show()
 
     # variance within population and best found position
     f2 = plt.figure(2)
-    for r in range(n_chgp_runs):
-        #plt.plot(stddev_within_pop_per_run_per_chgp[r, :, 0])
-        #plt.plot(stddev_within_pop_per_run_per_chgp[r, :, 1])
-        plt.plot(best_positions[r, :, 0])
-        plt.plot(best_positions[r, :, 1])
-
-    # plot real values of optimum per change period
-    benchmark_folder = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/GECCO_2019/"
-    #benchmark_file = "sphere/sphere_d-2_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
-    benchmark_file = "sphere/sphere_d-10_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
-    #benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
-    #benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
-
-    # mixture
-    benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
-    benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
-
-    benchmark_full_name = benchmark_folder + benchmark_file
-    b_file = np.load(benchmark_full_name)
-    global_opt_pos_per_chgperiod = b_file['global_opt_pos_per_chgperiod']
-    b_file.close()
-    # for dim=0 and dim=1
-    real_opt_dim0 = global_opt_pos_per_chgperiod[:n_change_periods, 0]
-    real_opt_dim1 = global_opt_pos_per_chgperiod[:n_change_periods, 1]
-    plt.plot(real_opt_dim0)
-    plt.plot(real_opt_dim1)
-    plt.title("real opt, best found, variance within pop")
+    for d in dims:
+        stddev = stddev_among_runs_per_chgp[:, d]
+        plt.plot(stddev)
+        # for r in range(n_chgp_runs):
+        #    plt.plot(stddev_within_pop_per_run_per_chgp[r, :, d])
+    plt.title("stddev among runs, stddev within pop")
     f2.show()
 
     # deviation to real optimum
     f3 = plt.figure(3)
     for r in range(n_chgp_runs):
-        for d in range(dims):
+        for d in dims:
             plt.plot(
                 abs(best_positions[r, :, d] - global_opt_pos_per_chgperiod[:n_change_periods, d]))
     plt.title("deviation to real opt")
@@ -140,17 +144,18 @@ def compute_variance_between_runs(in_full_name, out_full_name):
 
 def main():
     in_path = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/sphere/ersterTest/ea_no/arrays/"
-    #in_file_name = "no_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-11-30_12:21_00.npz"
+    in_file_name = "no_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-11-30_12:21_00.npz"
     #in_file_name = "no_sphere_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-11-30_12:21_00.npz"
     #in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-11-30_12:21_00.npz"
     #in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-11-30_12:21_00.npz"
 
     # mixture
-    in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-11-30_12:40_00.npz"
-    in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-11-30_12:40_00.npz"
+    in_file_name = "no_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-04_16:02_00.npz"
+    in_file_name = "no_sphere_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-04_16:02_00.npz"
+    #in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-11-30_12:40_00.npz"
+    #in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-11-30_12:40_00.npz"
 
     in_full_name = in_path + in_file_name
-
     out_path = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/sphere/ersterTest/ea_no/metrics/"
     out_file_name = "variances.csv"
     out_full_name = out_path + out_file_name
