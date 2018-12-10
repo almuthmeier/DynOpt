@@ -354,3 +354,22 @@ def prepare_scaler(min_input_value, max_input_value, dim):
         [[min_input_value] * dim, [max_input_value] * dim])
     scaler.fit(min_max_per_feature)
     return scaler
+
+
+def get_noisy_time_series(original_series, n_series, stddev_per_chgperiod):
+    '''
+    Generates n_series variations of original_series disturbed with gaussian 
+    noise of strength stddev_per_chgperiod.
+
+    Requires repeated execution of EA for the change periods.
+
+    @param original_series: for each change period the best found solution, 
+    format [n_chgperiods, dims]
+    @param n_series: number of noisy series to generate
+    @param stddev_per_chgperiod: for each change period the standard deviation of
+    the best found solution among the runs, format [n_chgperiod, dims]
+    @return: nump array, format [n_series, n_chgperiods, dims]
+    '''
+    n_chgperiods, dims = original_series.shape
+    return np.random.normal(loc=original_series, scale=stddev_per_chgperiod,
+                            size=(n_series, n_chgperiods, dims))

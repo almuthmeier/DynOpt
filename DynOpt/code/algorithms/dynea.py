@@ -16,7 +16,7 @@ from utils.utils_dynopt import environment_changed
 from utils.utils_ea import dominant_recombination, gaussian_mutation,\
     mu_plus_lambda_selection, adapt_sigma
 from utils.utils_prediction import build_predictor,\
-    predict_next_optimum_position, prepare_scaler
+    predict_next_optimum_position, prepare_scaler, get_noisy_time_series
 from utils.utils_transferlearning import get_variables_and_names
 
 
@@ -84,10 +84,14 @@ class DynamicEA():
         self.tl_learn_rate = tl_learn_rate
 
         # training/testing specifications
-        self.use_all_train_data = True  # user all previous data to train with
+        self.use_all_train_data = True  # use all previous data to train with
         self.predict_diffs = True  # predict position differences, TODO insert into PSO
         self.return_seq = True  # return values for all time steps not only the last one
         self.shuffle_train_data = True
+        # add noisy data (noise equals standard deviation among change period
+        # runs
+        self.add_noisy_train_data = True
+        self.n_noisy_series = 10  # TODO
         # ---------------------------------------------------------------------
         # for EA (fixed values)
         # ---------------------------------------------------------------------
@@ -159,7 +163,17 @@ class DynamicEA():
         # 3d list [runs, chgperiods, parents]
         # TODO insert into PSO
         self.final_pop_fitness_per_run_per_changeperiod = [
-            []for _ in range(self.max_n_chgperiod_reps)]
+            [] for _ in range(self.max_n_chgperiod_reps)]
+        # best found solution for each run of all change periods
+        # format [runs, chgperiods, dims]
+        self.best_found_pos_per_run_per_chgp = [
+            [] for _ in range(self.max_n_chgperiod_reps)]
+        # standard deviation and mean of the position of the best found solution
+        # (computed over the change period runs)
+        self.stddev_among_runs_per_chgp = [
+            [] for _ in range(self.max_n_chgperiod_reps)]
+        self.mean_among_runs_per_chgp = [
+            [] for _ in range(self.max_n_chgperiod_reps)]
 
 # =============================================================================
 # for (static) EA
@@ -282,6 +296,17 @@ class DynamicEA():
             else:
                 best_found_vals_per_chgperiod = self.best_found_pos_per_chgperiod
 
+            # add noisy training data in order to make network more robust and
+            # increase the number of training data
+            if self.add_noisy_train_data:
+                noisy_series = get_noisy_time_series(
+                    best_found_vals_per_chgperiod, self.n_noisy_series,
+                    self.stddev_among_runs_per_chgp)
+                all_series = np.append(
+                    noisy_series, [best_found_vals_per_chgperiod], axis=0)
+                # TODO all_series als Trainingsdaten verwendet: dazu alle
+                # Funktionen auf jetzt 3-dimensionales Array anpassen....
+                asdf
             # scale data (the data are re-scaled directly after the
             # prediction in this iteration)
             #scaler = scaler.fit(best_found_vals_per_chgperiod)
@@ -537,6 +562,20 @@ class DynamicEA():
                 self.population))
             self.final_pop_fitness_per_run_per_changeperiod[r].append(
                 copy.deepcopy(self.population_fitness))
+            # determine best found position (with minimum fitness)
+            min_fitness_index = np.argmin(self.population_fitness)
+            self.best_found_pos_per_run_per_chgp[r].append(
+                copy.deepcopy(self.population[min_fitness_index]))
+
+        # ---------------------------------------------------------------------
+        # compute standard deviation of best found position among runs
+        # ---------------------------------------------------------------------
+        # [chgperiods, dims]
+        self.stddev_among_runs_per_chgp = np.std(
+            self.best_found_pos_per_run_per_chgp, axis=0)
+        self.mean_among_runs_per_chgp = np.average(
+            self.best_found_pos_per_run_per_chgp, axis=0)
+
         # ---------------------------------------------------------------------
         # restore old values
         # ---------------------------------------------------------------------
