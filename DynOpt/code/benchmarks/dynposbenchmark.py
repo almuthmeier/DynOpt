@@ -51,6 +51,8 @@ def create_problems(output_parent_dir_path=None):
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "GECCO_2019"
+    lbound = 100
+    ubound = 200
     # -------------------------------------------------------------------------
     # for circle movement
 
@@ -180,7 +182,7 @@ def create_problems(output_parent_dir_path=None):
                         continue
                 elif pos_chng_type == 'pch-mixture':
                     opts = start_mixture(
-                        dims=dim, seed=np_rand_gen.randint(974))
+                        dims=dim, seed=np_rand_gen.randint(974), lbound, ubound)
                     opts = opts[:n_chg_periods]
                 else:
                     warnings.warn("unknown position change type")

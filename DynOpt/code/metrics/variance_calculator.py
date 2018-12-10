@@ -95,21 +95,22 @@ def compute_variance_between_runs(in_full_name, out_full_name):
     benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-sine_fch-none_2018-12-05_09:31.npz"
 
     # mixture
-    benchmark_file = "sphere/sphere_d-2_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
-    benchmark_file = "sphere/sphere_d-10_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
-    benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
-    #benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+    #benchmark_file = "sphere/sphere_d-2_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+    #benchmark_file = "sphere/sphere_d-10_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+    #benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+    benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
 
     benchmark_full_name = benchmark_folder + benchmark_file
     b_file = np.load(benchmark_full_name)
     global_opt_pos_per_chgperiod = b_file['global_opt_pos_per_chgperiod']
+    global_opt_fit_per_chgperiod = b_file['global_opt_fit_per_chgperiod']
     b_file.close()
     # -------------------------------------------------------------------------
     # plot (https://stackoverflow.com/questions/7744697/how-to-show-two-figures-using-matplotlib)
     # -------------------------------------------------------------------------
 
     dims = [0]
-    #dims = range(10)
+    dims = range(10)
 
     plot_shade = True
     # variance between runs (around mean) and real optimum
@@ -126,7 +127,7 @@ def compute_variance_between_runs(in_full_name, out_full_name):
             x = np.arange(len(stddev_among_runs_per_chgp))
             plt.fill_between(x, mean_val + stddev,
                              mean_val - stddev, alpha=0.4)
-            #plt.fill_between(x, max_val, min_val, alpha=0.2)
+            plt.fill_between(x, max_val, min_val, alpha=0.2)
     plt.title("real opt, mean & stddev of found")
     f1.show()
 
@@ -135,6 +136,9 @@ def compute_variance_between_runs(in_full_name, out_full_name):
     for d in dims:
         stddev = stddev_among_runs_per_chgp[:, d]
         plt.plot(stddev)
+        # avg_std_within_pop = np.average(
+        #    stddev_within_pop_per_run_per_chgp[:, :, d], axis=0)
+        # plt.plot(avg_std_within_pop)
         # for r in range(n_chgp_runs):
         #    plt.plot(stddev_within_pop_per_run_per_chgp[r, :, d])
     plt.title("stddev among runs, stddev within pop")
@@ -148,6 +152,14 @@ def compute_variance_between_runs(in_full_name, out_full_name):
                 abs(best_positions[r, :, d] - global_opt_pos_per_chgperiod[:n_change_periods, d]))
     plt.title("deviation to real opt")
     f3.show()
+
+    # fitness value
+    f4 = plt.figure(4)
+    plt.plot(global_opt_fit_per_chgperiod[:n_change_periods])
+    for r in range(n_chgp_runs):
+        plt.plot(best_fitnesses[r])
+    plt.title("fitness values")
+    f4.show()
 
     plt.show()
 
@@ -169,10 +181,11 @@ def main():
     # sine
     in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-12-05_09:32_00.npz"
     # mixture
-    in_file_name = "no_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
-    in_file_name = "no_sphere_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
-    in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
-    #in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    #in_file_name = "no_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    #in_file_name = "no_sphere_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    #in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    #in_file_name = "neu_wertebereich_ea_no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_10:21_00.npz"
 
     in_full_name = in_path + in_file_name
     out_path = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/sphere/ersterTest/ea_no/metrics/"

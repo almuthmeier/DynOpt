@@ -60,8 +60,8 @@ class DynamicEA():
         self.experiment_data = experiment_data
         self.predictor_name = predictor_name
 
-        self.lbound = 0  # assumed that the input data follow this assumption
-        self.ubound = 100  # TODO(exe) , TODO insert into dynPSO
+        self.lbound = 100  # assumed that the input data follow this assumption
+        self.ubound = 200  # TODO(exe) , TODO insert into dynPSO
         # ---------------------------------------------------------------------
         # for the predictor
         # ---------------------------------------------------------------------
