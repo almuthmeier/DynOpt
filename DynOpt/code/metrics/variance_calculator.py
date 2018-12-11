@@ -29,6 +29,7 @@ def compute_variance_between_runs(in_full_name, out_full_name):
     final_pop_per_run_per_chgperiod = in_file['final_pop_per_run_per_chgperiod']
     # 3d list [runs, chgperiods, parents]
     final_pop_fitness_per_run_per_changeperiod = in_file['final_pop_fitness_per_run_per_changeperiod']
+    #expected_stddev_among_runs_per_chgp = in_file['stddev_among_runs_per_chgp']
     in_file.close()
 
     # set parameters
@@ -100,6 +101,9 @@ def compute_variance_between_runs(in_full_name, out_full_name):
     #benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
     benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
 
+    # test whether saved variance and variance computed in this script are same
+    #benchmark_file = "sphere/sphere_d-2_chgperiods-10000_pch-linear_fch-none_2018-12-05_09:31.npz"
+
     benchmark_full_name = benchmark_folder + benchmark_file
     b_file = np.load(benchmark_full_name)
     global_opt_pos_per_chgperiod = b_file['global_opt_pos_per_chgperiod']
@@ -109,8 +113,12 @@ def compute_variance_between_runs(in_full_name, out_full_name):
     # plot (https://stackoverflow.com/questions/7744697/how-to-show-two-figures-using-matplotlib)
     # -------------------------------------------------------------------------
 
+    # test whether saved variance and variance computed in this script are same
+    # np.testing.assert_array_almost_equal(
+    #    expected_stddev_among_runs_per_chgp, stddev_among_runs_per_chgp)
+
     dims = [0]
-    dims = range(10)
+    dims = range(2)
 
     plot_shade = True
     # variance between runs (around mean) and real optimum
@@ -186,6 +194,9 @@ def main():
     #in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
     in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
     #in_file_name = "neu_wertebereich_ea_no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_10:21_00.npz"
+
+    # test whether saved variance and variance computed in this script are same
+    #in_file_name = "tfrnn_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-linear_fch-none_2018-12-11_20:10_00.npz"
 
     in_full_name = in_path + in_file_name
     out_path = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/sphere/ersterTest/ea_no/metrics/"
