@@ -193,7 +193,7 @@ def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler
     return converted.flatten()
 
 
-def predict_with_rnn(new_train_data, n_epochs, batch_size, n_time_steps,
+def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
                      n_features, scaler, predictor):
     '''
     Predicts next optimum position with a recurrent neural network.
@@ -204,6 +204,8 @@ def predict_with_rnn(new_train_data, n_epochs, batch_size, n_time_steps,
     # make supervised data from series
     train_samples = make_multidim_samples_from_series(
         new_train_data, n_time_steps)
+    if noisy_series is not None:
+        pass  # TODO implement
 
     # separate input series (first values) and prediction value (last value)
     train_in_data, train_out_data = train_samples[:, :-1], train_samples[:, -1]
@@ -247,17 +249,30 @@ def predict_with_rnn(new_train_data, n_epochs, batch_size, n_time_steps,
     return next_optimum
 
 
-def predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
+def predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
                        n_features, scaler, predictor, returnseq, shuffle):
     '''
     Predicts next optimum position with a tensorflow recurrent neural network.
+    @param new_train_data: [n_chgperiods, dims] (if differences are predicted 
+    the format is: [n_chgperiods-1, dims]
+    @param noisy_series: [n_series, n_chgperiods, dims]
     '''
     #========================
     # prepare training data
 
-    # make supervised data from series
+    # make supervised data from series [#samples,#n_time_steps+1,#n_features]
     train_samples = make_multidim_samples_from_series(
         new_train_data, n_time_steps)
+    if noisy_series is not None:
+        # 4d array [#series, #samples, #n_time_steps+1, #n_features]
+        noisy_samples = np.array([make_multidim_samples_from_series(
+            noisy_series[i], n_time_steps) for i in range(len(noisy_series))])
+        # convert 4d to 3d array [#series*#samples,#n_time_steps+1,#n_features]
+        noisy_samples = np.reshape(
+            noisy_samples, (-1, n_time_steps + 1, n_features))
+        # append noisy samples to "real" samples -> 3d array
+        train_samples = np.concatenate((train_samples, noisy_samples))
+
     # separate input series (first values) and prediction value (last value)
     train_in_data, train_out_data = shuffle_split_output(train_samples, returnseq,
                                                          n_time_steps, n_features, shuffle)
@@ -287,7 +302,7 @@ def predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
     return next_optimum, train_error, train_err_per_epoch
 
 
-def predict_next_optimum_position(mode, sess, new_train_data, n_epochs, batch_size,
+def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_epochs, batch_size,
                                   n_time_steps, n_features, scaler, predictor,
                                   returnseq, shuffle):
     '''
@@ -307,7 +322,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, n_epochs, batch_si
     train_error = None
     train_err_per_epoch = None
     if mode == "rnn":
-        prediction = predict_with_rnn(new_train_data, n_epochs, batch_size,
+        prediction = predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size,
                                       n_time_steps, n_features, scaler, predictor)
     elif mode == "autoregressive":
         try:
@@ -318,7 +333,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, n_epochs, batch_si
     elif mode == "no":
         prediction = None
     elif mode == "tfrnn" or mode == "tftlrnn" or mode == "tftlrnndense":
-        prediction, train_error, train_err_per_epoch = predict_with_tfrnn(sess, new_train_data, n_epochs, batch_size, n_time_steps,
+        prediction, train_error, train_err_per_epoch = predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
                                                                           n_features, scaler, predictor, returnseq, shuffle)
     return prediction, train_error, train_err_per_epoch
 

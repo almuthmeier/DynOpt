@@ -108,7 +108,8 @@ class PredictorComparator(object):
 
         dimensionality = len(self.experiment_data['orig_global_opt_pos'])
         n_generations = self.get_n_generations()
-        if self.predictor == "no" or self.predictor == "autoregressive":
+        if (self.predictor == "no" or self.predictor == "autoregressive" or
+                self.predictor == "tfrnn" or self.predictor == "rnn"):
             n_neurons = None
             full_tl_model_name = None
         else:

@@ -182,7 +182,7 @@ def create_problems(output_parent_dir_path=None):
                         continue
                 elif pos_chng_type == 'pch-mixture':
                     opts = start_mixture(
-                        dims=dim, seed=np_rand_gen.randint(974), lbound, ubound)
+                        dims=dim, seed=np_rand_gen.randint(974), min_value=lbound, max_value=ubound)
                     opts = opts[:n_chg_periods]
                 else:
                     warnings.warn("unknown position change type")

@@ -296,22 +296,27 @@ class DynamicEA():
             else:
                 best_found_vals_per_chgperiod = self.best_found_pos_per_chgperiod
 
-            # add noisy training data in order to make network more robust and
-            # increase the number of training data
-            if self.add_noisy_train_data:
-                noisy_series = get_noisy_time_series(
-                    best_found_vals_per_chgperiod, self.n_noisy_series,
-                    self.stddev_among_runs_per_chgp)
-                all_series = np.append(
-                    noisy_series, [best_found_vals_per_chgperiod], axis=0)
-                # TODO all_series als Trainingsdaten verwendet: dazu alle
-                # Funktionen auf jetzt 3-dimensionales Array anpassen....
-                asdf
             # scale data (the data are re-scaled directly after the
             # prediction in this iteration)
             #scaler = scaler.fit(best_found_vals_per_chgperiod)
             transf_best_found_pos_per_chgperiod = scaler.transform(
                 copy.copy(best_found_vals_per_chgperiod))
+
+            # add noisy training data in order to make network more robust and
+            # increase the number of training data
+            if self.add_noisy_train_data:
+                # 3d array [n_series, n_chgperiods, dims]
+                noisy_series = get_noisy_time_series(np.array(self.best_found_pos_per_chgperiod),
+                                                     self.n_noisy_series,
+                                                     self.stddev_among_runs_per_chgp)
+                if self.predict_diffs:
+                    noisy_series = np.array([np.subtract(
+                        noisy_series[i, 1:], noisy_series[i, :-1]) for i in range(len(noisy_series))])
+               	# scale data
+                noisy_series = np.array([scaler.transform(
+                    copy.copy(noisy_series[i])) for i in range(len(noisy_series))])
+            else:
+                noisy_series = None
 
             # choose training data
             if not trained_first_time or self.use_all_train_data:
@@ -331,7 +336,7 @@ class DynamicEA():
                         transf_best_found_pos_per_chgperiod[-step_idx])
                 train_data = np.array(train_data)
             # predict next optimum position or difference (and re-scale value)
-            prediction, train_error, train_err_per_epoch = predict_next_optimum_position(my_pred_mode, sess, train_data,
+            prediction, train_error, train_err_per_epoch = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
                                                                                          self.n_epochs, self.batch_size,
                                                                                          n_steps_to_use, n_features,
                                                                                          scaler, predictor, self.return_seq, self.shuffle_train_data)
@@ -421,6 +426,8 @@ class DynamicEA():
                     self.population))
                 self.final_pop_fitness_per_run_per_changeperiod[0].append(
                     copy.deepcopy(self.population_fitness))
+                self.best_found_pos_per_run_per_chgp[0].append(
+                    copy.deepcopy(self.best_found_pos_per_gen[i - 1]))
 
                 # -------------------------------------------
                 # only for experiments with repetitions of change periods
