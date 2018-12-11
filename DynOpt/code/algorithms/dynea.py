@@ -26,7 +26,8 @@ class DynamicEA():
                  ea_np_rnd_generator, pred_np_rnd_generator,
                  mu, la, ro, mean, sigma, trechenberg, tau,
                  timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
-                 n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps):
+                 n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps,
+                 add_noisy_train_data):
         '''
         Initialize a DynamicEA object.
         @param benchmarkfunction: (string)
@@ -90,8 +91,8 @@ class DynamicEA():
         self.shuffle_train_data = True
         # add noisy data (noise equals standard deviation among change period
         # runs
-        self.add_noisy_train_data = True
-        self.n_noisy_series = 10  # TODO
+        self.add_noisy_train_data = add_noisy_train_data
+        self.n_noisy_series = 20  # TODO
         # ---------------------------------------------------------------------
         # for EA (fixed values)
         # ---------------------------------------------------------------------
@@ -116,6 +117,7 @@ class DynamicEA():
         # initialize population (mu candidates) and compute fitness.
         # np.random.rand has values in [0, 1). Therefore multiply with 100 for
         # larger values. And make column vector from row vector.
+        # TODO consider lower and upper bound?
         self.population = self.ea_np_rnd_generator.rand(
             self.mu, self.dim) * 100
         # 2d numpy array (for each individual one row)
@@ -312,7 +314,7 @@ class DynamicEA():
                 if self.predict_diffs:
                     noisy_series = np.array([np.subtract(
                         noisy_series[i, 1:], noisy_series[i, :-1]) for i in range(len(noisy_series))])
-               	# scale data
+                # scale data
                 noisy_series = np.array([scaler.transform(
                     copy.copy(noisy_series[i])) for i in range(len(noisy_series))])
             else:

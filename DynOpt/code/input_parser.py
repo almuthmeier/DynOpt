@@ -74,6 +74,7 @@ def define_parser_arguments():
     # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
     parser.add_argument("-predictor", type=str)
     parser.add_argument("-timesteps", type=int)
+    parser.add_argument("-addnoisytraindata", type=str)
 
     # for ANN predictor
     # fixed20 or dyn1.3
@@ -153,9 +154,9 @@ def initialize_comparator_manually(comparator):
 
     # run only some experiments of all for the benchmark problem
     # ["linear", "sine", "circle"])
-    comparator.poschgtypes = np.array(["sine"])  # , "linear"])
+    comparator.poschgtypes = np.array(["mixture"])
     comparator.fitchgtypes = np.array(["none"])
-    comparator.dims = np.array([5])
+    comparator.dims = np.array([10])
     comparator.noises = np.array([0.0])
 
     # PSO
@@ -178,9 +179,10 @@ def initialize_comparator_manually(comparator):
         comparator.tau = 0.5
 
     # for predictor
-    # "tftlrnn"  # "tfrnn"  # "no", "tftlrnn" "autoregressive" "tftlrnndense"
+    # "tfrnn"  # "no", "tftlrnn" "autoregressive" "tftlrnndense"
     comparator.predictor = "tfrnn"
     comparator.timesteps = 50
+    comparator.addnoisytraindata = True
 
     # for ANN predictor
     if (comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or
@@ -201,13 +203,17 @@ def initialize_comparator_manually(comparator):
     # runtime
     comparator.ncpus = 2
 
+    # assertions
+    if comparator.addnoisytraindata:
+        assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
+
 
 def initialize_comparator_with_read_inputs(parser, comparator):
     args = parser.parse_args()
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 37:
+    if n_current_inputs != 38:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
@@ -251,6 +257,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     # predictor
     comparator.predictor = args.predictor
     comparator.timesteps = args.timesteps
+    comparator.addnoisytraindata = args.addnoisytraindata == 'True'
 
     # for ANN predictor
     if (args.predictor == "rnn" or args.predictor == "tfrnn" or
@@ -269,6 +276,10 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     # runtime
     comparator.ncpus = args.ncpus
+
+    # assertions
+    if comparator.addnoisytraindata:
+        assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
 
 
 def int_list_type(string):
