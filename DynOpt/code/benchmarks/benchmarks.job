@@ -18,7 +18,7 @@ benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/Robustness/data_2
 # mpbcorr
 benchmarkfunction="mpbcorr"
 
-# python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
 
 
 # -----------------------------------------------------------------------------
