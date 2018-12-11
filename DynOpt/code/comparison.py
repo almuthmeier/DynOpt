@@ -167,7 +167,9 @@ class PredictorComparator(object):
                  train_error_per_chgperiod=alg.train_error_per_chgperiod,
                  train_error_for_epochs_per_chgperiod=alg.train_error_for_epochs_per_chgperiod,
                  final_pop_per_run_per_chgperiod=alg.final_pop_per_run_per_chgperiod,
-                 final_pop_fitness_per_run_per_changeperiod=alg.final_pop_fitness_per_run_per_changeperiod
+                 final_pop_fitness_per_run_per_changeperiod=alg.final_pop_fitness_per_run_per_changeperiod,
+                 stddev_among_runs_per_chgp=alg.stddev_among_runs_per_chgp,
+                 mean_among_runs_per_chgp=alg.mean_among_runs_per_chgp
                  )
 
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):
