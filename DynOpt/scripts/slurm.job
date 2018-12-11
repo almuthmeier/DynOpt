@@ -34,7 +34,7 @@ lenchgperiod=20				# number of generations per change period; has to be
 ischgperiodrandom="False"	# True if the change occurs at a random time point.
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
-benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/GITs/Robustness/2018-12-11/DynOpt/code/benchmarks/" # parent directory path of the benchmark functions
+benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/Robustness/data_2018-12-11/" # parent directory path of the benchmark functions
 								   																				 # and child directory of the datasets folder
 								   																				 # of this project 
 
