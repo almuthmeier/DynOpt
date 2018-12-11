@@ -85,11 +85,11 @@ def create_problems(output_parent_dir_path=None):
             output_dir_path = path_to_dynopt + "/datasets/" + \
                 conference + "/" + func_name + "/"
             print("folder_path: ", output_dir_path)
-            if not os.path.exists(output_dir_path):
-                os.makedirs(output_dir_path)
-            #output_dir_path = folder_path + "/"
         else:
             output_dir_path = output_parent_dir_path + "/" + func_name + "/"
+        if not os.path.exists(output_dir_path):
+            print("created path since not existing: ", output_dir_path)
+            os.makedirs(output_dir_path)
 
         for dim in dims:
             # same seed for different functions so that the movement is same
