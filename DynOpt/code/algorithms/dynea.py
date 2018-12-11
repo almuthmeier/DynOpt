@@ -529,9 +529,9 @@ class DynamicEA():
         old_pop = copy.deepcopy(self.population)
         old_pop_fit = copy.deepcopy(self.population_fitness)
         # ---------------------------------------------------------------------
-        print("repeat chgperiod", flush=True)
+        #print("repeat chgperiod", flush=True)
         for r in run_idcs:
-            print("    repetition: ", r, flush=True)
+            #print("    repetition: ", r, flush=True)
             # set new values to class variables
             self.population = copy.deepcopy(original_pop)
             self.population_fitness = copy.deepcopy(original_pops_fit)
