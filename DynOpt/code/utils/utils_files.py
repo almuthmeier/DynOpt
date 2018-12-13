@@ -50,7 +50,7 @@ def get_metrics_file_name(metrics_file_path, predictor_name, benchmarkfunction, 
 
 def get_logs_file_name(logs_file_path, predictor_name, benchmarkfunction, day, time, noise):
     return logs_file_path + predictor_name + "_" + benchmarkfunction + "_" + \
-        "noise-" + "{:.1f}".format(noise) + "_" + \
+        "noise-" + "{:.2f}".format(noise) + "_" + \
         day + '_' + time.replace(":", "-") + ".txt" % noise
 
 
