@@ -258,7 +258,7 @@ def start_creating_problem(func_name=None, output_dir_path=None):
                     for noise in noise_strengths:
                         file_name = func_name + "_d-" + str(n_dims) + "_chgperiods-" + \
                             str(n_periods) + "_veclen-" + str(len_movement_vector) + \
-                            "_peaks-" + str(n_peaks) + "_noise-" + str(noise).lower() +\
+                            "_peaks-" + str(n_peaks) + "_noise-" + "{:.2f}".format(noise) + \
                             "_" + day + "_" + time + ".npz"
                         path_to_file = output_dir_path + "/" + file_name
                         print("mpb output path: ", path_to_file)
