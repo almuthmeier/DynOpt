@@ -4,7 +4,7 @@
 #SBATCH --job-name="nonoise"
 #SBATCH --ntasks=8
 #SBATCH --mem=32G
-#SBATCH --time=2-00:00
+#SBATCH --time=3-00:00
 #SBATCH --output="slurm_nonoise.%j.out"
 #SBATCH --error="slurm_nonoise.%j.err"
 #SBATCH --mail-type=END,FAIL
