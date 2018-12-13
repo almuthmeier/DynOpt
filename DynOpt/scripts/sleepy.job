@@ -11,6 +11,6 @@
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
 
-python3.5 ../code/slpeepy.py 
+python3.5 ../code/sleepy.py 
 
 wait
