@@ -191,7 +191,7 @@ def main():
     # mixture
     #in_file_name = "no_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
     #in_file_name = "no_sphere_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
-    #in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
     in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
     #in_file_name = "neu_wertebereich_ea_no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_10:21_00.npz"
 
