@@ -11,15 +11,15 @@
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
 
-benchmarkfunctionfolderpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/data_2018-11-22/"
-outputpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/output_2018-11-23/"
+benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/Robustness/data_2018-12-11/"
+outputpath="/raid/almuth/Uncertainty/Ausgaben/Robustness/output_2018-12-11/"
 benchmarkfunctions=mpbcorr,rastrigin,sphere
-poschgtypes=sine
+poschgtypes=sine,mixture
 fitchgtypes=none
-dims=1,5,10,50
-noises=0.0,0.2
-pathaddition="stepevaluation/"
-metricfilename="metric_db_stepevaluation_2018-11-22_rmses.csv"
+dims=2,10
+noises=0.05
+pathaddition="firsttest/"
+metricfilename="metric_db_noiseevalation_2018-12-14_rmses.csv"
 
 # -----------------------------------------------------------------------------
 
