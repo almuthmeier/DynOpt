@@ -99,41 +99,7 @@ class TFRNNWithoutState():
         else:
             rnn_input = self.input_pl
         # RNN layers
-
-        # create own cells for the layers (5.10.18)
-        # https://stackoverflow.com/questions/48372994/multirnn-and-static-rnn-error-dimensions-must-be-equal-but-are-256-and-129?rq=1
-        # https://danijar.com/introduction-to-recurrent-networks-in-tensorflow/
-        cell_list = []
-        for layer_idx in range(self.n_rnn_layers):
-            n_neurons = self.n_neurons_per_layer[layer_idx]
-            # TODO evtl CudnnRNNTanh Layer statt BasicRNNCell nutzen
-            # https://www.tensorflow.org/api_docs/python/tf/contrib/cudnn_rnn/CudnnRNNTanh
-            # https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/BasicRNNCell
-            if self.rnn_type == "LSTM":
-                rnn_layer = tf.nn.rnn_cell.LSTMCell(
-                    num_units=n_neurons, activation=self.act_func)
-            elif self.rnn_type == "RNN":
-                rnn_layer = tf.nn.rnn_cell.BasicRNNCell(
-                    num_units=n_neurons, activation=self.act_func)
-            else:
-                warnings.warn("unsupported RNN type: ", self.rnn_type)
-            # Dropout for RNN
-            # https://www.tensorflow.org/api_docs/python/tf/contrib/rnn/DropoutWrapper
-            # input_size: TensorShape object
-            # example for input_size found here:
-            # https://github.com/tensorflow/tensorflow/issues/11650 (24.9.18)
-            if layer_idx == 0:
-                input_size = self.n_features  # number of dimensions/features
-            else:
-                input_size = self.n_neurons_per_layer[layer_idx - 1]
-            drop_with_rnn_layer = tf.nn.rnn_cell.DropoutWrapper(cell=rnn_layer,
-                                                                input_keep_prob=self.in_keep_prob_pl,
-                                                                output_keep_prob=self.out_keep_prob_pl,
-                                                                state_keep_prob=self.st_keep_prob_pl,
-                                                                variational_recurrent=True,
-                                                                dtype=self.data_type,
-                                                                input_size=input_size)
-            cell_list.append(drop_with_rnn_layer)
+        cell_list = self._create_rnn_layers()
 
         # stack layers together
         cells = tf.nn.rnn_cell.MultiRNNCell(cell_list)
@@ -183,6 +149,44 @@ class TFRNNWithoutState():
         # in order to resume training later
         # https://www.tensorflow.org/api_guides/python/meta_graph
         #tf.add_to_collection('train_op', self.train_op)
+
+    def _create_rnn_layers(self):
+        import tensorflow as tf
+        # create own cells for the layers (5.10.18)
+        # https://stackoverflow.com/questions/48372994/multirnn-and-static-rnn-error-dimensions-must-be-equal-but-are-256-and-129?rq=1
+        # https://danijar.com/introduction-to-recurrent-networks-in-tensorflow/
+        cell_list = []
+        for layer_idx in range(self.n_rnn_layers):
+            n_neurons = self.n_neurons_per_layer[layer_idx]
+            # TODO evtl CudnnRNNTanh Layer statt BasicRNNCell nutzen
+            # https://www.tensorflow.org/api_docs/python/tf/contrib/cudnn_rnn/CudnnRNNTanh
+            # https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/BasicRNNCell
+            if self.rnn_type == "LSTM":
+                rnn_layer = tf.nn.rnn_cell.LSTMCell(
+                    num_units=n_neurons, activation=self.act_func)
+            elif self.rnn_type == "RNN":
+                rnn_layer = tf.nn.rnn_cell.BasicRNNCell(
+                    num_units=n_neurons, activation=self.act_func)
+            else:
+                warnings.warn("unsupported RNN type: ", self.rnn_type)
+            # Dropout for RNN
+            # https://www.tensorflow.org/api_docs/python/tf/contrib/rnn/DropoutWrapper
+            # input_size: TensorShape object
+            # example for input_size found here:
+            # https://github.com/tensorflow/tensorflow/issues/11650 (24.9.18)
+            if layer_idx == 0:
+                input_size = self.n_features  # number of dimensions/features
+            else:
+                input_size = self.n_neurons_per_layer[layer_idx - 1]
+            drop_with_rnn_layer = tf.nn.rnn_cell.DropoutWrapper(cell=rnn_layer,
+                                                                input_keep_prob=self.in_keep_prob_pl,
+                                                                output_keep_prob=self.out_keep_prob_pl,
+                                                                state_keep_prob=self.st_keep_prob_pl,
+                                                                variational_recurrent=True,
+                                                                dtype=self.data_type,
+                                                                input_size=input_size)
+            cell_list.append(drop_with_rnn_layer)
+        return cell_list
 
     def train(self, sess, train_in, train_out, in_keep_prob=1.0, out_keep_prob=1.0, st_keep_prob=1.0,
               shuffle_between_epochs=False, saver=None, saver_path=None, model_name=None,
