@@ -25,7 +25,7 @@ class TFRNNWithoutState():
                  has_time_outputs=False,
                  custom_reset=False,
                  n_rnn_layers=1,
-                 n_neurons_per_layer=[10],
+                 n_neurons_per_layer=[32],
                  rnn_type="LSTM",
                  with_dense_first=False):
         import tensorflow as tf
@@ -39,6 +39,7 @@ class TFRNNWithoutState():
         self.act_func = tf.tanh
         self.n_time_steps_to_use = n_time_steps_to_use
         self.with_dense_first = with_dense_first
+        self.use_bidirnn = False
 
         # true if the RNN has for each time slice one output
         self.has_time_outputs = has_time_outputs
@@ -57,9 +58,12 @@ class TFRNNWithoutState():
         # TODO specify outside
         n_neurons_1st_layer = math.ceil(self.n_features * 1.5)
         n_neurons_2nd_layer = math.ceil(self.n_features * 2.0)
-        n_neurons_3rd_layer = math.ceil(self.n_features * 2.5)
+        n_neurons_3rd_layer = math.ceil(
+            self.n_features * 2.5)  # zu wenig Neuronen
         self.n_neurons_per_layer = [
             n_neurons_1st_layer, n_neurons_2nd_layer, n_neurons_3rd_layer]
+        self.n_neurons_per_layer = [32, 32, 32, 32, 32, 32]
+        #self.n_neurons_per_layer = [4, 8, 16, 32, 32, 22]
         assert n_rnn_layers <= 3, "more than 3 layers -> no specified number neurons for the additional layers"
 
         # training/testing parameters
@@ -116,12 +120,35 @@ class TFRNNWithoutState():
         s_length = tf.reshape(s_length, [-1])
         #s_length = [n_time_steps_to_use] * b_size
 
-        # format of outputs: [batch_size, max_time, cell_state_size]
-        self.rnn_outputs, _ = tf.nn.dynamic_rnn(
-            cell=cells,
-            dtype=self.data_type,
-            sequence_length=s_length,  # separately for batch
-            inputs=rnn_input)
+        if self.use_bidirnn:
+            '''
+            https://github.com/aymericdamien/TensorFlow-Examples/blob/master/examples/3_NeuralNetworks/bidirectional_rnn.py
+            https://riptutorial.com/tensorflow/example/17004/creating-a-bidirectional-lstm
+            https://www.tensorflow.org/api_docs/python/tf/nn/bidirectional_dynamic_rnn
+            '''
+            bw_cell_list = self._create_rnn_layers()
+            bw_cells = tf.nn.rnn_cell.MultiRNNCell(bw_cell_list)
+
+            (self.rnn_outputs, bw_output), (state_fw, state_bw) = tf.nn.bidirectional_dynamic_rnn(
+                cells,
+                bw_cells,
+                inputs=rnn_input,
+                sequence_length=s_length,
+                # initial_state_fw=None,
+                # initial_state_bw=None,
+                dtype=self.data_type
+                # parallel_iterations=None,
+                # swap_memory=False,
+                # time_major=False,
+                # scope=None
+            )
+        else:
+            # format of outputs: [batch_size, max_time, cell_state_size]
+            self.rnn_outputs, _ = tf.nn.dynamic_rnn(
+                cell=cells,
+                dtype=self.data_type,
+                sequence_length=s_length,  # separately for batch
+                inputs=rnn_input)
 
         # linear output layer (if only next step is predicted, than use
         # (outputs[:, -1, :]) instead)
@@ -140,8 +167,12 @@ class TFRNNWithoutState():
                 units=self.n_features)(self.rnn_outputs[:, -1, :])
 
         # loss definition
+        # self.loss = tf.losses.mean_squared_error(
+        #    labels=np.square(self.output_pl),
+        #    predictions=np.square(self.out_layer))
         self.loss = tf.losses.mean_squared_error(
             labels=self.output_pl, predictions=self.out_layer)
+
         # optimizer definition
         self.train_op = tf.train.AdamOptimizer(
             learning_rate=0.001).minimize(self.loss)
