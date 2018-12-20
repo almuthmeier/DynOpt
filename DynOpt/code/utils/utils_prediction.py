@@ -172,7 +172,7 @@ def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler
             # "ValueError: x already contains a constant"
             # if max_lag = n_time_steps
             model_fit = model.fit()
-            print("ARR prediction: catched Exception", flush=True)
+            print("ARR prediction: caught Exception", flush=True)
 
         lag_order = model_fit.k_ar
         #print('Lag: %s' % lag_order)
@@ -279,7 +279,8 @@ def predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size,
     #========================
     # train regressor
     # TODO save model? report training error?
-    train_error, _, _, train_err_per_epoch, _ = predictor.train(sess, train_in_data, train_out_data, in_keep_prob=0.95, out_keep_prob=0.95, st_keep_prob=0.95,
+    keep_prob = 0.95
+    train_error, _, _, train_err_per_epoch, _ = predictor.train(sess, train_in_data, train_out_data, in_keep_prob=keep_prob, out_keep_prob=keep_prob, st_keep_prob=keep_prob,
                                                                 shuffle_between_epochs=True, saver=None, saver_path=None, model_name=None,
                                                                 do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None)
 
