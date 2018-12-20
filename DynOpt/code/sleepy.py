@@ -9,5 +9,5 @@ if __name__ == '__main__':
     minute = 0
     while True:
         minute += 1
-        print("minute: ", minute)
+        print("minute: ", minute, flush=True)
         time.sleep(60)  # Delay for 1 minute (60 seconds).
