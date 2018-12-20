@@ -72,7 +72,7 @@ class MetricTransformer():
         noises = [0.05]
         #steps = 50
         # "bog-for-run"  # , "bebc", "rcs", "arr" "ea-rmse","foundpred-rmse","truepred-rmse"
-        metric = "bog-for-run"
+        metric = "truepred-rmse"
 
         full_output_file_name = path_transformed_db + "selection_fcts-" + \
             str(functions) + "metric-" + str(metric) + "_rmses.csv"
@@ -90,12 +90,16 @@ class MetricTransformer():
             print("f: ", f)
             for d in dims:
                 print("    d: ", d)
+                is_first_mpb = True
                 for poschg in poschgs:
-                    # if not is_first_mpb:
-                    #    continue
+                    if is_first_mpb and f == "mpbcorr":
+                        is_first_mpb = False
+                    elif f == "mpbcorr":
+                        break
                     for param in algparams:
                         print("            param: ", param)
-                        row_prefix = [f, param, d, poschg]
+                        row_prefix = [f, param, d,
+                                      poschg if f != "mpbcorr" else ""]
                         avg_values = []
                         std_values = []
                         for p in preds:
