@@ -14,6 +14,7 @@ import warnings
 
 from sklearn.preprocessing.data import MinMaxScaler
 
+from code.predictors.mytcn import MyTCN
 import numpy as np
 
 
@@ -88,7 +89,7 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                     ntllayers, with_dense_first, tl_learn_rate):
     '''
     Creates the desired prediction model.
-    @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense
+    @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense, tcn
     @param batch_size: batch size for the RNN
     @param n_time_steps: number of time steps to use for prediction/training
     @param n_features: dimensionality of the solution space
@@ -115,6 +116,19 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                                            n_overall_layers, n_time_steps, epochs, n_features,
                                            returnseq, batch_size, apply_tl, with_dense_first,
                                            tl_learn_rate)
+    elif mode == "tcn":
+        nhid = 27
+        levels = 8  # 8  # 4
+        in_channels = n_features  # for each dimension one channel
+        output_size = n_features  # n_classes
+        num_channels = [nhid] * levels  # channel_sizes
+        sequence_length = n_time_steps
+        kernel_size = 3
+        default_dropout = 0.0  # is overwritten in train() and evaluate()
+        use_aleat_unc = True
+        predictor = MyTCN(in_channels, output_size, num_channels,
+                          sequence_length, kernel_size, default_dropout, batch_size,
+                          init=False, use_aleat_unc=use_aleat_unc)
     else:
         msg = "unknown prediction mode " + mode
         warnings.warn(msg)
@@ -303,9 +317,128 @@ def predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size,
     return next_optimum, train_error, train_err_per_epoch
 
 
+def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
+                     n_time_steps, n_features, scaler, predictor,
+                     shuffle, do_training):
+    '''
+    @param train_interval: number of change periods that must have passed before
+    TCN is trained anew (to reduce training effort)
+    '''
+
+    #========================
+    # prepare training data
+    print("new_train_data: ", new_train_data.shape, flush=True)
+    # make supervised data from series [#samples,#n_time_steps+1,#n_features]
+    train_samples = make_multidim_samples_from_series(
+        new_train_data, n_time_steps)
+    print("train_samples: ", train_samples.shape, flush=True)
+    if noisy_series is not None:
+        print("noisy")
+        # 4d array [#series, #samples, #n_time_steps+1, #n_features]
+        noisy_samples = np.array([make_multidim_samples_from_series(
+            noisy_series[i], n_time_steps) for i in range(len(noisy_series))])
+        # convert 4d to 3d array [#series*#samples,#n_time_steps+1,#n_features]
+        noisy_samples = np.reshape(
+            noisy_samples, (-1, n_time_steps + 1, n_features))
+        # append noisy samples to "real" samples -> 3d array
+        train_samples = np.concatenate((train_samples, noisy_samples))
+
+    # separate input series (first values) and prediction value (last value)
+    returnseq = False
+    train_in_data, train_out_data = shuffle_split_output(train_samples, returnseq,
+                                                         n_time_steps, n_features, shuffle)
+    print("train_in_data: ", train_in_data.shape, flush=True)
+    print("train_out_data: ", train_out_data.shape, flush=True)
+
+    train_dropout = 0.1
+    eval_dropout = 0.1  # TODO
+    n_mc_runs = 10
+    n_train = len(train_in_data)
+
+    #========================
+    # Training
+    import tensorflow as tf
+    log_interval = 1
+    file_writer = tf.summary.FileWriter('./log/train', sess.graph)
+    if do_training:
+        print("train_CNN", flush=True)
+        for ep in range(1, n_epochs + 1):
+            predictor.train(ep, sess, train_in_data, train_out_data,
+                            n_train, log_interval, file_writer, train_dropout)
+
+    #========================
+    # Prediction
+    # prediction for next step (with n_time_steps)
+    prediction_series = np.array(new_train_data[-n_time_steps:])
+    n_sampl = 1  # should be 1
+    reshaped_sample_x = prediction_series.reshape(
+        n_sampl, n_time_steps, n_features)
+    if n_mc_runs > 0:
+        (avg_ep_uncs, avg_al_uncs,
+         avg_preds, predictions) = evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
+                                                                   reshaped_sample_x,
+                                                                   eval_dropout, n_mc_runs)
+        sample_y_hat = avg_preds
+    else:
+        sample_y_hat, aleat_unc = predictor.predict(
+            sess, reshaped_sample_x, n_sampl, n_features, train_dropout)
+
+    # invert scaling
+    next_optimum = scaler.inverse_transform(sample_y_hat).flatten()
+
+    #========================
+    return next_optimum
+
+
+def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
+                                    in_data, eval_dropout, n_mc_runs):
+    predictions = []
+    aleat_uncts = []
+    for i in range(n_mc_runs):
+        print("mc run ", i, flush=True)
+        # shape of pred: [len(unsh_in_data), dims]
+        # shape of aleat_unc: [len(unsh_in_data), dims or 1]
+        (pred, aleat_unc) = evaluate_tcn(sess, predictor, scaler,
+                                         in_data, eval_dropout)
+        predictions.append(pred)
+        aleat_uncts.append(aleat_unc)
+
+    predictions = np.array(predictions)
+    aleat_uncts = np.array(aleat_uncts)
+
+    # average uncertainties for each data point
+    avg_preds = np.average(predictions, axis=0)
+    avg_squared_preds = np.average(np.square(predictions), axis=0)
+    # convert logarithmic uncertainties to "real" ones
+    avg_al_uncs = np.average(np.square(np.exp(aleat_uncts)), axis=0)
+    if len(aleat_uncts.shape) > 2:
+        # uncertainties for each dimension
+        pass
+    else:
+        # al. unc. has only one dimension -> add one dimension
+        avg_al_uncs = np.array([avg_al_uncs])
+        avg_al_uncs = np.transpose(avg_al_uncs)
+
+    avg_ep_uncs = avg_squared_preds - np.square(avg_preds) + avg_al_uncs
+
+    return avg_ep_uncs, avg_al_uncs, avg_preds, predictions
+
+
+def evaluate_tcn(sess, predictor, scaler, in_data, eval_dropout):
+    n_data = len(in_data)
+    n_features = in_data.shape[-1]
+
+    total_pred, aleat_unc = predictor.predict(
+        sess, in_data, n_data, n_features, eval_dropout)
+
+    p = scaler.inverse_transform(total_pred)
+
+    return p, aleat_unc
+
+
 def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_epochs, batch_size,
                                   n_time_steps, n_features, scaler, predictor,
-                                  returnseq, shuffle):
+                                  returnseq, shuffle, do_training):
     '''
     @param mode: the desired predictor
     @param new_train_data: 2d numpy array: contains time series of 
@@ -336,6 +469,12 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     elif mode == "tfrnn" or mode == "tftlrnn" or mode == "tftlrnndense":
         prediction, train_error, train_err_per_epoch = predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
                                                                           n_features, scaler, predictor, returnseq, shuffle)
+    elif mode == "tcn":
+        # number of change periods that must have passed before TCN is trained
+        # anew
+        prediction = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
+                                      n_time_steps, n_features, scaler, predictor,
+                                      shuffle, do_training)
     return prediction, train_error, train_err_per_epoch
 
 

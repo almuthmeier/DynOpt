@@ -67,6 +67,7 @@ class PredictorComparator(object):
         self.predictor = None  # string
         self.timesteps = None  # int
         self.addnoisytraindata = None  # bool
+        self.traininterval = None  # int
 
         # ANN predictor
         self.neuronstype = None  # string
@@ -110,7 +111,8 @@ class PredictorComparator(object):
         dimensionality = len(self.experiment_data['orig_global_opt_pos'])
         n_generations = self.get_n_generations()
         if (self.predictor == "no" or self.predictor == "autoregressive" or
-                self.predictor == "tfrnn" or self.predictor == "rnn"):
+                self.predictor == "tfrnn" or self.predictor == "rnn" or
+                self.predictor == "tcn"):
             n_neurons = None
             full_tl_model_name = None
         else:
@@ -126,7 +128,8 @@ class PredictorComparator(object):
                             n_neurons, self.epochs, self.batchsize,
                             self.n_layers, self.apply_tl, self.n_tllayers,
                             full_tl_model_name, self.tl_learn_rate,
-                            self.chgperiodrepetitions, self.addnoisytraindata)
+                            self.chgperiodrepetitions, self.addnoisytraindata,
+                            self.traininterval)
         elif self.algorithm == "dynpso":
             alg = DynamicPSO(self.benchmarkfunction, dimensionality,
                              n_generations, self.experiment_data, self.predictor,

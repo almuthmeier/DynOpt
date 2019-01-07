@@ -71,10 +71,11 @@ def define_parser_arguments():
     parser.add_argument("-tau", type=float)
 
     # for predictor
-    # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
+    # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn
     parser.add_argument("-predictor", type=str)
     parser.add_argument("-timesteps", type=int)
     parser.add_argument("-addnoisytraindata", type=str)
+    parser.add_argument("-traininterval", type=int)
 
     # for ANN predictor
     # fixed20 or dyn1.3
@@ -140,23 +141,23 @@ def initialize_comparator_manually(comparator):
     # benchmark problem
     comparator.algorithm = "dynea"
     comparator.repetitions = 1
-    comparator.chgperiodrepetitions = 3
-    comparator.chgperiods = 50
+    comparator.chgperiodrepetitions = 1
+    comparator.chgperiods = 100
     comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "GECCO_2019/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_no/"
+    comparator.outputdirectory = "ersterTest/ea_tcn/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "GECCO_2019/" + "sphere/"
 
     # run only some experiments of all for the benchmark problem
     # ["linear", "sine", "circle"])
-    comparator.poschgtypes = np.array(["mixture"])
+    comparator.poschgtypes = np.array(["sine", "mixture"])
     comparator.fitchgtypes = np.array(["none"])
-    comparator.dims = np.array([10])
+    comparator.dims = np.array([2])
     comparator.noises = np.array([0.0])
 
     # PSO
@@ -179,17 +180,20 @@ def initialize_comparator_manually(comparator):
         comparator.tau = 0.5
 
     # for predictor
-    # "tfrnn"  # "no", "tftlrnn" "autoregressive" "tftlrnndense"
-    comparator.predictor = "tfrnn"
+    # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense"
+    comparator.predictor = "tcn"
     comparator.timesteps = 50
-    comparator.addnoisytraindata = True
+    comparator.addnoisytraindata = False  # must be true if addnoisytraindata
+    comparator.traininterval = 10
 
     # for ANN predictor
     if (comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or
-            comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense"):
+            comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense" or
+            comparator.predictor == "tcn"):
+        # (not everything is necessary for every predictor)
         comparator.neuronstype = "fixed20"
-        comparator.epochs = 3
-        comparator.batchsize = 1
+        comparator.epochs = 80
+        comparator.batchsize = 8
         comparator.n_layers = 1
         # apply transfer learning only for tftlrnn
         comparator.apply_tl = comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense"
@@ -213,7 +217,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 38:
+    if n_current_inputs != 39:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
@@ -258,10 +262,12 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.predictor = args.predictor
     comparator.timesteps = args.timesteps
     comparator.addnoisytraindata = args.addnoisytraindata == 'True'
+    comparator.traininterval = args.traininterval
 
     # for ANN predictor
     if (args.predictor == "rnn" or args.predictor == "tfrnn" or
-            args.predictor == "tftlrnn" or args.predictor == "tftlrnndense"):
+            args.predictor == "tftlrnn" or args.predictor == "tftlrnndense" or
+            args.predictor == "tcn"):
         comparator.neuronstype = args.neuronstype
         comparator.epochs = args.epochs
         comparator.batchsize = args.batchsize

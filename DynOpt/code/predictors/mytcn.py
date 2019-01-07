@@ -36,10 +36,12 @@ class MyTCN():
 
         self.use_aleat_unc = use_aleat_unc
         n_classes = output_size
+        # None instead of batch_size
         self.input_pl = tf.placeholder(
-            tf.float32, (self.batch_size, sequence_length, in_channels))
+            tf.float32, (None, sequence_length, in_channels))
+        # None instead of batch_size
         self.output_pl = tf.placeholder(
-            tf.float32, (self.batch_size, n_classes))
+            tf.float32, (None, n_classes))
         # default value for dropout (is for testing/training)
         self.dropout_pl = tf.placeholder_with_default(default_dropout, ())
 
@@ -130,7 +132,7 @@ class MyTCN():
                       'loss {:5.8f} |'.format(
                           epoch, batch_idx, n_train // self.batch_size +
                           1, self.lr, elapsed * 1000 / log_interval,
-                          avg_loss))
+                          avg_loss), flush=True)
                 start_time = time.time()
                 total_loss = 0
 
@@ -179,3 +181,43 @@ class MyTCN():
 
         distances = paired_distances(Y_test, total_pred)
         return total_pred, total_aleat_unc_pred, distances
+
+    def predict(self, sess, X_test, n_test, n_features, dropout):
+        '''
+        Only prediction, no computation of MSE.
+        @param X_test: 3d array, format [n_data, n_time_steps, n_features]
+        '''
+        total_pred = np.zeros((n_test, n_features))
+        if self.n_neurons_aleat_unc > 1:
+            total_aleat_unc_pred = np.zeros((n_test, n_features))
+        else:
+            total_aleat_unc_pred = np.zeros(n_test)
+        for batch_idx, batch in enumerate(range(0, n_test, self.batch_size)):
+            start_idx = batch
+            end_idx = batch + self.batch_size
+
+            x = X_test[start_idx:end_idx]
+
+            exclude = 0
+            if len(x) < self.batch_size:
+                exclude = self.batch_size - len(x)
+                x = np.pad(x, ((0, exclude), (0, 0), (0, 0)), 'constant')
+
+            p, al_un = sess.run([self.out_layer, self.noise_out_layer], feed_dict={
+                self.input_pl: x,
+                self.dropout_pl: dropout})
+
+            if self.n_neurons_aleat_unc <= 1:
+                al_un = al_un.flatten()
+
+            if exclude > 0:
+                total_pred[start_idx:end_idx] = p[:-exclude]
+                total_aleat_unc_pred[start_idx:end_idx] = al_un[:-exclude]
+            else:
+                total_pred[start_idx:end_idx] = p
+                total_aleat_unc_pred[start_idx:end_idx] = al_un
+
+        if not self.use_aleat_unc:
+            total_aleat_unc_pred = None
+
+        return total_pred, total_aleat_unc_pred
