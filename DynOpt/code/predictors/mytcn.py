@@ -13,8 +13,8 @@ import time
 
 from sklearn.metrics.pairwise import paired_distances
 
-from code.predictors.tcn import TemporalConvNet
 import numpy as np
+from predictors.tcn import TemporalConvNet
 import tensorflow as tf
 
 

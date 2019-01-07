@@ -14,8 +14,8 @@ import warnings
 
 from sklearn.preprocessing.data import MinMaxScaler
 
-from code.predictors.mytcn import MyTCN
 import numpy as np
+from predictors.mytcn import MyTCN
 
 
 def make_multidim_samples_from_series(train_data, n_time_steps):
@@ -383,9 +383,7 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
         sample_y_hat, aleat_unc = predictor.predict(
             sess, reshaped_sample_x, n_sampl, n_features, train_dropout)
 
-    # invert scaling
-    next_optimum = scaler.inverse_transform(sample_y_hat).flatten()
-
+    next_optimum = sample_y_hat.flatten()
     #========================
     return next_optimum
 
