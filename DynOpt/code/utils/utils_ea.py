@@ -62,6 +62,13 @@ def gaussian_mutation(x, mean, sigma, ea_np_rnd_generator):
     @param ea_np_rnd_generator: numpy random number generator, created with
         np.random.RandomState(<seed>)
     '''
+    if type(sigma) != float:
+        # multivariate sigma: for each dimension different standard deviation
+        # convert single float to vector by repeating it multiple times
+        mean = np.array([mean] * len(x))
+        # convert vector to diagonal matrix
+        sigma = np.diag(sigma)
+
     noise = ea_np_rnd_generator.normal(mean, sigma, x.size)
     return x + noise
 
