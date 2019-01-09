@@ -321,8 +321,8 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
                      n_time_steps, n_features, scaler, predictor,
                      shuffle, do_training):
     '''
-    @param train_interval: number of change periods that must have passed before
-    TCN is trained anew (to reduce training effort)
+    @param do_training: False if model should not be trained but should only
+    predict the next step for the given data
     '''
 
     #========================
@@ -374,7 +374,7 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     reshaped_sample_x = prediction_series.reshape(
         n_sampl, n_time_steps, n_features)
     if n_mc_runs > 0:
-        (avg_ep_uncs, avg_al_uncs,
+        (ep_uncs, avg_al_uncs,
          avg_preds, predictions) = evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
                                                                    reshaped_sample_x,
                                                                    eval_dropout, n_mc_runs)
@@ -385,11 +385,15 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
 
     next_optimum = sample_y_hat.flatten()
     #========================
-    return next_optimum
+    return next_optimum, ep_uncs
 
 
 def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
                                     in_data, eval_dropout, n_mc_runs):
+    '''
+    @return: ep_uncs: 2d array [n_data, n_dims]: predictive variance for each 
+    dimension for each input data item
+    '''
     predictions = []
     aleat_uncts = []
     for i in range(n_mc_runs):
@@ -417,9 +421,10 @@ def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
         avg_al_uncs = np.array([avg_al_uncs])
         avg_al_uncs = np.transpose(avg_al_uncs)
 
-    avg_ep_uncs = avg_squared_preds - np.square(avg_preds) + avg_al_uncs
+    # predictive variance
+    ep_uncs = avg_squared_preds - np.square(avg_preds) + avg_al_uncs
 
-    return avg_ep_uncs, avg_al_uncs, avg_preds, predictions
+    return ep_uncs, avg_al_uncs, avg_preds, predictions
 
 
 def evaluate_tcn(sess, predictor, scaler, in_data, eval_dropout):
@@ -430,6 +435,7 @@ def evaluate_tcn(sess, predictor, scaler, in_data, eval_dropout):
         sess, in_data, n_data, n_features, eval_dropout)
 
     p = scaler.inverse_transform(total_pred)
+    aleat_unc = scaler.inverse_transform(aleat_unc)  # TOD
 
     return p, aleat_unc
 
@@ -468,11 +474,9 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
         prediction, train_error, train_err_per_epoch = predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
                                                                           n_features, scaler, predictor, returnseq, shuffle)
     elif mode == "tcn":
-        # number of change periods that must have passed before TCN is trained
-        # anew
-        prediction = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
-                                      n_time_steps, n_features, scaler, predictor,
-                                      shuffle, do_training)
+        prediction, ep_uncs = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
+                                               n_time_steps, n_features, scaler, predictor,
+                                               shuffle, do_training)
     return prediction, train_error, train_err_per_epoch
 
 
