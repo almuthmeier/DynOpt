@@ -374,18 +374,20 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     reshaped_sample_x = prediction_series.reshape(
         n_sampl, n_time_steps, n_features)
     if n_mc_runs > 0:
-        (ep_uncs, avg_al_uncs,
-         avg_preds, predictions) = evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
-                                                                   reshaped_sample_x,
-                                                                   eval_dropout, n_mc_runs)
-        sample_y_hat = avg_preds
+        (ep_unc, avg_al_unc,
+         avg_pred, predictions) = evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
+                                                                  reshaped_sample_x,
+                                                                  eval_dropout, n_mc_runs)
+        sample_y_hat = avg_pred
     else:
         sample_y_hat, aleat_unc = predictor.predict(
             sess, reshaped_sample_x, n_sampl, n_features, train_dropout)
 
+    # convert 2d-arrays with format [1, n_dims] to 1d arrays with [n_dims]
     next_optimum = sample_y_hat.flatten()
+    ep_unc = ep_unc.flatten()
     #========================
-    return next_optimum, ep_uncs
+    return next_optimum, ep_unc
 
 
 def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
@@ -459,6 +461,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     '''
     train_error = None
     train_err_per_epoch = None
+    ep_unc = None
     if mode == "rnn":
         prediction = predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size,
                                       n_time_steps, n_features, scaler, predictor)
@@ -474,10 +477,10 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
         prediction, train_error, train_err_per_epoch = predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
                                                                           n_features, scaler, predictor, returnseq, shuffle)
     elif mode == "tcn":
-        prediction, ep_uncs = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
-                                               n_time_steps, n_features, scaler, predictor,
-                                               shuffle, do_training)
-    return prediction, train_error, train_err_per_epoch
+        prediction, ep_unc = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
+                                              n_time_steps, n_features, scaler, predictor,
+                                              shuffle, do_training)
+    return prediction, train_error, train_err_per_epoch, ep_unc
 
 
 def get_n_neurons(n_neurons_type, dim):
@@ -496,6 +499,12 @@ def get_n_neurons(n_neurons_type, dim):
     return n_neurons
 
 
+def fit_scaler(data_for_fitting):
+    scaler = MinMaxScaler(feature_range=(-1, 1))
+    scaler.fit(data_for_fitting)
+    return scaler
+
+
 def prepare_scaler(min_input_value, max_input_value, dim):
     '''
     Instantiates scaler that scales input data into range [-1,1] whereby the
@@ -504,12 +513,27 @@ def prepare_scaler(min_input_value, max_input_value, dim):
     To scale data only the transform() method has to be called (otherwise 
     different scaling behavior would be obtained for different data).
     '''
+    warnings.warn("do not use anymore! Better: fit scaler directly to data")
+    lbound = min_input_value
+    ubound = max_input_value
+    # if predict_diffs:
+    #    ubound = lbound
+    #    lbound = -lbound
+    print("TODO: prepare_scaler!!!!!")
+
     # fit scaler to desired range [-1,1]
     scaler = MinMaxScaler(feature_range=(-1, 1))
-    # first row contains minimum value per feature, second row max values
-    min_max_per_feature = np.array(
-        [[min_input_value] * dim, [max_input_value] * dim])
+    if type(min_input_value) is not float or type(min_input_value) is not int:
+        # inputs are already arrays containing the min value per dimension (or
+        # max value, respectively)
+        min_max_per_feature = np.array([lbound, ubound])
+    else:
+        # first row contains minimum value per feature, second row max values
+        min_max_per_feature = np.array(
+            [[lbound] * dim, [ubound] * dim])
     scaler.fit(min_max_per_feature)
+    print("data_min_: ", scaler.data_min_, flush=True)
+    print("data_max_: ", scaler.data_max_, flush=True)
     return scaler
 
 

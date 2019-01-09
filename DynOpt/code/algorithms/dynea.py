@@ -16,7 +16,7 @@ from utils.utils_dynopt import environment_changed
 from utils.utils_ea import dominant_recombination, gaussian_mutation,\
     mu_plus_lambda_selection, adapt_sigma
 from utils.utils_prediction import build_predictor,\
-    predict_next_optimum_position, prepare_scaler, get_noisy_time_series
+    predict_next_optimum_position, get_noisy_time_series, fit_scaler
 from utils.utils_transferlearning import get_variables_and_names
 
 
@@ -94,6 +94,7 @@ class DynamicEA():
         # runs
         self.add_noisy_train_data = add_noisy_train_data
         self.n_noisy_series = 20  # TODO
+        self.use_ep_unc = False
         # ---------------------------------------------------------------------
         # for EA (fixed values)
         # ---------------------------------------------------------------------
@@ -142,9 +143,11 @@ class DynamicEA():
         self.best_found_pos_per_chgperiod = []
         # fitness of found optima (one for each change period)
         self.best_found_fit_per_chgperiod = []
-        # position & fitness of predicted optima (one for each change period)
+        # position, fitness & epistemic uncertainty of predicted optima (one for
+        # each change period)
         self.pred_opt_pos_per_chgperiod = []
         self.pred_opt_fit_per_chgperiod = []
+        self.epist_unc_per_chgperiod = []  # predictive variance
         # training error per chgperiod (if prediction was done)
         self.train_error_per_chgperiod = []
         # training error per epoch for each chgperiod (if prediction was done)
@@ -233,23 +236,36 @@ class DynamicEA():
             # ratio of a) and b): 2/3, 1/3
             if n_remaining_immigrants > 1:
                 # a)
-                # immigrants randomly in the area around the optimum:
-
+                # immigrants randomly in the area around the optimum (in case
+                # of TCN the area is bound to the predicitve variance)
                 two_third = math.ceil((n_remaining_immigrants / 3) * 2)
-                # insert new generated noisy neighbors of the predicted
-                # optimum (noise has different levels (equal number of
-                # immigrants per noise level)
-                noise_steps = [1, 10, 100, 1000]
-                n_noise_steps = len(noise_steps)
-                n_immigrants_per_noise = two_third // n_noise_steps
-                mean = 0.0
-                for i in noise_steps:
-                    if n_immigrants_per_noise > 0:
-                        sigma = i * 0.01  # 0.01, 0.1, 1.0, 10.0
-                        noisy_optimum_positions = np.array(
-                            [gaussian_mutation(pred_optimum_position, mean, sigma, self.pred_np_rnd_generator) for _ in range(n_immigrants_per_noise)])
-                        immigrants = np.concatenate(
-                            (immigrants, noisy_optimum_positions))
+                if self.epist_unc_per_chgperiod is not [] and self.use_ep_unc:
+                    mean = 0.0
+                    # convert predictive variance to standard deviation
+                    sigma = np.sqrt(self.epist_unc_per_chgperiod)
+                    noisy_optimum_positions = np.array(
+                        [gaussian_mutation(pred_optimum_position, mean,
+                                           sigma, self.pred_np_rnd_generator)
+                         for _ in range(two_third)])
+                    immigrants = np.concatenate(
+                        (immigrants, noisy_optimum_positions))
+                else:
+                    # insert new generated noisy neighbors of the predicted
+                    # optimum (noise has different levels (equal number of
+                    # immigrants per noise level)
+                    noise_steps = [1, 10, 100, 1000]
+                    n_noise_steps = len(noise_steps)
+                    n_immigrants_per_noise = two_third // n_noise_steps
+                    mean = 0.0
+                    for i in noise_steps:
+                        if n_immigrants_per_noise > 0:
+                            sigma = i * 0.01  # 0.01, 0.1, 1.0, 10.0
+                            noisy_optimum_positions = np.array(
+                                [gaussian_mutation(pred_optimum_position, mean,
+                                                   sigma, self.pred_np_rnd_generator)
+                                 for _ in range(n_immigrants_per_noise)])
+                            immigrants = np.concatenate(
+                                (immigrants, noisy_optimum_positions))
 
                 # b)
                 # initialize remaining immigrants completely randomly
@@ -273,7 +289,7 @@ class DynamicEA():
         self.population_fitness = np.array([utils_dynopt.fitness(self.benchmarkfunction, individual, curr_gen,  self.experiment_data)
                                             for individual in self.population]).reshape(-1, 1)
 
-    def prepare_data_train_and_predict(self, sess, gen_idx, trained_first_time, scaler,
+    def prepare_data_train_and_predict(self, sess, gen_idx, trained_first_time,
                                        n_features, predictor, n_new_train_data):
         '''
         TODO insert this function into dynpso
@@ -287,7 +303,8 @@ class DynamicEA():
 
         # prevent training with too few train data
         if (overall_n_train_data <= n_steps_to_use or self.predictor_name == "no") or\
-                (self.predict_diffs and overall_n_train_data <= n_steps_to_use + 1):  # to build differences 1 item more is required
+                (self.predict_diffs and overall_n_train_data <= n_steps_to_use + 1) or\
+                (overall_n_train_data < 150):  # to build differences 1 item more is required
             my_pred_mode = "no"
             train_data = None
             prediction = None
@@ -304,7 +321,7 @@ class DynamicEA():
 
             # scale data (the data are re-scaled directly after the
             # prediction in this iteration)
-            #scaler = scaler.fit(best_found_vals_per_chgperiod)
+            scaler = fit_scaler(best_found_vals_per_chgperiod)
             transf_best_found_pos_per_chgperiod = scaler.transform(
                 copy.copy(best_found_vals_per_chgperiod))
 
@@ -353,11 +370,11 @@ class DynamicEA():
             if do_training:
                 n_new_train_data = 0
             # predict next optimum position or difference (and re-scale value)
-            prediction, train_error, train_err_per_epoch = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
-                                                                                         self.n_epochs, self.batch_size,
-                                                                                         n_steps_to_use, n_features,
-                                                                                         scaler, predictor, self.return_seq, self.shuffle_train_data,
-                                                                                         do_training)
+            prediction, train_error, train_err_per_epoch, ep_unc = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
+                                                                                                 self.n_epochs, self.batch_size,
+                                                                                                 n_steps_to_use, n_features,
+                                                                                                 scaler, predictor, self.return_seq, self.shuffle_train_data,
+                                                                                                 do_training)
             # convert predicted difference into position
             if self.predict_diffs:
                 prediction = np.add(
@@ -367,6 +384,8 @@ class DynamicEA():
                 copy.copy(prediction))
             self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
                 self.benchmarkfunction, prediction, gen_idx, self.experiment_data))
+            if ep_unc is not None and self.use_ep_unc:
+                self.epist_unc_per_chgperiod.append(copy.copy(ep_unc))
             self.train_error_per_chgperiod.append(train_error)
             self.train_error_for_epochs_per_chgperiod.append(
                 train_err_per_epoch)
@@ -412,7 +431,7 @@ class DynamicEA():
 
         # denotes whether the predictor has been trained or not
         trained_first_time = False
-        scaler = prepare_scaler(self.lbound, self.ubound, self.dim)
+        #scaler = prepare_scaler(self.lbound, self.ubound, self.dim)
         # number of change periods (new training data) since last training
         n_new_train_data = 0
         # ---------------------------------------------------------------------
@@ -478,7 +497,7 @@ class DynamicEA():
                     copy.copy(self.best_found_fit_per_gen[i - 1]))
 
                 # prepare data and predict optimum
-                my_pred_mode, trained_first_time, n_new_train_data = self.prepare_data_train_and_predict(sess, i, trained_first_time, scaler,
+                my_pred_mode, trained_first_time, n_new_train_data = self.prepare_data_train_and_predict(sess, i, trained_first_time,
                                                                                                          self.dim, predictor, n_new_train_data)
 
                 # adapt population to environment change
