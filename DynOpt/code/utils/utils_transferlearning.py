@@ -66,7 +66,7 @@ def get_variables_and_names(ntllayers):
 
 def build_tl_model(rnn_type, ntllayers, ntimesteps,
                    epochs, dims, returnseq, test_b_size, with_dense_first):
-    from code.predictors.tensorflow_rnnclass_withoutstate import TFRNNWithoutState
+    from predictors.tensorflow_rnnclass_withoutstate import TFRNNWithoutState
     # build transfer learning network
     return TFRNNWithoutState(dims, n_time_steps_to_use=ntimesteps,
                              test_b_size=test_b_size, n_epochs=epochs, has_time_outputs=returnseq,
