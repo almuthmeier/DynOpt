@@ -24,6 +24,7 @@ import warnings
 from benchmarks.circlemovement import create_circle_movement_points,\
     plot_movement
 from benchmarks.movingoptgenerator import start_mixture
+from code.benchmarks.sine_generator import create_sinefreq_benchmark
 import matplotlib.pyplot as plt
 import numpy as np
 from utils.fitnessfunctions import sphere, rosenbrock, rastrigin,\
@@ -43,11 +44,12 @@ def create_problems(output_parent_dir_path=None):
     # -------------------------------------------------------------------------
     # TODO(exp) parameters to adjust
     n_chg_periods = 10000
-    dims = [2, 10]  # [1, 2, 5]  # , 10, 50]
+    dims = [2]  # [1, 2, 5]  # , 10, 50]
     functions = [sphere, rastrigin, griewank]  # , rastrigin]
-    functions = [sphere, rastrigin]  # , rastrigin]
-    pos_chng_types = ['pch-linear', 'pch-sine', 'pch-circle', 'pch-mixture']
-    pos_chng_types = ['pch-mixture', 'pch-sine']
+    functions = [sphere]  # , rastrigin]
+    pos_chng_types = ['pch-linear', 'pch-sine',
+                      'pch-circle', 'pch-mixture', 'pch-sinefreq']
+    pos_chng_types = ['pch-sinefreq']
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "GECCO_2019"
@@ -112,7 +114,7 @@ def create_problems(output_parent_dir_path=None):
                 if pos_chng_type == 'pch-sine':
                     if conference == "GECCO_2018" or conference == "GECCO_2019" or conference == "ESANN_2019":
                         # initialize sine-parameters randomly (stay unchanged
-                        # during all change periods
+                        # during all change periods)
                         amplitudes = np_rand_gen.randint(5, 50, dim)
                         width_factors = np_rand_gen.rand(dim)
                         for chg_period in range(1, n_chg_periods):
@@ -124,7 +126,10 @@ def create_problems(output_parent_dir_path=None):
                                 movement[d] = amplitudes[d] * \
                                     np.sin(width_factors[d] *
                                            chg_period) + amplitudes[d] + chg_period
-                            # new optimum position
+                            # new optimum position (movement is referenced to
+                            # original point, (therefore the difference between
+                            # the first two points and the difference between
+                            # the second and third points differ much.
                             new_opt = orig_global_opt_position + movement
                             opts.append(copy.copy(new_opt))
                     elif conference == "EvoStar_2018":
@@ -184,6 +189,8 @@ def create_problems(output_parent_dir_path=None):
                     opts = start_mixture(
                         dims=dim, seed=np_rand_gen.randint(974), min_value=lbound, max_value=ubound)
                     opts = opts[:n_chg_periods]
+                elif pos_chng_type == 'pch-sinefreq':
+                    opts = create_sinefreq_benchmark(n_chg_periods)
                 else:
                     warnings.warn("unknown position change type")
                 opts = np.array(opts)
