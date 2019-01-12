@@ -5,7 +5,7 @@ test functions).
 Main parts of code taken from add_test.py from: 
 https://github.com/YuanTingHsieh/TF_TCN/blob/master/adding_problem/add_test.py
 
-Modified code to enabble Monte Carlo dropout: 
+Modified code to enable Monte Carlo dropout: 
     - placeholder for dropout (now dropout is also possible during testing)
 '''
 from pathlib import Path
