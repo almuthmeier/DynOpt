@@ -85,12 +85,13 @@ class MyAutoTCN():
             # format [batch_size, dims]
             self.pred_var_pl = tf.placeholder(tf.float32, (None, n_classes))
 
-            # format  [n_mc_runs, batch_size, dims]
+            # format  [n_mc_runs-1, batch_size, dims] (n_mc_runs -1 since the
+            # results for last run are added later)
             self.preds_pl = tf.placeholder(
-                tf.float32, (self.n_train_mc_runs, None, n_classes))
+                tf.float32, (self.n_train_mc_runs - 1, None, n_classes))
             # format  [n_mc_runs, batch_size, dims]
             self.al_uncs_pl = tf.placeholder(
-                tf.float32, (self.n_train_mc_runs, None, n_classes))
+                tf.float32, (self.n_train_mc_runs - 1, None, n_classes))
 
             self.pred_mean_pl, self.pred_var_pl = self.get_pred_var_and_mean(
                 self.preds_pl, self.al_uncs_pl, self.out_layer, self.noise_out_layer)
@@ -153,14 +154,14 @@ class MyAutoTCN():
             yield batch_idx + 1, all_indices[start_ind:end_ind]
 
     def train(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
-        self.__train_prediction(
+        self.train_prediction(
             epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout)
 
         # train with noise-Loss
-        self.__train_noise(epoch, sess, X_train, Y_train,
-                           n_train, log_interval, train_writer, dropout)
+        self.train_noise(epoch, sess, X_train, Y_train,
+                         n_train, log_interval, train_writer, dropout)
 
-    def __train_prediction(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
+    def train_prediction(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
         steps = 0
         total_loss = 0
         start_time = time.time()
@@ -187,7 +188,7 @@ class MyAutoTCN():
                 start_time = time.time()
                 total_loss = 0
 
-    def __train_noise(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
+    def train_noise(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
         print("\n train noise", flush=True)
         b = 0
         for batch_idx, indices in self.index_generator(n_train):
@@ -261,6 +262,8 @@ class MyAutoTCN():
     def predict(self, sess, X_test, n_test, n_features, dropout):
         '''
         Only prediction, no computation of MSE.
+        (That is the difference to the function evaluate().)
+
         @param X_test: 3d array, format [n_data, n_time_steps, n_features]
         '''
         total_pred = np.zeros((n_test, n_features))
