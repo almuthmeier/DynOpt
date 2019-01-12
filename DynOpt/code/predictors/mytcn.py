@@ -108,33 +108,34 @@ class MyTCN():
 
             yield batch_idx + 1, all_indices[start_ind:end_ind]
 
-    def train(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
-        steps = 0
-        total_loss = 0
-        start_time = time.time()
+    def train(self, n_epochs, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
+        for ep in range(1, n_epochs + 1):
+            steps = 0
+            total_loss = 0
+            start_time = time.time()
 
-        for batch_idx, indices in self.index_generator(n_train):
-            x = X_train[indices]
-            y = Y_train[indices]
+            for batch_idx, indices in self.index_generator(n_train):
+                x = X_train[indices]
+                y = Y_train[indices]
 
-            summary, _, p, al_un, l = sess.run([self.merged, self.update_step,
-                                                self.out_layer, self.noise_out_layer, self.loss],
-                                               feed_dict={self.input_pl: x, self.output_pl: y,
-                                                          self.dropout_pl: dropout})
-            total_loss += l
-            steps += 1
-            train_writer.add_summary(summary, steps)
+                summary, _, p, al_un, l = sess.run([self.merged, self.update_step,
+                                                    self.out_layer, self.noise_out_layer, self.loss],
+                                                   feed_dict={self.input_pl: x, self.output_pl: y,
+                                                              self.dropout_pl: dropout})
+                total_loss += l
+                steps += 1
+                train_writer.add_summary(summary, steps)
 
-            if (batch_idx > 0 and batch_idx % log_interval == 0):
-                avg_loss = total_loss / log_interval
-                elapsed = time.time() - start_time
-                print('| Epoch {:3d} | {:5d}/{:5d} batches | lr {:2.5f} | ms/batch {:5.2f} | '
-                      'loss {:5.8f} |'.format(
-                          epoch, batch_idx, n_train // self.batch_size +
-                          1, self.lr, elapsed * 1000 / log_interval,
-                          avg_loss), flush=True)
-                start_time = time.time()
-                total_loss = 0
+                if (batch_idx > 0 and batch_idx % log_interval == 0):
+                    avg_loss = total_loss / log_interval
+                    elapsed = time.time() - start_time
+                    print('| Epoch {:3d} | {:5d}/{:5d} batches | lr {:2.5f} | ms/batch {:5.2f} | '
+                          'loss {:5.8f} |'.format(
+                              ep, batch_idx, n_train // self.batch_size +
+                              1, self.lr, elapsed * 1000 / log_interval,
+                              avg_loss), flush=True)
+                    start_time = time.time()
+                    total_loss = 0
 
     def evaluate(self, sess, X_test, Y_test, n_test, dropout):
 

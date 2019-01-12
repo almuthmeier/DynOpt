@@ -153,13 +153,15 @@ class MyAutoTCN():
 
             yield batch_idx + 1, all_indices[start_ind:end_ind]
 
-    def train(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
-        self.train_prediction(
-            epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout)
-
-        # train with noise-Loss
-        self.train_noise(epoch, sess, X_train, Y_train,
-                         n_train, log_interval, train_writer, dropout)
+    def train(self, n_epochs, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
+        # train output layer
+        for ep in range(1, n_epochs + 1):
+            self.train_prediction(ep, sess, X_train, Y_train,
+                                  n_train, log_interval, train_writer, dropout)
+        # train noise layer
+        for ep in range(1, n_epochs + 1):
+            self.train_noise(ep, sess, X_train, Y_train,
+                             n_train, log_interval, train_writer, dropout)
 
     def train_prediction(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
         steps = 0

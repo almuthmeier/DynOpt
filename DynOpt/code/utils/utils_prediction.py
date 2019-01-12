@@ -15,7 +15,7 @@ import warnings
 from sklearn.preprocessing.data import MinMaxScaler
 
 import numpy as np
-from predictors.mytcn import MyTCN
+from predictors.myautomatictcn import MyAutoTCN
 
 
 def make_multidim_samples_from_series(train_data, n_time_steps):
@@ -126,9 +126,9 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
         kernel_size = 3
         default_dropout = 0.0  # is overwritten in train() and evaluate()
         use_aleat_unc = True
-        predictor = MyTCN(in_channels, output_size, num_channels,
-                          sequence_length, kernel_size, default_dropout, batch_size,
-                          init=False, use_aleat_unc=use_aleat_unc)
+        predictor = MyAutoTCN(in_channels, output_size, num_channels,
+                              sequence_length, kernel_size, default_dropout, batch_size,
+                              init=False, use_aleat_unc=use_aleat_unc)
     else:
         msg = "unknown prediction mode " + mode
         warnings.warn(msg)
@@ -362,9 +362,8 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     file_writer = tf.summary.FileWriter('./log/train', sess.graph)
     if do_training:
         print("train_CNN", flush=True)
-        for ep in range(1, n_epochs + 1):
-            predictor.train(ep, sess, train_in_data, train_out_data,
-                            n_train, log_interval, file_writer, train_dropout)
+        predictor.train(n_epochs, sess, train_in_data, train_out_data,
+                        n_train, log_interval, file_writer, train_dropout)
 
     #========================
     # Prediction
