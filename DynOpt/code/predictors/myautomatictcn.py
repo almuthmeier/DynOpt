@@ -1,4 +1,6 @@
 '''
+-- Difference to mytcn.py: automatic scaling of noise --
+
 Builds a complete Temporal Convolution Network (with output layer, train and 
 test functions). 
 
@@ -18,6 +20,7 @@ from pathlib import Path
 import time
 
 from sklearn.metrics.pairwise import paired_distances
+from tensorflow.python.ops.distributions.special_math import erfinv
 
 import numpy as np
 from predictors.tcn import TemporalConvNet
@@ -27,7 +30,7 @@ import tensorflow as tf
 print('Running' if __name__ == '__main__' else 'Importing', Path(__file__).resolve())
 
 
-class MyTCN():
+class MyAutoTCN():
 
     def __init__(self, in_channels, output_size, num_channels, sequence_length,
                  kernel_size, default_dropout, batch_size, init=False, use_aleat_unc=False):
@@ -37,8 +40,11 @@ class MyTCN():
         should be applied
         '''
         self.lr = 4e-3  # TODO
-        clip = -1
         self.batch_size = batch_size
+        self.noise_scope = "noise_output"
+        # number of Monte Carlo runs during training (for loss function with
+        # automatic noise scaling)
+        self.n_train_mc_runs = 30
 
         self.use_aleat_unc = use_aleat_unc
         n_classes = output_size
@@ -61,6 +67,7 @@ class MyTCN():
         # deviation of prediction and labels
         prediction_mse = tf.losses.mean_squared_error(
             labels=self.output_pl, predictions=self.out_layer)
+        self.pred_loss = prediction_mse
 
         # output layer for observation noise
         if self.use_aleat_unc:
@@ -69,29 +76,60 @@ class MyTCN():
             # for each dimension one uncertainty output
             self.n_neurons_aleat_unc = output_size
             # heteroscedastic aleatoric uncertainty
-            self.noise_out_layer = tf.contrib.layers.fully_connected(tcn[:, -1, :], self.n_neurons_aleat_unc, activation_fn=tf.nn.softplus,
-                                                                     weights_initializer=tf.initializers.random_normal(0, 0.01))
+            with tf.variable_scope(self.noise_scope):
+                self.noise_out_layer = tf.contrib.layers.fully_connected(tcn[:, -1, :], self.n_neurons_aleat_unc, activation_fn=tf.nn.softplus,
+                                                                         weights_initializer=tf.initializers.random_normal(
+                                                                         0, 0.01))
+            # format [batch_size, dims]
+            self.pred_mean_pl = tf.placeholder(tf.float32, (None, n_classes))
+            # format [batch_size, dims]
+            self.pred_var_pl = tf.placeholder(tf.float32, (None, n_classes))
 
+            # format  [n_mc_runs, batch_size, dims]
+            self.preds_pl = tf.placeholder(
+                tf.float32, (self.n_train_mc_runs, None, n_classes))
+            # format  [n_mc_runs, batch_size, dims]
+            self.al_uncs_pl = tf.placeholder(
+                tf.float32, (self.n_train_mc_runs, None, n_classes))
+
+            self.pred_mean_pl, self.pred_var_pl = self.get_pred_var_and_mean(
+                self.preds_pl, self.al_uncs_pl, self.out_layer, self.noise_out_layer)
             # compute loss
-            t1 = tf.scalar_mul(1 / 2, tf.exp(-self.noise_out_layer))
-            t2 = tf.multiply(t1, prediction_mse)
-            t3 = tf.scalar_mul(1 / 2, self.noise_out_layer)
-            t4 = tf.add(t2, t3)
-            self.loss = tf.reduce_mean(t4)
+            t1_perc = 51 / 100
+            t3_perc = 99 / 100
+
+            t1 = self.diff(t1_perc) * (t1_perc - self.acc(t1_perc))**2
+            t1 = tf.maximum(t1, 0)
+
+            t2 = np.sum([abs(self.diff(i / 100) * (i / 100 - self.acc(i / 100))**2)
+                         for i in range(52, 98 + 1)])
+
+            t3 = self.diff(t3_perc) * (t3_perc - self.acc(t3_perc))**2
+            t3 = tf.maximum(-t3, 0)
+
+            self.noise_loss = 2 * t1 + t2 + 2 * t3
+            #self.noise_loss = prediction_mse
         else:
             self.noise_out_layer = []
-            self.loss = prediction_mse
+            self.pred_loss = prediction_mse
 
-        # output
-        tf.summary.scalar('mse', self.loss)
-        self.merged = tf.summary.merge_all()
+        # print-output for prediction training
+        tf.summary.scalar('mse', self.pred_loss)
+        self.pred_merged = tf.summary.merge_all()
 
-        # optimization operation
-        optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
-        gradients, variables = zip(*optimizer.compute_gradients(self.loss))
-        if clip > 0:
-            gradients, _ = tf.clip_by_global_norm(gradients, clip)
-        self.update_step = optimizer.apply_gradients(zip(gradients, variables))
+        # optimization operation for prediction layer
+        pred_optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
+        # update steps for prediction layer (trains all layers)
+        self.pred_update_step = pred_optimizer.minimize(self.pred_loss)
+
+        # optimization operation for noise layer
+        noise_optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
+        # variables of noise layer
+        noise_layer_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
+                                             scope=self.noise_scope)
+        # update step of noise layer (trains only that layer)
+        self.noise_update_step = noise_optimizer.minimize(
+            self.noise_loss, var_list=noise_layer_vars)
 
     def index_generator(self, n_train):
         all_indices = np.arange(n_train)
@@ -115,18 +153,25 @@ class MyTCN():
             yield batch_idx + 1, all_indices[start_ind:end_ind]
 
     def train(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
+        self.__train_prediction(
+            epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout)
+
+        # train with noise-Loss
+        self.__train_noise(epoch, sess, X_train, Y_train,
+                           n_train, log_interval, train_writer, dropout)
+
+    def __train_prediction(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
         steps = 0
         total_loss = 0
         start_time = time.time()
-
         for batch_idx, indices in self.index_generator(n_train):
             x = X_train[indices]
             y = Y_train[indices]
 
-            summary, _, p, al_un, l = sess.run([self.merged, self.update_step,
-                                                self.out_layer, self.noise_out_layer, self.loss],
-                                               feed_dict={self.input_pl: x, self.output_pl: y,
-                                                          self.dropout_pl: dropout})
+            summary, _, p, l = sess.run([self.pred_merged, self.pred_update_step,
+                                         self.out_layer, self.pred_loss],
+                                        feed_dict={self.input_pl: x, self.output_pl: y,
+                                                   self.dropout_pl: dropout})
             total_loss += l
             steps += 1
             train_writer.add_summary(summary, steps)
@@ -141,6 +186,31 @@ class MyTCN():
                           avg_loss), flush=True)
                 start_time = time.time()
                 total_loss = 0
+
+    def __train_noise(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
+        print("\n train noise", flush=True)
+        b = 0
+        for batch_idx, indices in self.index_generator(n_train):
+            b += 1
+            x = X_train[indices]
+            y = Y_train[indices]
+
+            # format [n_mc_runs, batch_size, dims]
+            preds = []
+            al_uncs = []
+            for _ in range(self.n_train_mc_runs - 1):
+                p, al_unc = sess.run([self.out_layer, self.noise_out_layer], feed_dict={self.input_pl: x,
+                                                                                        self.dropout_pl: dropout})
+                preds.append(p)
+                al_uncs.append(al_unc)
+
+            # do weight update in last MC run
+            _, _, _, l = sess.run([self.noise_update_step, self.out_layer,
+                                   self.noise_out_layer, self.noise_loss],
+                                  feed_dict={self.input_pl: x, self.output_pl: y,
+                                             self.dropout_pl: dropout,
+                                             self.preds_pl: preds,
+                                             self.al_uncs_pl: al_uncs})
 
     def evaluate(self, sess, X_test, Y_test, n_test, dropout):
 
@@ -163,7 +233,7 @@ class MyTCN():
                 x = np.pad(x, ((0, exclude), (0, 0), (0, 0)), 'constant')
                 y = np.pad(y, ((0, exclude), (0, 0)), 'constant')
 
-            p, al_un, l = sess.run([self.out_layer, self.noise_out_layer, self.loss], feed_dict={
+            p, al_un, l = sess.run([self.out_layer, self.noise_out_layer, self.pred_loss], feed_dict={
                 self.input_pl: x, self.output_pl: y,
                 self.dropout_pl: dropout})
 
@@ -227,3 +297,60 @@ class MyTCN():
             total_aleat_unc_pred = None
 
         return total_pred, total_aleat_unc_pred
+
+    def diff(self, j):
+        '''
+        @return format [batch_size]
+        '''
+        t1 = tf.norm(self.pred_mean_pl - self.output_pl)
+        t3 = tf.sqrt(2.0)
+        t4 = erfinv(j)
+        return tf.cast(tf.reduce_mean(t1 - tf.sqrt(self.pred_var_pl) * t3 * t4), tf.float32)
+
+    def acc(self, j):
+        '''
+        @return format [batch_size]
+        '''
+        t1 = tf.norm(self.pred_mean_pl - self.output_pl)
+        t2 = tf.sqrt(self.pred_var_pl) * tf.sqrt(2.0) * erfinv(j)
+
+        t = t1 < t2
+        s = tf.count_nonzero(t)
+
+        b_size = tf.size(t)
+        b_size = tf.cast(b_size, tf.int64)
+
+        return tf.cast(s / b_size, tf.float32)
+
+    def predictive_mean(self, preds):
+        '''
+        Gets input of mc runs for whole batch. Computes predictive mean 
+        separately for each input item.
+
+        @param preds: format [n_mc_runs, batch_size, dims]
+        @return format [batch_size, dims]
+        '''
+        m = tf.reduce_mean(preds, axis=0)
+        return m
+
+    def predictive_variance(self, pred_mean, preds, al_uncs):
+        return tf.reduce_mean(al_uncs + tf.square(preds), axis=0) - tf.square(pred_mean)
+
+    def get_pred_var_and_mean(self, preds, al_uncs, out_layer, noise_out_layer):
+        '''
+        Computes predictive mean and variance.
+
+        @param preds: format [n_mc_runs, batch_size, dims]
+        @param al_uncs: format [n_mc_runs, batch_size, dims]
+        @param out_layer: format [batch_size, dims]
+        @param noise_out_layer: format [batch_size, dims]
+        @return format [batch_size, dims]
+        '''
+        # append results of last MC run to results from previous runs
+        preds = tf.concat([preds, [out_layer]], axis=0)
+        al_uncs = tf.concat([al_uncs, [noise_out_layer]], axis=0)
+
+        # compute predictive mean and variance
+        pred_mean = self.predictive_mean(preds)
+        pred_var = self.predictive_variance(pred_mean, preds, al_uncs)
+        return pred_mean, pred_var
