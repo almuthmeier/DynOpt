@@ -88,13 +88,13 @@ class DynamicEA():
         # training/testing specifications
         self.use_all_train_data = True  # use all previous data to train with
         self.predict_diffs = True  # predict position differences, TODO insert into PSO
-        self.return_seq = True  # return values for all time steps not only the last one
+        self.return_seq = False  # return values for all time steps not only the last one
         self.shuffle_train_data = True
         # add noisy data (noise equals standard deviation among change period
         # runs
         self.add_noisy_train_data = add_noisy_train_data
         self.n_noisy_series = 20  # TODO
-        self.use_ep_unc = False
+        self.use_ep_unc = True
         # ---------------------------------------------------------------------
         # for EA (fixed values)
         # ---------------------------------------------------------------------
@@ -304,7 +304,7 @@ class DynamicEA():
         # prevent training with too few train data
         if (overall_n_train_data <= n_steps_to_use or self.predictor_name == "no") or\
                 (self.predict_diffs and overall_n_train_data <= n_steps_to_use + 1) or\
-                (overall_n_train_data < 150):  # to build differences 1 item more is required
+                (overall_n_train_data < 5):  # TODO # to build differences 1 item more is required
             my_pred_mode = "no"
             train_data = None
             prediction = None
@@ -374,11 +374,8 @@ class DynamicEA():
                                                                                                  self.n_epochs, self.batch_size,
                                                                                                  n_steps_to_use, n_features,
                                                                                                  scaler, predictor, self.return_seq, self.shuffle_train_data,
-                                                                                                 do_training)
-            # convert predicted difference into position
-            if self.predict_diffs:
-                prediction = np.add(
-                    self.best_found_pos_per_chgperiod[-1], prediction)
+                                                                                                 do_training, self.best_found_pos_per_chgperiod,
+                                                                                                 self.predict_diffs)
 
             self.pred_opt_pos_per_chgperiod.append(
                 copy.copy(prediction))

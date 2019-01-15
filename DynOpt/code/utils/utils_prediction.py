@@ -319,7 +319,8 @@ def predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size,
 
 def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
                      n_time_steps, n_features, scaler, predictor,
-                     shuffle, do_training):
+                     shuffle, do_training,
+                     best_found_pos_per_chgperiod, predict_diffs):
     '''
     @param do_training: False if model should not be trained but should only
     predict the next step for the given data
@@ -373,35 +374,46 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     reshaped_sample_x = prediction_series.reshape(
         n_sampl, n_time_steps, n_features)
     if n_mc_runs > 0:
-        (ep_unc, avg_al_unc,
-         avg_pred, predictions) = evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
-                                                                  reshaped_sample_x,
-                                                                  eval_dropout, n_mc_runs)
-        sample_y_hat = avg_pred
+        (pred_var, avg_al_uncs,
+         pred_mean, predictions) = evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
+                                                                   reshaped_sample_x,
+                                                                   eval_dropout, n_mc_runs,
+                                                                   best_found_pos_per_chgperiod,
+                                                                   predict_diffs)
+        sample_y_hat = pred_mean
     else:
         sample_y_hat, aleat_unc = predictor.predict(
             sess, reshaped_sample_x, n_sampl, n_features, train_dropout)
+        sample_y_hat = scaler.inverse_transform(sample_y_hat)
+        if predict_diffs:
+            sample_y_hat = np.add(
+                best_found_pos_per_chgperiod[-1], sample_y_hat)
 
     # convert 2d-arrays with format [1, n_dims] to 1d arrays with [n_dims]
     next_optimum = sample_y_hat.flatten()
-    ep_unc = ep_unc.flatten()
+    pred_var = pred_var.flatten()
     #========================
-    return next_optimum, ep_unc
+    return next_optimum, pred_var
 
 
 def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
-                                    in_data, eval_dropout, n_mc_runs):
+                                    in_data, eval_dropout, n_mc_runs,
+                                    best_found_pos_per_chgperiod, pred_diffs):
     '''
+    Implements "loss type" proposed by S. Oehmcke (ICANN 2018)
+
     @return: ep_uncs: 2d array [n_data, n_dims]: predictive variance for each 
     dimension for each input data item
     '''
+    # =====================
+    # Monte Carlo runs
     predictions = []
     aleat_uncts = []
     for i in range(n_mc_runs):
         print("mc run ", i, flush=True)
         # shape of pred: [len(unsh_in_data), dims]
         # shape of aleat_unc: [len(unsh_in_data), dims or 1]
-        (pred, aleat_unc) = evaluate_tcn(sess, predictor, scaler,
+        (pred, aleat_unc) = evaluate_tcn(sess, predictor,
                                          in_data, eval_dropout)
         predictions.append(pred)
         aleat_uncts.append(aleat_unc)
@@ -409,11 +421,21 @@ def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
     predictions = np.array(predictions)
     aleat_uncts = np.array(aleat_uncts)
 
-    # average uncertainties for each data point
-    avg_preds = np.average(predictions, axis=0)
+    # =====================
+    # re-scale data, transform differences to absolute positions
+    for i in range(len(predictions)):
+        # format [n_mc_runs, n_data, dims]
+        predictions[i] = scaler.inverse_transform(predictions[i])
+        aleat_uncts[i] = scaler.inverse_transform(aleat_uncts[i])
+    # redo differences
+    if pred_diffs:
+        predictions = np.add(best_found_pos_per_chgperiod[-1], predictions)
+
+    # =====================
+    # predictive mean/variance according to S. Oehmckes paper
+    pred_mean = np.average(predictions, axis=0)
     avg_squared_preds = np.average(np.square(predictions), axis=0)
-    # convert logarithmic uncertainties to "real" ones
-    avg_al_uncs = np.average(np.square(np.exp(aleat_uncts)), axis=0)
+    avg_al_uncs = np.average(aleat_uncts, axis=0)
     if len(aleat_uncts.shape) > 2:
         # uncertainties for each dimension
         pass
@@ -421,29 +443,25 @@ def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
         # al. unc. has only one dimension -> add one dimension
         avg_al_uncs = np.array([avg_al_uncs])
         avg_al_uncs = np.transpose(avg_al_uncs)
+    pred_var = avg_al_uncs + avg_squared_preds - np.square(pred_mean)
 
-    # predictive variance
-    ep_uncs = avg_squared_preds - np.square(avg_preds) + avg_al_uncs
-
-    return ep_uncs, avg_al_uncs, avg_preds, predictions
+    return pred_var, avg_al_uncs, pred_mean, predictions
 
 
-def evaluate_tcn(sess, predictor, scaler, in_data, eval_dropout):
+def evaluate_tcn(sess, predictor, in_data, eval_dropout):
     n_data = len(in_data)
     n_features = in_data.shape[-1]
 
     total_pred, aleat_unc = predictor.predict(
         sess, in_data, n_data, n_features, eval_dropout)
 
-    p = scaler.inverse_transform(total_pred)
-    aleat_unc = scaler.inverse_transform(aleat_unc)  # TOD
-
-    return p, aleat_unc
+    return total_pred, aleat_unc
 
 
 def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_epochs, batch_size,
                                   n_time_steps, n_features, scaler, predictor,
-                                  returnseq, shuffle, do_training):
+                                  returnseq, shuffle, do_training, best_found_pos_per_chgperiod,
+                                  predict_diffs):
     '''
     @param mode: the desired predictor
     @param new_train_data: 2d numpy array: contains time series of 
@@ -478,7 +496,13 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     elif mode == "tcn":
         prediction, ep_unc = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
                                               n_time_steps, n_features, scaler, predictor,
-                                              shuffle, do_training)
+                                              shuffle, do_training,
+                                              best_found_pos_per_chgperiod, predict_diffs)
+
+    # convert predicted difference into position (tcn has already re-scaled the values
+    # in the sub-functions)
+    if predict_diffs and mode != "tcn":
+        prediction = np.add(best_found_pos_per_chgperiod[-1], prediction)
     return prediction, train_error, train_err_per_epoch, ep_unc
 
 
