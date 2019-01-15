@@ -24,7 +24,7 @@ import warnings
 from benchmarks.circlemovement import create_circle_movement_points,\
     plot_movement
 from benchmarks.movingoptgenerator import start_mixture
-from code.benchmarks.sine_generator import create_sinefreq_benchmark
+from code.benchmarks.sine_generator import generate_sine_fcts_for_multiple_dimensions
 import matplotlib.pyplot as plt
 import numpy as np
 from utils.fitnessfunctions import sphere, rosenbrock, rastrigin,\
@@ -44,7 +44,7 @@ def create_problems(output_parent_dir_path=None):
     # -------------------------------------------------------------------------
     # TODO(exp) parameters to adjust
     n_chg_periods = 10000
-    dims = [2]  # [1, 2, 5]  # , 10, 50]
+    dims = [2, 5, 10]  # [1, 2, 5]  # , 10, 50]
     functions = [sphere, rastrigin, griewank]  # , rastrigin]
     functions = [sphere]  # , rastrigin]
     pos_chng_types = ['pch-linear', 'pch-sine',
@@ -53,8 +53,8 @@ def create_problems(output_parent_dir_path=None):
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "GECCO_2019"
-    lbound = 100
-    ubound = 200
+    lbound = 5
+    ubound = 100
     # -------------------------------------------------------------------------
     # for circle movement
 
@@ -190,7 +190,13 @@ def create_problems(output_parent_dir_path=None):
                         dims=dim, seed=np_rand_gen.randint(974), min_value=lbound, max_value=ubound)
                     opts = opts[:n_chg_periods]
                 elif pos_chng_type == 'pch-sinefreq':
-                    opts = create_sinefreq_benchmark(n_chg_periods)
+                    seed = np_rand_gen.randint(4)
+                    desired_curv = 10
+                    desired_min_acc = 0.5  # no longer used
+                    desired_med_acc = 0.5
+                    opts = generate_sine_fcts_for_multiple_dimensions(dim, n_chg_periods, seed,
+                                                                      lbound, ubound, desired_curv,
+                                                                      desired_min_acc, desired_med_acc)
                 else:
                     warnings.warn("unknown position change type")
                 opts = np.array(opts)
