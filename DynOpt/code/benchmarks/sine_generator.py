@@ -16,8 +16,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc):
-    do_print = False
+def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc,
+                                         desired_med_acc, min_val, max_val):
+    do_print = True
     #============================================
     print("n_data: ", n_data)
     step_size = math.pi / 30
@@ -34,16 +35,18 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc):
     c_idx = 2
     #============================================
 
-    # np.random.seed()
+    np.random.seed(3)
     max_n_functions = 3
-    max_a = 2
+    max_a = 4  # TODO (dev) depends on max_val
     max_b = desired_curv / 2
     # only positive, since positive and negative movement are the same
     min_c = 0
-    max_c = 10
+    max_c = 2 * math.pi
     # probabilities that a or b, respectively, are in [0,1)
     a_prob_smaller_one = 0.2
     b_prob_smaller_one = 0.5
+    # y-movement so that min_val really is the minimum value
+    y_movement = max(min_val, math.pow(max_a, max_n_functions))
 
     # 2d array: each row consists of 3 values: the values for parameters a,b,c
     # of the base function: a*sin(bx+c)
@@ -66,7 +69,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc):
                 b = get_a_or_b(curr_max_b, b_prob_smaller_one)
 
         c = np.random.uniform(min_c, max_c)
-        fcts.append([a, b, c])
+        fcts.append([a, b, c, y_movement])
         # compute current function values
         vals = a * np.sin(b * time + c)
         if do_print:
@@ -86,7 +89,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc):
         print("\ncurv: ", compute_curvature_analytically(vals))
         print("min, max, med: ", (min_acc, max_acc, med_acc))
         plt.plot(vals)
-        plt.title("base time")
+        plt.title("for base time")
         plt.show()
 
         print("\nfor all time steps")
@@ -95,20 +98,20 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc):
         print("\ncurv: ", compute_curvature_analytically(vals))
         print("min, max, med: ", (min_acc, max_acc, med_acc))
         plt.plot(vals)
-        plt.title("all time steps")
+        plt.title("for all time steps")
         plt.show()
 
     # correct acceleration (after that "fcts" must not be used, since the
     # parameters could not be corrected, only the function values)
 
-    final_vals = correct_parms(fcts, time, desired_min_acc)
+    final_vals = correct_parms(fcts, time, desired_min_acc, desired_med_acc)
     if do_print:
         print("\nfor all time steps (after correction)")
-        vals = compute_vals_for_fct(fcts, time)
-        min_acc, max_acc, med_acc, _ = compute_acceleration_analytically(vals)
-        print("\ncurv: ", compute_curvature_analytically(vals))
+        min_acc, max_acc, med_acc, _ = compute_acceleration_analytically(
+            final_vals)
+        print("\ncurv: ", compute_curvature_analytically(final_vals))
         print("min, max, med: ", (min_acc, max_acc, med_acc))
-        plt.plot(vals)
+        plt.plot(final_vals)
         plt.title("all time steps (after correction)")
         plt.show()
 
@@ -151,7 +154,7 @@ def compute_acceleration_analytically(values):
     abs_diffs = np.abs(diff_vals)
     min_acc = np.min(abs_diffs)
     max_acc = np.max(diff_vals)
-    med_acc = np.average(abs_diffs)
+    med_acc = np.median(abs_diffs)
     return min_acc, max_acc, med_acc, diff_vals
 
 
@@ -161,43 +164,60 @@ def compute_vals_for_fct(fcts, time):
 
     @param fct: 2d array: for each component function one row containing three
     values: first: a, second: b, third: c (for base function a*sin(bx+c))
+    fourth: y-movement
     @return 1d array for each time step the function value
     '''
     values = np.ones(len(time))
 
     for f in fcts:
         values *= f[0] * np.sin(f[1] * time + f[2])
-    return values
+    return values + f[3]
 
 
-def correct_parms(fcts, time, desired_min_acc):
+def correct_parms(fcts, time, desired_min_acc, desired_med_acc):
     '''
     Correct minimum acceleration.
 
     @param fcts: params for already specified functions
     @param desired_min_acc: desired minimum acceleration of overall function
     '''
-
+    correct_min = False
     values = compute_vals_for_fct(fcts, time)
 
     # current minimum acceleration
-    min_acc, _, _, diff_vals = compute_acceleration_analytically(values)
+    min_acc, _, med_acc, diff_vals = compute_acceleration_analytically(values)
 
-    # correct min acc.
-    missing_min_acc = desired_min_acc - min_acc
-    missing_min_acc_ratio = desired_min_acc / min_acc
-    if missing_min_acc > 0:
-        # to small acceleration
-        diff_vals *= missing_min_acc_ratio
+    # correct min acc
+    if correct_min:
+        missing_min_acc = desired_min_acc - min_acc
+        print("missing_min_acc: ", missing_min_acc)
+        missing_min_acc_ratio = desired_min_acc / min_acc
+        print("missing_min_acc_ratio: ", missing_min_acc_ratio)
+        if missing_min_acc > 0:
+            # to small acceleration
+            diff_vals *= missing_min_acc_ratio
+
+        # testing
+        curr_min = np.min(np.abs(diff_vals))
+        assert abs(desired_min_acc - curr_min) < 0.01,  "curr_min: " + str(
+            curr_min) + " desired_min_acc: " + str(desired_min_acc)
+    else:  # correct median acceleration
+        missing_med_acc = desired_med_acc - med_acc
+        print("missing_med_acc: ", missing_med_acc)
+        missing_med_acc_ratio = desired_med_acc / med_acc
+        print("missing_med_acc_ratio: ", missing_med_acc_ratio)
+        if missing_med_acc > 0:
+            # to small acceleration
+            diff_vals *= missing_med_acc_ratio
+
+        # testing
+        curr_med = np.median(np.abs(diff_vals))
+        assert abs(desired_med_acc - curr_med) < 0.01,  "curr_med: " + str(
+            curr_med) + " desired_med_acc: " + str(desired_med_acc)
 
     # update function values
     min_acc_corrected_values = update_function_values_from_diff_values(
         values, diff_vals)
-
-    # testing
-    curr_min = np.min(np.abs(diff_vals))
-    assert abs(desired_min_acc - curr_min) < 0.01,  "curr_min: " + str(
-        curr_min) + " desired_min_acc: " + str(desired_min_acc)
 
     return min_acc_corrected_values
 
@@ -211,18 +231,22 @@ def update_function_values_from_diff_values(old_values, new_diff_vals):
     for i in range(1, n_vals):
         new_vals[i] = new_vals[i - 1] + new_diff_vals[i - 1]
 
+    # testing
     test_diffs = new_vals[1:] - new_vals[:-1]
-    #print("test_diffs: ", test_diffs)
-    #print("new_diff_vals: ", new_diff_vals)
-    print("sum: ", np.sum(np.abs(test_diffs - new_diff_vals)))
+    assert np.sum(np.abs(test_diffs - new_diff_vals)) < 0.1
     return new_vals
 
 
 def start_generation():
     n_data = math.ceil(2 * math.pi * 10 * 100)
     desired_curv = 10  # five extremes in base interval [0, pi]
-    desired_min_acc = 4
-    generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc)
+    desired_min_acc = 0.5
+    desired_med_acc = 0.5
+    min_val = 5
+    max_val = 100
+    generate_sine_fcts_for_one_dimension(
+        n_data, desired_curv, desired_min_acc, desired_med_acc,
+        min_val, max_val)
 
 
 if __name__ == '__main__':
