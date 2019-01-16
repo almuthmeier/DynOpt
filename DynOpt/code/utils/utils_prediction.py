@@ -12,9 +12,9 @@ Created on Jan 18, 2018
 import math
 import warnings
 
-
 import numpy as np
 from predictors.myautomatictcn import MyAutoTCN
+from utils.my_scaler import MyMinMaxScaler
 
 
 def make_multidim_samples_from_series(train_data, n_time_steps):
@@ -525,8 +525,7 @@ def get_n_neurons(n_neurons_type, dim):
 
 
 def fit_scaler(data_for_fitting):
-    from code.utils.my_scaler import MyMinMaxScaler
-    scaler = MyMinMaxScaler(feature_range=(-1, 1))
+    scaler = MyMinMaxScaler(feature_range=(0, 1))
     scaler.fit(data_for_fitting)
     return scaler
 
