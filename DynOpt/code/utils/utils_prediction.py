@@ -118,15 +118,16 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                                            tl_learn_rate)
     elif mode == "tcn":
         nhid = 27
-        levels = 5 #6  # 5  # 8  # 4
+        levels = 5  # 6  # 5  # 8  # 4
         in_channels = n_features  # for each dimension one channel
         output_size = n_features  # n_classes
         num_channels = [nhid] * levels  # channel_sizes
         sequence_length = n_time_steps
-        kernel_size = 3 # 2  # 3
+        kernel_size = 3  # 2  # 3
+        lr = 2e-3  # learning rate # TODO
         predictor = MyAutoTCN(in_channels, output_size, num_channels,
                               sequence_length, kernel_size, batch_size,
-                              train_mc_runs, train_dropout, test_dropout,
+                              train_mc_runs, train_dropout, test_dropout, lr,
                               init=False, use_uncs=use_uncs)
     else:
         msg = "unknown prediction mode " + mode
@@ -356,7 +357,7 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     if do_training:
         print("train_CNN", flush=True)
         predictor.train(n_epochs, sess, train_in_data, train_out_data,
-                        n_train, log_interval, file_writer, True)
+                        n_train, log_interval, file_writer, shuffle)
 
     #========================
     # Prediction

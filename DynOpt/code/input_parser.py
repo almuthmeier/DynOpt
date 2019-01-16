@@ -76,6 +76,7 @@ def define_parser_arguments():
     parser.add_argument("-timesteps", type=int)
     parser.add_argument("-addnoisytraindata", type=str)
     parser.add_argument("-traininterval", type=int)
+    parser.add_argument("-nrequiredtraindata", type=int)
     parser.add_argument("-useuncs", type=str)
     parser.add_argument("-trainmcruns", type=int)
     parser.add_argument("-testmcruns", type=int)
@@ -190,6 +191,7 @@ def initialize_comparator_manually(comparator):
     comparator.timesteps = 50
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 50
+    comparator.nrequiredtraindata = 100
     comparator.useuncs = False
     comparator.trainmcruns = 10 if comparator.useuncs else 0
     comparator.testmcruns = 3 if comparator.useuncs else 0
@@ -227,7 +229,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 42:
+    if n_current_inputs != 43:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
@@ -275,6 +277,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.timesteps = args.timesteps
     comparator.addnoisytraindata = args.addnoisytraindata == 'True'
     comparator.traininterval = args.traininterval
+    comparator.nrequiredtraindata = args.nrequiredtraindata
     comparator.useuncs = args.useuncs == 'True'
     comparator.trainmcruns = args.trainmcruns if comparator.useuncs else 0
     comparator.testmcruns = args.testmcruns if comparator.useuncs else 0

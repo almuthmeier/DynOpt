@@ -70,6 +70,7 @@ class PredictorComparator(object):
         self.timesteps = None  # int
         self.addnoisytraindata = None  # bool
         self.traininterval = None  # int
+        self.nrequiredtraindata = None  # int
         self.useuncs = None  # bool
         self.trainmcruns = None  # int
         self.testmcruns = None  # int
@@ -137,7 +138,7 @@ class PredictorComparator(object):
                             self.n_layers, self.apply_tl, self.n_tllayers,
                             full_tl_model_name, self.tl_learn_rate,
                             self.chgperiodrepetitions, self.addnoisytraindata,
-                            self.traininterval, self.useuncs,
+                            self.traininterval, self.nrequiredtraindata, self.useuncs,
                             self.trainmcruns, self.testmcruns,
                             self.traindropout, self.testdropout)
         elif self.algorithm == "dynpso":

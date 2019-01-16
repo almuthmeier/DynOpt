@@ -35,23 +35,23 @@ class MyAutoTCN():
 
     def __init__(self, in_channels, output_size, num_channels, sequence_length,
                  kernel_size, batch_size, n_train_mc_runs,
-                 train_dropout, test_dropout, init=False, use_uncs=False):
+                 train_dropout, test_dropout, learning_rate, init=False, use_uncs=False):
         '''
         @param default_dropout: is overwritten in train() and evaluate()
         @param use_uncs: True if the loss function for aleatoric uncertainty 
         should be applied and epistemic uncertainties are computed
         '''
-        self.lr = 4e-3  # TODO
+        self.lr = learning_rate
         self.batch_size = batch_size
-        self.noise_scope = "noise_output"
+
         # number of Monte Carlo runs during training (for loss function with
         # automatic noise scaling)
         self.n_train_mc_runs = n_train_mc_runs
         self.train_dropout = train_dropout
         self.test_dropout = test_dropout
-
         self.use_uncs = use_uncs
         n_classes = output_size
+
         # None instead of batch_size
         self.input_pl = tf.placeholder(
             tf.float32, (None, sequence_length, in_channels))
@@ -75,6 +75,7 @@ class MyAutoTCN():
 
         # output layer for observation noise
         if self.use_uncs:
+            self.noise_scope = "noise_output"
             # one neuron because one uncertainty output for one input
             self.n_neurons_aleat_unc = 1
             # for each dimension one uncertainty output

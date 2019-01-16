@@ -27,7 +27,7 @@ class DynamicEA():
                  mu, la, ro, mean, sigma, trechenberg, tau,
                  timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
                  n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps,
-                 add_noisy_train_data, train_interval, use_uncs,
+                 add_noisy_train_data, train_interval, n_required_train_data, use_uncs,
                  train_mc_runs, test_mc_runs, train_dropout, test_dropout):
         '''
         Initialize a DynamicEA object.
@@ -88,9 +88,11 @@ class DynamicEA():
 
         # training/testing specifications
         # number train data with that the network at least is trained
-        self.n_required_train_data = max(100, self.n_time_steps)
+        self.n_required_train_data = max(
+            n_required_train_data, self.n_time_steps)
         self.predict_diffs = True  # predict position differences, TODO insert into PSO
         self.return_seq = False  # return values for all time steps not only the last one
+        # True -> train data are shuffled before training and between epochs
         self.shuffle_train_data = True
         # add noisy data (noise equals standard deviation among change period
         # runs
@@ -119,11 +121,8 @@ class DynamicEA():
         # for EA (variable values)
         # ---------------------------------------------------------------------
         # initialize population (mu candidates) and compute fitness.
-        # np.random.rand has values in [0, 1). Therefore multiply with 100 for
-        # larger values. And make column vector from row vector.
-        # TODO consider lower and upper bound?
-        self.population = self.ea_np_rnd_generator.rand(
-            self.mu, self.dim) * 100
+        self.population = self.ea_np_rnd_generator.uniform(self.lbound,
+                                                           self.ubound, (self.mu, self.dim))
         # 2d numpy array (for each individual one row)
         self.population_fitness = np.array([utils_dynopt.fitness(self.benchmarkfunction,
                                                                  individual, 0,
@@ -263,7 +262,7 @@ class DynamicEA():
                     mean = 0.0
                     for i in noise_steps:
                         if n_immigrants_per_noise > 0:
-                            sigma = i * 0.01  # 0.01, 0.1, 1.0, 10.0
+                            sigma = i * 0.01  # sigma -> 0.01, 0.1, 1.0, 10.0
                             noisy_optimum_positions = np.array(
                                 [gaussian_mutation(pred_optimum_position, mean,
                                                    sigma, self.pred_np_rnd_generator)
@@ -304,7 +303,7 @@ class DynamicEA():
 
         # prevent training with too few train data
         if (overall_n_train_data <= self.n_required_train_data or self.predictor_name == "no") or\
-                (self.predict_diffs and overall_n_train_data <= self.n_required_train_data + 1):  # TODO # to build differences 1 item more is required
+                (self.predict_diffs and overall_n_train_data <= self.n_required_train_data + 1):  # to build differences 1 item more is required
             my_pred_mode = "no"
             train_data = None
             prediction = None
