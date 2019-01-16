@@ -242,7 +242,7 @@ class DynamicEA():
                 if self.epist_unc_per_chgperiod is not [] and self.use_ep_unc:
                     mean = 0.0
                     # convert predictive variance to standard deviation
-                    sigma = np.sqrt(self.epist_unc_per_chgperiod)
+                    sigma = np.sqrt(self.epist_unc_per_chgperiod[-1])
                     noisy_optimum_positions = np.array(
                         [gaussian_mutation(pred_optimum_position, mean,
                                            sigma, self.pred_np_rnd_generator)
@@ -428,7 +428,6 @@ class DynamicEA():
 
         # denotes whether the predictor has been trained or not
         trained_first_time = False
-        #scaler = prepare_scaler(self.lbound, self.ubound, self.dim)
         # number of change periods (new training data) since last training
         n_new_train_data = 0
         # ---------------------------------------------------------------------
