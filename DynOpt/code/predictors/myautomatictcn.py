@@ -18,6 +18,7 @@ Created on Jan 11, 2019
 
 from pathlib import Path
 import time
+import warnings
 
 from sklearn.metrics.pairwise import paired_distances
 from tensorflow.python.ops.distributions.special_math import erfinv
@@ -33,20 +34,23 @@ print('Running' if __name__ == '__main__' else 'Importing', Path(__file__).resol
 class MyAutoTCN():
 
     def __init__(self, in_channels, output_size, num_channels, sequence_length,
-                 kernel_size, default_dropout, batch_size, init=False, use_aleat_unc=False):
+                 kernel_size, batch_size, n_train_mc_runs,
+                 train_dropout, test_dropout, init=False, use_uncs=False):
         '''
         @param default_dropout: is overwritten in train() and evaluate()
-        @param aleat_unc: True if the loss function for aleatoric uncertainty 
-        should be applied
+        @param use_uncs: True if the loss function for aleatoric uncertainty 
+        should be applied and epistemic uncertainties are computed
         '''
         self.lr = 4e-3  # TODO
         self.batch_size = batch_size
         self.noise_scope = "noise_output"
         # number of Monte Carlo runs during training (for loss function with
         # automatic noise scaling)
-        self.n_train_mc_runs = 30
+        self.n_train_mc_runs = n_train_mc_runs
+        self.train_dropout = train_dropout
+        self.test_dropout = test_dropout
 
-        self.use_aleat_unc = use_aleat_unc
+        self.use_uncs = use_uncs
         n_classes = output_size
         # None instead of batch_size
         self.input_pl = tf.placeholder(
@@ -55,7 +59,7 @@ class MyAutoTCN():
         self.output_pl = tf.placeholder(
             tf.float32, (None, n_classes))
         # default value for dropout (is for testing/training)
-        self.dropout_pl = tf.placeholder_with_default(default_dropout, ())
+        self.dropout_pl = tf.placeholder_with_default(self.train_dropout, ())
 
         tcn = TemporalConvNet(input_layer=self.input_pl, num_channels=num_channels, sequence_length=sequence_length,
                               kernel_size=kernel_size, dropout=self.dropout_pl, init=init)
@@ -70,7 +74,7 @@ class MyAutoTCN():
         self.pred_loss = prediction_mse
 
         # output layer for observation noise
-        if self.use_aleat_unc:
+        if self.use_uncs:
             # one neuron because one uncertainty output for one input
             self.n_neurons_aleat_unc = 1
             # for each dimension one uncertainty output
@@ -109,7 +113,15 @@ class MyAutoTCN():
             t3 = tf.maximum(-t3, 0)
 
             self.noise_loss = 2 * t1 + t2 + 2 * t3
-            #self.noise_loss = prediction_mse
+
+            # optimization operation for noise layer
+            noise_optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
+            # variables of noise layer
+            noise_layer_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
+                                                 scope=self.noise_scope)
+            # update step of noise layer (trains only that layer)
+            self.noise_update_step = noise_optimizer.minimize(
+                self.noise_loss, var_list=noise_layer_vars)
         else:
             self.noise_out_layer = []
             self.pred_loss = prediction_mse
@@ -122,15 +134,6 @@ class MyAutoTCN():
         pred_optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
         # update steps for prediction layer (trains all layers)
         self.pred_update_step = pred_optimizer.minimize(self.pred_loss)
-
-        # optimization operation for noise layer
-        noise_optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
-        # variables of noise layer
-        noise_layer_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
-                                             scope=self.noise_scope)
-        # update step of noise layer (trains only that layer)
-        self.noise_update_step = noise_optimizer.minimize(
-            self.noise_loss, var_list=noise_layer_vars)
 
     def index_generator(self, n_train):
         all_indices = np.arange(n_train)
@@ -153,31 +156,32 @@ class MyAutoTCN():
 
             yield batch_idx + 1, all_indices[start_ind:end_ind]
 
+    def shuffle_data(self, X_train, Y_train, n_train):
+        # generate and shuffle indices to shuffle input and output data
+        # in same order
+        idx = np.arange(n_train)
+        np.random.shuffle(idx)
+        X_train = X_train[idx]
+        Y_train = Y_train[idx]
+        return X_train, Y_train
+
     def train(self, n_epochs, sess, X_train, Y_train, n_train, log_interval,
-              train_writer, dropout, shuffle_between_epochs):
+              train_writer, shuffle_between_epochs):
         # train output layer
         for ep in range(1, n_epochs + 1):
             if shuffle_between_epochs:
-                # generate and shuffle indices to shuffle input and output data
-                # in same order
-                idx = np.arange(n_train)
-                np.random.shuffle(idx)
-                X_train = X_train[idx]
-                Y_train = Y_train[idx]
-
+                X_train, Y_train = self.shuffle_data(X_train, Y_train, n_train)
             self.train_prediction(ep, sess, X_train, Y_train,
-                                  n_train, log_interval, train_writer, dropout)
-        # train noise layer
-        for ep in range(1, n_epochs + 1):
-            if shuffle_between_epochs:
-                # generate and shuffle indices to shuffle input and output data
-                # in same order
-                idx = np.arange(n_train)
-                np.random.shuffle(idx)
-                X_train = X_train[idx]
-                Y_train = Y_train[idx]
-            self.train_noise(ep, sess, X_train, Y_train,
-                             n_train, log_interval, train_writer, dropout)
+                                  n_train, log_interval, train_writer, self.train_dropout)
+
+        if self.use_uncs:
+            # train noise layer
+            for ep in range(1, n_epochs + 1):
+                if shuffle_between_epochs:
+                    X_train, Y_train = self.shuffle_data(
+                        X_train, Y_train, n_train)
+                self.train_noise(ep, sess, X_train, Y_train,
+                                 n_train, log_interval, train_writer, self.train_dropout)
 
     def train_prediction(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
         steps = 0
@@ -207,10 +211,11 @@ class MyAutoTCN():
                 total_loss = 0
 
     def train_noise(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
+        if not self.use_uncs:
+            warnings.warn("noise can not be trained since not activated!")
+
         print("\n train noise", flush=True)
-        b = 0
         for batch_idx, indices in self.index_generator(n_train):
-            b += 1
             x = X_train[indices]
             y = Y_train[indices]
 
@@ -271,13 +276,13 @@ class MyAutoTCN():
         mse = np.mean(np.square(total_pred - Y_test))
         print('Test MSE Loss {:5.8f} '.format(mse))
 
-        if not self.use_aleat_unc:
+        if not self.use_uncs:
             total_aleat_unc_pred = None
 
         distances = paired_distances(Y_test, total_pred)
         return total_pred, total_aleat_unc_pred, distances
 
-    def predict(self, sess, X_test, n_test, n_features, dropout):
+    def predict(self, sess, X_test, n_test, n_features):
         '''
         Only prediction, no computation of MSE.
         (That is the difference to the function evaluate().)
@@ -285,10 +290,14 @@ class MyAutoTCN():
         @param X_test: 3d array, format [n_data, n_time_steps, n_features]
         '''
         total_pred = np.zeros((n_test, n_features))
-        if self.n_neurons_aleat_unc > 1:
-            total_aleat_unc_pred = np.zeros((n_test, n_features))
+        if not self.use_uncs:
+            pass
         else:
-            total_aleat_unc_pred = np.zeros(n_test)
+            if self.n_neurons_aleat_unc > 1:
+                total_aleat_unc_pred = np.zeros((n_test, n_features))
+            else:
+                total_aleat_unc_pred = np.zeros(n_test)
+
         for batch_idx, batch in enumerate(range(0, n_test, self.batch_size)):
             start_idx = batch
             end_idx = batch + self.batch_size
@@ -302,19 +311,21 @@ class MyAutoTCN():
 
             p, al_un = sess.run([self.out_layer, self.noise_out_layer], feed_dict={
                 self.input_pl: x,
-                self.dropout_pl: dropout})
+                self.dropout_pl: self.test_dropout})
 
-            if self.n_neurons_aleat_unc <= 1:
+            if self.use_uncs and self.n_neurons_aleat_unc <= 1:
                 al_un = al_un.flatten()
 
             if exclude > 0:
                 total_pred[start_idx:end_idx] = p[:-exclude]
-                total_aleat_unc_pred[start_idx:end_idx] = al_un[:-exclude]
+                if self.use_uncs:
+                    total_aleat_unc_pred[start_idx:end_idx] = al_un[:-exclude]
             else:
                 total_pred[start_idx:end_idx] = p
-                total_aleat_unc_pred[start_idx:end_idx] = al_un
+                if self.use_uncs:
+                    total_aleat_unc_pred[start_idx:end_idx] = al_un
 
-        if not self.use_aleat_unc:
+        if not self.use_uncs:
             total_aleat_unc_pred = None
 
         return total_pred, total_aleat_unc_pred

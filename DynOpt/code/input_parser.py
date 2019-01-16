@@ -77,6 +77,8 @@ def define_parser_arguments():
     parser.add_argument("-addnoisytraindata", type=str)
     parser.add_argument("-traininterval", type=int)
     parser.add_argument("-useuncs", type=str)
+    parser.add_argument("-trainmcruns", type=int)
+    parser.add_argument("-testmcruns", type=int)
 
     # for ANN predictor
     # fixed20 or dyn1.3
@@ -150,7 +152,7 @@ def initialize_comparator_manually(comparator):
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "GECCO_2019/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_tcn_auto/"
+    comparator.outputdirectory = "ersterTest/ea_no/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "GECCO_2019/" + "sphere/"
     comparator.lbound = 0
@@ -184,11 +186,15 @@ def initialize_comparator_manually(comparator):
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense"
-    comparator.predictor = "tcn"
+    comparator.predictor = "no"
     comparator.timesteps = 50
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 50
     comparator.useuncs = False
+    comparator.trainmcruns = 10 if comparator.useuncs else 0
+    comparator.testmcruns = 3 if comparator.useuncs else 0
+    comparator.traindropout = 0.1
+    comparator.testdropout = 0.1 if comparator.useuncs else 0.0
 
     # for ANN predictor
     if (comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or
@@ -221,7 +227,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 40:
+    if n_current_inputs != 42:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
@@ -270,6 +276,10 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.addnoisytraindata = args.addnoisytraindata == 'True'
     comparator.traininterval = args.traininterval
     comparator.useuncs = args.useuncs == 'True'
+    comparator.trainmcruns = args.trainmcruns if comparator.useuncs else 0
+    comparator.testmcruns = args.testmcruns if comparator.useuncs else 0
+    comparator.traindropout = 0.1  # TODO
+    comparator.testdropout = 0.1 if comparator.useuncs else 0.0  # TODO
 
     # for ANN predictor
     if (args.predictor == "rnn" or args.predictor == "tfrnn" or

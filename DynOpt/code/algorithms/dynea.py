@@ -27,7 +27,8 @@ class DynamicEA():
                  mu, la, ro, mean, sigma, trechenberg, tau,
                  timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
                  n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps,
-                 add_noisy_train_data, train_interval, use_uncs):
+                 add_noisy_train_data, train_interval, use_uncs,
+                 train_mc_runs, test_mc_runs, train_dropout, test_dropout):
         '''
         Initialize a DynamicEA object.
         @param benchmarkfunction: (string)
@@ -72,6 +73,10 @@ class DynamicEA():
         self.batch_size = batchsize
         self.n_layers = n_layers
         self.train_interval = train_interval
+        self.train_mc_runs = train_mc_runs
+        self.test_mc_runs = test_mc_runs
+        self.train_dropout = train_dropout
+        self.test_dropout = test_dropout
 
         # transfer learning
         self.apply_tl = apply_tl  # True if pre-trained model should be used
@@ -82,7 +87,6 @@ class DynamicEA():
         self.tl_learn_rate = tl_learn_rate
 
         # training/testing specifications
-        self.use_all_train_data = True  # use all previous data to train with # TODO delete
         # number train data with that the network at least is trained
         self.n_required_train_data = max(100, self.n_time_steps)
         self.predict_diffs = True  # predict position differences, TODO insert into PSO
@@ -350,7 +354,7 @@ class DynamicEA():
                                                                                                  self.n_time_steps, n_features,
                                                                                                  scaler, predictor, self.return_seq, self.shuffle_train_data,
                                                                                                  do_training, self.best_found_pos_per_chgperiod,
-                                                                                                 self.predict_diffs)
+                                                                                                 self.predict_diffs, self.test_mc_runs)
 
             self.pred_opt_pos_per_chgperiod.append(
                 copy.copy(prediction))
@@ -381,7 +385,8 @@ class DynamicEA():
                                     self.dim, self.batch_size, self.n_neurons,
                                     self.return_seq, self.apply_tl, self.n_layers,
                                     self.n_epochs, self.tl_rnn_type, self.n_tllayers,
-                                    self.with_dense_first, self.tl_learn_rate)
+                                    self.with_dense_first, self.tl_learn_rate, self.use_uncs,
+                                    self.train_mc_runs, self.train_dropout, self.test_dropout)
         sess = None
         if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
                 self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn":

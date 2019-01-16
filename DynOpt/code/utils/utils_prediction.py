@@ -85,7 +85,8 @@ def shuffle_split_output(samples, returnseq, ntimesteps, n_features, shuffle):
 
 def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                     returnseq, apply_tl, n_overall_layers, epochs, rnn_type,
-                    ntllayers, with_dense_first, tl_learn_rate):
+                    ntllayers, with_dense_first, tl_learn_rate, use_uncs,
+                    train_mc_runs, train_dropout, test_dropout):
     '''
     Creates the desired prediction model.
     @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense, tcn
@@ -117,17 +118,16 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                                            tl_learn_rate)
     elif mode == "tcn":
         nhid = 27
-        levels = 8  # 8  # 4
+        levels = 5 #6  # 5  # 8  # 4
         in_channels = n_features  # for each dimension one channel
         output_size = n_features  # n_classes
         num_channels = [nhid] * levels  # channel_sizes
         sequence_length = n_time_steps
-        kernel_size = 3
-        default_dropout = 0.0  # is overwritten in train() and evaluate()
-        use_aleat_unc = True
+        kernel_size = 3 # 2  # 3
         predictor = MyAutoTCN(in_channels, output_size, num_channels,
-                              sequence_length, kernel_size, default_dropout, batch_size,
-                              init=False, use_aleat_unc=use_aleat_unc)
+                              sequence_length, kernel_size, batch_size,
+                              train_mc_runs, train_dropout, test_dropout,
+                              init=False, use_uncs=use_uncs)
     else:
         msg = "unknown prediction mode " + mode
         warnings.warn(msg)
@@ -319,7 +319,7 @@ def predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size,
 def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
                      n_time_steps, n_features, scaler, predictor,
                      shuffle, do_training,
-                     best_found_pos_per_chgperiod, predict_diffs):
+                     best_found_pos_per_chgperiod, predict_diffs, test_mc_runs):
     '''
     @param do_training: False if model should not be trained but should only
     predict the next step for the given data
@@ -327,11 +327,10 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
 
     #========================
     # prepare training data
-    print("new_train_data: ", new_train_data.shape, flush=True)
+
     # make supervised data from series [#samples,#n_time_steps+1,#n_features]
     train_samples = make_multidim_samples_from_series(
         new_train_data, n_time_steps)
-    print("train_samples: ", train_samples.shape, flush=True)
     if noisy_series is not None:
         print("noisy")
         # 4d array [#series, #samples, #n_time_steps+1, #n_features]
@@ -347,12 +346,6 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     returnseq = False
     train_in_data, train_out_data = shuffle_split_output(train_samples, returnseq,
                                                          n_time_steps, n_features, shuffle)
-    print("train_in_data: ", train_in_data.shape, flush=True)
-    print("train_out_data: ", train_out_data.shape, flush=True)
-
-    train_dropout = 0.1
-    eval_dropout = 0.1  # TODO
-    n_mc_runs = 10
     n_train = len(train_in_data)
 
     #========================
@@ -363,7 +356,7 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     if do_training:
         print("train_CNN", flush=True)
         predictor.train(n_epochs, sess, train_in_data, train_out_data,
-                        n_train, log_interval, file_writer, train_dropout, True)
+                        n_train, log_interval, file_writer, True)
 
     #========================
     # Prediction
@@ -372,31 +365,32 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     n_sampl = 1  # should be 1
     reshaped_sample_x = prediction_series.reshape(
         n_sampl, n_time_steps, n_features)
-    if n_mc_runs > 0:
+    if test_mc_runs > 0:
         (pred_var, avg_al_uncs,
          pred_mean, predictions) = evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
                                                                    reshaped_sample_x,
-                                                                   eval_dropout, n_mc_runs,
+                                                                   test_mc_runs,
                                                                    best_found_pos_per_chgperiod,
                                                                    predict_diffs)
         sample_y_hat = pred_mean
+        pred_var = pred_var.flatten()
     else:
         sample_y_hat, aleat_unc = predictor.predict(
-            sess, reshaped_sample_x, n_sampl, n_features, train_dropout)
+            sess, reshaped_sample_x, n_sampl, n_features)
         sample_y_hat = scaler.inverse_transform(sample_y_hat, False)
         if predict_diffs:
             sample_y_hat = np.add(
                 best_found_pos_per_chgperiod[-1], sample_y_hat)
-
+        pred_var = None
     # convert 2d-arrays with format [1, n_dims] to 1d arrays with [n_dims]
     next_optimum = sample_y_hat.flatten()
-    pred_var = pred_var.flatten()
+
     #========================
     return next_optimum, pred_var
 
 
 def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
-                                    in_data, eval_dropout, n_mc_runs,
+                                    in_data, test_mc_runs,
                                     best_found_pos_per_chgperiod, pred_diffs):
     '''
     Implements "loss type" proposed by S. Oehmcke (ICANN 2018)
@@ -408,12 +402,11 @@ def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
     # Monte Carlo runs
     predictions = []
     aleat_uncts = []
-    for i in range(n_mc_runs):
+    for i in range(test_mc_runs):
         print("mc run ", i, flush=True)
         # shape of pred: [len(unsh_in_data), dims]
         # shape of aleat_unc: [len(unsh_in_data), dims or 1]
-        (pred, aleat_unc) = evaluate_tcn(sess, predictor,
-                                         in_data, eval_dropout)
+        (pred, aleat_unc) = evaluate_tcn(sess, predictor, in_data)
         predictions.append(pred)
         aleat_uncts.append(aleat_unc)
 
@@ -450,12 +443,12 @@ def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
     return pred_var, avg_al_uncs, pred_mean, predictions
 
 
-def evaluate_tcn(sess, predictor, in_data, eval_dropout):
+def evaluate_tcn(sess, predictor, in_data):
     n_data = len(in_data)
     n_features = in_data.shape[-1]
 
     total_pred, aleat_unc = predictor.predict(
-        sess, in_data, n_data, n_features, eval_dropout)
+        sess, in_data, n_data, n_features)
 
     return total_pred, aleat_unc
 
@@ -463,7 +456,7 @@ def evaluate_tcn(sess, predictor, in_data, eval_dropout):
 def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_epochs, batch_size,
                                   n_time_steps, n_features, scaler, predictor,
                                   returnseq, shuffle, do_training, best_found_pos_per_chgperiod,
-                                  predict_diffs):
+                                  predict_diffs, test_mc_runs):
     '''
     @param mode: the desired predictor
     @param new_train_data: 2d numpy array: contains time series of 
@@ -499,7 +492,8 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
         prediction, ep_unc = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
                                               n_time_steps, n_features, scaler, predictor,
                                               shuffle, do_training,
-                                              best_found_pos_per_chgperiod, predict_diffs)
+                                              best_found_pos_per_chgperiod, predict_diffs,
+                                              test_mc_runs)
 
     # convert predicted difference into position (tcn has already re-scaled the values
     # in the sub-functions)

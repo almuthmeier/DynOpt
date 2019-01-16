@@ -71,6 +71,10 @@ class PredictorComparator(object):
         self.addnoisytraindata = None  # bool
         self.traininterval = None  # int
         self.useuncs = None  # bool
+        self.trainmcruns = None  # int
+        self.testmcruns = None  # int
+        self.traindropout = None  # float
+        self.testdropout = None  # float
 
         # ANN predictor
         self.neuronstype = None  # string
@@ -133,7 +137,9 @@ class PredictorComparator(object):
                             self.n_layers, self.apply_tl, self.n_tllayers,
                             full_tl_model_name, self.tl_learn_rate,
                             self.chgperiodrepetitions, self.addnoisytraindata,
-                            self.traininterval, self.useuncs)
+                            self.traininterval, self.useuncs,
+                            self.trainmcruns, self.testmcruns,
+                            self.traindropout, self.testdropout)
         elif self.algorithm == "dynpso":
             alg = DynamicPSO(self.benchmarkfunction, dimensionality,
                              n_generations, self.experiment_data, self.predictor,
