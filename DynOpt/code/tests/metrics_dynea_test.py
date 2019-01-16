@@ -12,11 +12,30 @@ from matplotlib import colors
 
 import matplotlib.pyplot as plt
 from metrics.metrics_dynea import arr, best_error_before_change,\
-    avg_best_of_generation, rel_conv_speed, normalized_bog, __convergence_speed__
+    avg_best_of_generation, rel_conv_speed, normalized_bog, __convergence_speed__,\
+    rmse
 import numpy as np
 
 
 class Test(unittest.TestCase):
+
+    def test_rmse(self):
+        # one-dimensional
+        true_vals = np.array([1, 2, 4])
+        current_vals = np.array([0, 1, 2])
+        act_rmse = rmse(true_vals, current_vals)
+        exp_rmse = np.sqrt(np.average(np.square(true_vals - current_vals)))
+        # tf_rmse = tf.losses.mean_squared_error(
+        #    labels=true_vals, predictions=current_vals)
+        self.assertEqual(act_rmse, exp_rmse, "act_rmse: " +
+                         str(act_rmse) + " exp_rmse: " + str(exp_rmse))
+        # multi-dimensional
+        true_vals = np.array([[1, 2, 4], [1, 2, 4]])
+        current_vals = np.array([[0, 1, 2], [0, 1, 2]])
+        act_rmse = rmse(true_vals, current_vals)
+        exp_rmse = np.sqrt(np.average(np.square(true_vals - current_vals)))
+        self.assertEqual(act_rmse, exp_rmse, "act_rmse: " +
+                         str(act_rmse) + " exp_rmse: " + str(exp_rmse))
 
     def test_arr(self):
         #======================================================================

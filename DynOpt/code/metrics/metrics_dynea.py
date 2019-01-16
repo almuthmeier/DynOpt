@@ -14,6 +14,7 @@ import numpy as np
 
 
 def rmse(true_vals, current_vals):
+    # https://stackoverflow.com/questions/17197492/root-mean-square-error-in-python/17221808 (16.1.19)
     return np.sqrt(sklearn.metrics.mean_squared_error(true_vals, current_vals))
 
 
