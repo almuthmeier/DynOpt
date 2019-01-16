@@ -68,8 +68,10 @@ def gaussian_mutation(x, mean, sigma, ea_np_rnd_generator):
         mean = np.array([mean] * len(x))
         # convert vector to diagonal matrix
         sigma = np.diag(sigma)
+        noise = ea_np_rnd_generator.multivariate_normal(mean, sigma)
+    else:
+        noise = ea_np_rnd_generator.normal(mean, sigma, len(x))
 
-    noise = ea_np_rnd_generator.normal(mean, sigma, x.size)
     return x + noise
 
 
