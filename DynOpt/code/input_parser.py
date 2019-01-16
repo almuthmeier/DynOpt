@@ -76,6 +76,7 @@ def define_parser_arguments():
     parser.add_argument("-timesteps", type=int)
     parser.add_argument("-addnoisytraindata", type=str)
     parser.add_argument("-traininterval", type=int)
+    parser.add_argument("-useuncs", type=str)
 
     # for ANN predictor
     # fixed20 or dyn1.3
@@ -187,6 +188,7 @@ def initialize_comparator_manually(comparator):
     comparator.timesteps = 50
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 50
+    comparator.useuncs = False
 
     # for ANN predictor
     if (comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or
@@ -219,7 +221,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 39:
+    if n_current_inputs != 40:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
@@ -267,6 +269,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.timesteps = args.timesteps
     comparator.addnoisytraindata = args.addnoisytraindata == 'True'
     comparator.traininterval = args.traininterval
+    comparator.useuncs = args.useuncs == 'True'
 
     # for ANN predictor
     if (args.predictor == "rnn" or args.predictor == "tfrnn" or

@@ -27,7 +27,7 @@ class DynamicEA():
                  mu, la, ro, mean, sigma, trechenberg, tau,
                  timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
                  n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps,
-                 add_noisy_train_data, train_interval):
+                 add_noisy_train_data, train_interval, use_uncs):
         '''
         Initialize a DynamicEA object.
         @param benchmarkfunction: (string)
@@ -92,7 +92,7 @@ class DynamicEA():
         # runs
         self.add_noisy_train_data = add_noisy_train_data
         self.n_noisy_series = 20  # TODO
-        self.use_ep_unc = True
+        self.use_uncs = use_uncs  # True if uncertainties should be trained, predicted and used
         # ---------------------------------------------------------------------
         # for EA (fixed values)
         # ---------------------------------------------------------------------
@@ -239,7 +239,7 @@ class DynamicEA():
                 # immigrants randomly in the area around the optimum (in case
                 # of TCN the area is bound to the predicitve variance)
                 two_third = math.ceil((n_remaining_immigrants / 3) * 2)
-                if self.epist_unc_per_chgperiod is not [] and self.use_ep_unc:
+                if self.epist_unc_per_chgperiod is not [] and self.use_uncs:
                     mean = 0.0
                     # convert predictive variance to standard deviation
                     sigma = np.sqrt(self.epist_unc_per_chgperiod[-1])
@@ -356,7 +356,7 @@ class DynamicEA():
                 copy.copy(prediction))
             self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
                 self.benchmarkfunction, prediction, gen_idx, self.experiment_data))
-            if ep_unc is not None and self.use_ep_unc:
+            if ep_unc is not None and self.use_uncs:
                 self.epist_unc_per_chgperiod.append(copy.copy(ep_unc))
             self.train_error_per_chgperiod.append(train_error)
             self.train_error_for_epochs_per_chgperiod.append(
