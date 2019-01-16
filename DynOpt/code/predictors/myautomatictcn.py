@@ -153,13 +153,29 @@ class MyAutoTCN():
 
             yield batch_idx + 1, all_indices[start_ind:end_ind]
 
-    def train(self, n_epochs, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
+    def train(self, n_epochs, sess, X_train, Y_train, n_train, log_interval,
+              train_writer, dropout, shuffle_between_epochs):
         # train output layer
         for ep in range(1, n_epochs + 1):
+            if shuffle_between_epochs:
+                # generate and shuffle indices to shuffle input and output data
+                # in same order
+                idx = np.arange(n_train)
+                np.random.shuffle(idx)
+                X_train = X_train[idx]
+                Y_train = Y_train[idx]
+
             self.train_prediction(ep, sess, X_train, Y_train,
                                   n_train, log_interval, train_writer, dropout)
         # train noise layer
         for ep in range(1, n_epochs + 1):
+            if shuffle_between_epochs:
+                # generate and shuffle indices to shuffle input and output data
+                # in same order
+                idx = np.arange(n_train)
+                np.random.shuffle(idx)
+                X_train = X_train[idx]
+                Y_train = Y_train[idx]
             self.train_noise(ep, sess, X_train, Y_train,
                              n_train, log_interval, train_writer, dropout)
 
