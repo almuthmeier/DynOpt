@@ -12,7 +12,6 @@ Created on Jan 18, 2018
 import math
 import warnings
 
-from sklearn.preprocessing.data import MinMaxScaler
 
 import numpy as np
 from predictors.myautomatictcn import MyAutoTCN
@@ -203,7 +202,7 @@ def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler
         prediction = predictions.flatten()
 
     # invert scaling (1d array would result in DeprecatedWarning -> pass 2d)
-    converted = scaler.inverse_transform(np.array([prediction]))
+    converted = scaler.inverse_transform(np.array([prediction]), False)
     return converted.flatten()
 
 
@@ -259,7 +258,7 @@ def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_
         reshaped_sample_x, batch_size=batch_size)
 
     # invert scaling
-    next_optimum = scaler.inverse_transform(sample_y_hat).flatten()
+    next_optimum = scaler.inverse_transform(sample_y_hat, False).flatten()
     return next_optimum
 
 
@@ -313,7 +312,7 @@ def predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size,
         sample_y_hat = sample_y_hat[:, -1, :]
 
     # invert scaling
-    next_optimum = scaler.inverse_transform(sample_y_hat).flatten()
+    next_optimum = scaler.inverse_transform(sample_y_hat, False).flatten()
     return next_optimum, train_error, train_err_per_epoch
 
 
@@ -364,7 +363,7 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     if do_training:
         print("train_CNN", flush=True)
         predictor.train(n_epochs, sess, train_in_data, train_out_data,
-                        n_train, log_interval, file_writer, train_dropout)
+                        n_train, log_interval, file_writer, train_dropout, True)
 
     #========================
     # Prediction
@@ -384,7 +383,7 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     else:
         sample_y_hat, aleat_unc = predictor.predict(
             sess, reshaped_sample_x, n_sampl, n_features, train_dropout)
-        sample_y_hat = scaler.inverse_transform(sample_y_hat)
+        sample_y_hat = scaler.inverse_transform(sample_y_hat, False)
         if predict_diffs:
             sample_y_hat = np.add(
                 best_found_pos_per_chgperiod[-1], sample_y_hat)
@@ -420,13 +419,14 @@ def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
 
     predictions = np.array(predictions)
     aleat_uncts = np.array(aleat_uncts)
+    assert (aleat_uncts >= 0).all()
 
     # =====================
     # re-scale data, transform differences to absolute positions
     for i in range(len(predictions)):
         # format [n_mc_runs, n_data, dims]
-        predictions[i] = scaler.inverse_transform(predictions[i])
-        aleat_uncts[i] = scaler.inverse_transform(aleat_uncts[i])
+        predictions[i] = scaler.inverse_transform(predictions[i], False)
+        aleat_uncts[i] = scaler.inverse_transform(aleat_uncts[i], True)
     # redo differences
     if pred_diffs:
         predictions = np.add(best_found_pos_per_chgperiod[-1], predictions)
@@ -445,6 +445,8 @@ def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
         avg_al_uncs = np.transpose(avg_al_uncs)
     pred_var = avg_al_uncs + avg_squared_preds - np.square(pred_mean)
 
+    assert (avg_al_uncs >= 0).all()
+    assert (pred_var >= 0).all()
     return pred_var, avg_al_uncs, pred_mean, predictions
 
 
@@ -523,40 +525,9 @@ def get_n_neurons(n_neurons_type, dim):
 
 
 def fit_scaler(data_for_fitting):
-    scaler = MinMaxScaler(feature_range=(-1, 1))
+    from code.utils.my_scaler import MyMinMaxScaler
+    scaler = MyMinMaxScaler(feature_range=(-1, 1))
     scaler.fit(data_for_fitting)
-    return scaler
-
-
-def prepare_scaler(min_input_value, max_input_value, dim):
-    '''
-    Instantiates scaler that scales input data into range [-1,1] whereby the
-    minimum and maximum input values have to be specified.
-
-    To scale data only the transform() method has to be called (otherwise 
-    different scaling behavior would be obtained for different data).
-    '''
-    warnings.warn("do not use anymore! Better: fit scaler directly to data")
-    lbound = min_input_value
-    ubound = max_input_value
-    # if predict_diffs:
-    #    ubound = lbound
-    #    lbound = -lbound
-    print("TODO: prepare_scaler!!!!!")
-
-    # fit scaler to desired range [-1,1]
-    scaler = MinMaxScaler(feature_range=(-1, 1))
-    if type(min_input_value) is not float or type(min_input_value) is not int:
-        # inputs are already arrays containing the min value per dimension (or
-        # max value, respectively)
-        min_max_per_feature = np.array([lbound, ubound])
-    else:
-        # first row contains minimum value per feature, second row max values
-        min_max_per_feature = np.array(
-            [[lbound] * dim, [ubound] * dim])
-    scaler.fit(min_max_per_feature)
-    print("data_min_: ", scaler.data_min_, flush=True)
-    print("data_max_: ", scaler.data_max_, flush=True)
     return scaler
 
 

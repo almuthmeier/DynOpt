@@ -9,8 +9,7 @@ Created on Dec 13, 2017
 
 import copy
 
-from sklearn.preprocessing.data import MinMaxScaler
-
+from code.utils.my_scaler import MyMinMaxScaler
 import numpy as np
 from utils import utils_dynopt
 from utils.utils_dynopt import environment_changed, replace_worst_individuals
@@ -208,7 +207,7 @@ class DynamicPSO():
             self.predictor_name, self.n_time_steps, n_features, self.batch_size, self.n_neurons)
         # denotes whether the predictor has been trained or not
         trained_first_time = False
-        scaler = MinMaxScaler(feature_range=(-1, 1))
+        scaler = MyMinMaxScaler(feature_range=(-1, 1))
 
         # ---------------------------------------------------------------------
         # local variables for PSO
