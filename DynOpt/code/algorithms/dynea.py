@@ -22,7 +22,7 @@ from utils.utils_transferlearning import get_variables_and_names
 
 class DynamicEA():
     def __init__(self, benchmarkfunction, dim,
-                 n_generations, experiment_data, predictor_name,
+                 n_generations, experiment_data, predictor_name, lbound, ubound,
                  ea_np_rnd_generator, pred_np_rnd_generator,
                  mu, la, ro, mean, sigma, trechenberg, tau,
                  timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
@@ -61,16 +61,12 @@ class DynamicEA():
         self.experiment_data = experiment_data
         self.predictor_name = predictor_name
 
-        self.lbound = 100  # assumed that the input data follow this assumption
-        self.ubound = 200  # TODO(exe) , TODO insert into dynPSO
+        self.lbound = lbound  # 100  # assumed that the input data follow this assumption
+        self.ubound = ubound  # 200  # TODO(exe) , TODO insert into dynPSO
         # ---------------------------------------------------------------------
         # for the predictor
         # ---------------------------------------------------------------------
         self.n_time_steps = timesteps
-        # number steps used to predict before the number of training data is
-        # equal or larger than self.n_time_steps
-        # TODO  set at another location? (value depends on n_time_steps)
-        self.preliminary_n_steps = 5
         self.n_neurons = n_neurons
         self.n_epochs = epochs
         self.batch_size = batchsize
@@ -86,7 +82,9 @@ class DynamicEA():
         self.tl_learn_rate = tl_learn_rate
 
         # training/testing specifications
-        self.use_all_train_data = True  # use all previous data to train with
+        self.use_all_train_data = True  # use all previous data to train with # TODO delete
+        # number train data with that the network at least is trained
+        self.n_required_train_data = max(100, self.n_time_steps)
         self.predict_diffs = True  # predict position differences, TODO insert into PSO
         self.return_seq = False  # return values for all time steps not only the last one
         self.shuffle_train_data = True
@@ -131,6 +129,8 @@ class DynamicEA():
         # ---------------------------------------------------------------------
         # for EA (prediction and evaluation)
         # ---------------------------------------------------------------------
+        # number of change periods (new training data) since last training
+        self.n_new_train_data = 0
         # number of changes detected by the EA
         self.detected_n_changes = 0
         # for each detected change the corresponding generation numbers
@@ -289,22 +289,18 @@ class DynamicEA():
         self.population_fitness = np.array([utils_dynopt.fitness(self.benchmarkfunction, individual, curr_gen,  self.experiment_data)
                                             for individual in self.population]).reshape(-1, 1)
 
-    def prepare_data_train_and_predict(self, sess, gen_idx, trained_first_time,
-                                       n_features, predictor, n_new_train_data):
+    def prepare_data_train_and_predict(self, sess, gen_idx,
+                                       n_features, predictor):
         '''
         TODO insert this function into dynpso
         '''
 
+        # TODO rename: n_finished_chgps
         overall_n_train_data = len(self.best_found_pos_per_chgperiod)
-        # use less time steps when not enough data collected until now
-        #n_steps_to_use = self.n_time_steps if overall_n_train_data > self.n_time_steps else self.preliminary_n_steps
-        # fixed number of time steps
-        n_steps_to_use = self.n_time_steps
 
         # prevent training with too few train data
-        if (overall_n_train_data <= n_steps_to_use or self.predictor_name == "no") or\
-                (self.predict_diffs and overall_n_train_data <= n_steps_to_use + 1) or\
-                (overall_n_train_data < 5):  # TODO # to build differences 1 item more is required
+        if (overall_n_train_data <= self.n_required_train_data or self.predictor_name == "no") or\
+                (self.predict_diffs and overall_n_train_data <= self.n_required_train_data + 1):  # TODO # to build differences 1 item more is required
             my_pred_mode = "no"
             train_data = None
             prediction = None
@@ -341,38 +337,17 @@ class DynamicEA():
             else:
                 noisy_series = None
 
-            # choose training data
-            if not trained_first_time or self.use_all_train_data:
-                # use all found optimum positions (if it's the first time of
-                # training; or if desired)
-                train_data = transf_best_found_pos_per_chgperiod
-                if not trained_first_time:
-                    do_training = True
-                else:
-                    do_training = n_new_train_data % self.train_interval == 0
-
-                # reset variables
-                trained_first_time = True
-            else:
-                # append the last new train data (one) and in addition
-                # n_steps_to_use already evaluated data in order to create a
-                # whole time series of n_steps_to_use together with the new
-                # data. The oldest data is appended first, then a newer
-                # one and so on.
-                train_data = []
-                for step_idx in range(n_steps_to_use + 1, 0, -1):
-                    train_data.append(
-                        transf_best_found_pos_per_chgperiod[-step_idx])
-                train_data = np.array(train_data)
-                # train the model only when train_interval new data are
-                # available
-                do_training = n_new_train_data % self.train_interval == 0
+            # train data
+            train_data = transf_best_found_pos_per_chgperiod[-self.n_required_train_data:]
+            train_data = np.array(train_data)
+            # train the model only when train_interval new data are available
+            do_training = self.n_new_train_data >= self.train_interval
             if do_training:
-                n_new_train_data = 0
+                self.n_new_train_data = 0
             # predict next optimum position or difference (and re-scale value)
             prediction, train_error, train_err_per_epoch, ep_unc = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
                                                                                                  self.n_epochs, self.batch_size,
-                                                                                                 n_steps_to_use, n_features,
+                                                                                                 self.n_time_steps, n_features,
                                                                                                  scaler, predictor, self.return_seq, self.shuffle_train_data,
                                                                                                  do_training, self.best_found_pos_per_chgperiod,
                                                                                                  self.predict_diffs)
@@ -386,7 +361,7 @@ class DynamicEA():
             self.train_error_per_chgperiod.append(train_error)
             self.train_error_for_epochs_per_chgperiod.append(
                 train_err_per_epoch)
-        return my_pred_mode, trained_first_time, n_new_train_data
+        return my_pred_mode
 
 
 # =============================================================================
@@ -426,10 +401,6 @@ class DynamicEA():
                 # overwrite initial values with pre-trained weights/biases
                 saver.restore(sess, self.tl_model_path)
 
-        # denotes whether the predictor has been trained or not
-        trained_first_time = False
-        # number of change periods (new training data) since last training
-        n_new_train_data = 0
         # ---------------------------------------------------------------------
         # local variables for EA
         # ---------------------------------------------------------------------
@@ -481,7 +452,7 @@ class DynamicEA():
                 # count change
                 self.detected_n_changes += 1
                 # count new train data
-                n_new_train_data += 1
+                self.n_new_train_data += 1
                 print("(chg/gen)-(" + str(self.detected_n_changes) +
                       "/" + str(i) + ") ", end="", flush=True)
                 # store best found solution during change period as training data for predictor
@@ -493,8 +464,8 @@ class DynamicEA():
                     copy.copy(self.best_found_fit_per_gen[i - 1]))
 
                 # prepare data and predict optimum
-                my_pred_mode, trained_first_time, n_new_train_data = self.prepare_data_train_and_predict(sess, i, trained_first_time,
-                                                                                                         self.dim, predictor, n_new_train_data)
+                my_pred_mode = self.prepare_data_train_and_predict(sess, i,
+                                                                   self.dim, predictor)
 
                 # adapt population to environment change
                 self.adapt_population(i, my_pred_mode)

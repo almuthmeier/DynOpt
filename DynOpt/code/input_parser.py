@@ -142,20 +142,22 @@ def initialize_comparator_manually(comparator):
     comparator.algorithm = "dynea"
     comparator.repetitions = 1
     comparator.chgperiodrepetitions = 1
-    comparator.chgperiods = 100
+    comparator.chgperiods = 200
     comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "GECCO_2019/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_tcn/"
+    comparator.outputdirectory = "ersterTest/ea_tcn_auto/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "GECCO_2019/" + "sphere/"
+    comparator.lbound = 0
+    comparator.ubound = 100
 
     # run only some experiments of all for the benchmark problem
-    # ["linear", "sine", "circle"])
-    comparator.poschgtypes = np.array(["sine", "mixture"])
+    # ["linear", "sine", "circle", "mixture"])
+    comparator.poschgtypes = np.array(["sinefreq"])
     comparator.fitchgtypes = np.array(["none"])
     comparator.dims = np.array([2])
     comparator.noises = np.array([0.0])
@@ -184,7 +186,7 @@ def initialize_comparator_manually(comparator):
     comparator.predictor = "tcn"
     comparator.timesteps = 50
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
-    comparator.traininterval = 10
+    comparator.traininterval = 50
 
     # for ANN predictor
     if (comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or
@@ -192,8 +194,8 @@ def initialize_comparator_manually(comparator):
             comparator.predictor == "tcn"):
         # (not everything is necessary for every predictor)
         comparator.neuronstype = "fixed20"
-        comparator.epochs = 80
-        comparator.batchsize = 8
+        comparator.epochs = 1
+        comparator.batchsize = 32
         comparator.n_layers = 1
         # apply transfer learning only for tftlrnn
         comparator.apply_tl = comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense"
@@ -232,6 +234,8 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.benchmarkfunctionfolderpath = args.benchmarkfunctionfolderpath
     comparator.outputdirectory = args.outputdirectory
     comparator.outputdirectorypath = args.outputdirectorypath
+    comparator.lbound = None  # TODO # fixed or dependent from benchmark?
+    comparator.ubound = None  # TODO
 
     # run only some experiments of all for the benchark problem
     comparator.poschgtypes = args.poschgtypes

@@ -39,6 +39,8 @@ class PredictorComparator(object):
         self.benchmarkfunctionfolderpath = None  # string
         self.outputdirectory = None  # string
         self.outputdirectorypath = None  # string
+        self.lbound = None  # int
+        self.ubound = None  # int
 
         # run only some experiments of all for the benchmark problem
         self.poschgtypes = None  # str
@@ -122,6 +124,7 @@ class PredictorComparator(object):
         if self.algorithm == "dynea":
             alg = DynamicEA(self.benchmarkfunction, dimensionality,
                             n_generations, self.experiment_data, self.predictor,
+                            self.lbound, self.ubound,
                             alg_np_rnd_generator, pred_np_rnd_generator,
                             self.mu, self.la, self.ro, self.mean, self.sigma,
                             self.trechenberg, self.tau, self.timesteps,
