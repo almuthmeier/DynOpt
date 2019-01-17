@@ -237,7 +237,7 @@ class MyAutoTCN():
                                              self.preds_pl: preds,
                                              self.al_uncs_pl: al_uncs})
 
-    def evaluate(self, sess, X_test, Y_test, n_test, dropout):
+    def evaluate(self, sess, X_test, Y_test, n_test):
 
         total_pred = np.zeros(Y_test.shape)
         if self.n_neurons_aleat_unc > 1:
@@ -260,7 +260,7 @@ class MyAutoTCN():
 
             p, al_un, l = sess.run([self.out_layer, self.noise_out_layer, self.pred_loss], feed_dict={
                 self.input_pl: x, self.output_pl: y,
-                self.dropout_pl: dropout})
+                self.dropout_pl: self.test_dropout})
 
             if self.n_neurons_aleat_unc <= 1:
                 al_un = al_un.flatten()
