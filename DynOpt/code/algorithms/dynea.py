@@ -301,6 +301,7 @@ class DynamicEA():
         '''
 
         n_past_chgps = len(self.best_found_pos_per_chgperiod)
+        # number of train data that can be produced from the last chg. periods
         overall_n_train_data = calculate_n_train_samples(
             n_past_chgps, self.predict_diffs, self.n_time_steps)
 
@@ -373,13 +374,6 @@ class DynamicEA():
 # =============================================================================
 
     def optimize(self):
-        #n_overall_layers = 2
-
-        # if apply_tl:
-        #    ntllayers = 1  # TODO
-        # else:
-        #    ntllayers = 0
-
         # ---------------------------------------------------------------------
         # local variables for predictor
         # ---------------------------------------------------------------------
