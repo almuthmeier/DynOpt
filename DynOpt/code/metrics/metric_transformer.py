@@ -68,8 +68,10 @@ class MetricTransformer():
 
         # functions that are combined into one file
         # , "tftlrnndense"]
-        preds = ["no", "autoregressive", "tfrnn", "tftlrnn", "tftlrnndense"]
-        preds = ["no", "autoregressive", "tcn"]
+        #preds = ["no", "autoregressive", "tfrnn", "tftlrnn", "tftlrnndense"]
+        #preds = ["no", "autoregressive", "tcn"]
+        algs = ["ea_tcn_auto", "ea_tcn", "ea_autoregressive", "ea_no"]
+
         functions = ["sphere"]  # , "mpbcorr", "rastrigin"]
         algparams = ['ersterTest']  # ['steps_50', 'nonoise']
         poschgs = ['sinefreq']
@@ -85,8 +87,8 @@ class MetricTransformer():
 
         # column names for average metric values (element-wise string
         # concatenation)
-        avg_cols = list(np.core.defchararray.add(preds, ["_avg"] * len(preds)))
-        std_cols = list(np.core.defchararray.add(preds, ["_std"] * len(preds)))
+        avg_cols = list(np.core.defchararray.add(algs, ["_avg"] * len(algs)))
+        std_cols = list(np.core.defchararray.add(algs, ["_std"] * len(algs)))
         header_line = ["function", "algparams", "dim",
                        "poschg"] + avg_cols + std_cols
 
@@ -108,20 +110,20 @@ class MetricTransformer():
                                       poschg if f != "mpbcorr" else ""]
                         avg_values = []
                         std_values = []
-                        for p in preds:
-                            if param == 'nonoise' and p != "tfrnn":
+                        for a in algs:
+                            if param == 'nonoise' and "tfrnn" not in a:
                                 avg_values.append("-")
                                 std_values.append("-")
-                            print("                p: ", p)
+                            print("                a: ", a)
                             if f == "mpbcorr":
                                 v = all_data.loc[(all_data["function"] == f) &
                                                  (all_data["dim"] == d) &
-                                                 (all_data["predictor"] == p) &
+                                                 (all_data["alg"] == a) &
                                                  (all_data["algparams"] == param), metric]
                             elif f == "sphere" or f == "rastrigin":  # no noise available
                                 v = all_data.loc[(all_data["function"] == f) &
                                                  (all_data["dim"] == d) &
-                                                 (all_data["predictor"] == p) &
+                                                 (all_data["alg"] == a) &
                                                  (all_data["poschg"] == poschg) &
                                                  (all_data["algparams"] == param), metric]
 
