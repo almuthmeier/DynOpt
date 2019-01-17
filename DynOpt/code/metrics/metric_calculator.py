@@ -84,6 +84,39 @@ class MetricCalculator():
         else:
             self.n_preds = self.n_chgps - (n_required_train_data + 1)
 
+    def compute_rmses(self, global_opt_per_chgperiod, best_found_per_chgperiod,
+                      pred_opt_per_chgperiod, first_chgp_idx_with_pred):
+        '''
+        Computes three RMSEs:
+            - prediction - truth (-> truepred_rmse)
+            - found - truth (-> ea_rmse)
+            - prediction - found (-> foundpred_rmse)
+
+        Is either for fitness values or for positions (depending on the input).
+        '''
+        # RMSEs (do not compute it when prediction is None (e.g, for "no")
+        n_found = len(best_found_per_chgperiod)
+        relevant_glob_opt_per_chgperiod = global_opt_per_chgperiod[
+            first_chgp_idx_with_pred:n_found]
+        ea_rmse = rmse(relevant_glob_opt_per_chgperiod,
+                       best_found_per_chgperiod[first_chgp_idx_with_pred:])
+        print("ea-rmse: ", ea_rmse)
+        foundpred_rmse = None
+        truepred_rmse = None
+        if not len(pred_opt_per_chgperiod) == 0:
+            # assume that all changes are detected
+            n_predictions = len(pred_opt_per_chgperiod)
+            # compute rmse only for chgperiods where something was predicted
+            assert n_predictions <= n_found, "n_predictions: " + \
+                str(n_predictions) + " n_found:" + str(n_found)
+            foundpred_rmse = rmse(best_found_per_chgperiod[first_chgp_idx_with_pred:],
+                                  pred_opt_per_chgperiod)
+            truepred_rmse = rmse(relevant_glob_opt_per_chgperiod,
+                                 pred_opt_per_chgperiod)
+        print("truepred-rmse: ", truepred_rmse)
+        print("foundpred-rmse: ", foundpred_rmse)
+        return ea_rmse, foundpred_rmse, truepred_rmse
+
     def compute_metrics(self, best_found_fit_per_gen, gens_of_chgperiods,
                         global_opt_fit_per_chgperiod, global_opt_pos_per_chgperiod,
                         pred_opt_pos_per_chgperiod, pred_opt_fit_per_chgperiod,
@@ -104,28 +137,18 @@ class MetricCalculator():
                         self.only_for_preds, first_chgp_idx_with_pred)
         print("arr: ", arr_value)
 
-        # RMSEs (do not compute it when prediction is None (e.g, for "no")
-        n_found = len(best_found_pos_per_chgperiod)
-        relevant_glob_opt_pos_per_chgperiod = global_opt_pos_per_chgperiod[
-            first_chgp_idx_with_pred:n_found]
-        ea_rmse = rmse(relevant_glob_opt_pos_per_chgperiod,
-                       best_found_pos_per_chgperiod[first_chgp_idx_with_pred:])
-        print("ea-rmse: ", ea_rmse)
-        foundpred_rmse = None
-        truepred_rmse = None
-        if not len(pred_opt_pos_per_chgperiod) == 0:
-            # assume that all changes are detected
-            n_predictions = len(pred_opt_pos_per_chgperiod)
-            # compute rmse only for chgperiods where something was predicted
-            assert n_predictions <= n_found, "n_predictions: " + \
-                str(n_predictions) + " n_found:" + str(n_found)
-            foundpred_rmse = rmse(best_found_pos_per_chgperiod[first_chgp_idx_with_pred:],
-                                  pred_opt_pos_per_chgperiod)
-            truepred_rmse = rmse(relevant_glob_opt_pos_per_chgperiod,
-                                 pred_opt_pos_per_chgperiod)
-        print("truepred-rmse: ", truepred_rmse)
-        print("foundpred-rmse: ", foundpred_rmse)
-        return bebc, arr_value, ea_rmse, foundpred_rmse, truepred_rmse
+        # fitness RMSEs
+        fit_ea_rmse, fit_foundpred_rmse, fit_truepred_rmse = self.compute_rmses(
+            global_opt_fit_per_chgperiod, best_found_fit_per_chgperiod,
+            pred_opt_fit_per_chgperiod, first_chgp_idx_with_pred)
+
+        # position RMSEs
+        pos_ea_rmse, pos_foundpred_rmse, pos_truepred_rmse = self.compute_rmses(
+            global_opt_pos_per_chgperiod, best_found_pos_per_chgperiod,
+            pred_opt_pos_per_chgperiod, first_chgp_idx_with_pred)
+
+        return (bebc, arr_value, fit_ea_rmse, fit_foundpred_rmse, fit_truepred_rmse,
+                pos_ea_rmse, pos_foundpred_rmse, pos_truepred_rmse)
 
     def compute_and_save_all_metrics(self):
         '''
@@ -137,7 +160,8 @@ class MetricCalculator():
                         'algparams', 'alg', 'dim', 'chgperiods', 'len_c_p',
                         'ischgperiodrandom', 'veclen', 'peaks', 'noise',
                         'poschg', 'fitchg', 'run', 'bog-for-run', 'bebc', 'rcs', 'arr',
-                        'ea-rmse', 'foundpred-rmse', 'truepred-rmse',
+                        'fit-ea-rmse', 'fit-foundpred-rmse', 'fit-truepred-rmse',
+                        'pos-ea-rmse', 'pos-foundpred-rmse', 'pos-truepred-rmse',
                         'expfilename', 'arrayfilename']
 
         df = pd.DataFrame(columns=column_names)
@@ -235,15 +259,17 @@ class MetricCalculator():
                                 self.n_chgps, self.n_preds)
                             first_gen_idx_with_pred = get_first_generation_idx_with_pred(
                                 self.n_chgps, self.n_preds, gens_of_chgperiods)
-                            bebc, arr_value, ea_rmse, foundpred_rmse, truepred_rmse = self.compute_metrics(best_found_fit_per_gen,
-                                                                                                           gens_of_chgperiods,
-                                                                                                           global_opt_fit_per_chgperiod,
-                                                                                                           global_opt_pos_per_chgperiod,
-                                                                                                           pred_opt_pos_per_chgperiod,
-                                                                                                           pred_opt_fit_per_chgperiod,
-                                                                                                           best_found_pos_per_chgperiod,
-                                                                                                           best_found_fit_per_chgperiod,
-                                                                                                           first_chgp_idx_with_pred)
+                            (bebc, arr_value,
+                             fit_ea_rmse, fit_foundpred_rmse, fit_truepred_rmse,
+                             pos_ea_rmse, pos_foundpred_rmse, pos_truepred_rmse) = self.compute_metrics(best_found_fit_per_gen,
+                                                                                                        gens_of_chgperiods,
+                                                                                                        global_opt_fit_per_chgperiod,
+                                                                                                        global_opt_pos_per_chgperiod,
+                                                                                                        pred_opt_pos_per_chgperiod,
+                                                                                                        pred_opt_fit_per_chgperiod,
+                                                                                                        best_found_pos_per_chgperiod,
+                                                                                                        best_found_fit_per_chgperiod,
+                                                                                                        first_chgp_idx_with_pred)
                             # averaged bog for this run (not the average bog as
                             # defined) (should not be used other than as average
                             # over all runs)
@@ -259,7 +285,8 @@ class MetricCalculator():
                                     'veclen': veclen, 'peaks': peaks, 'noise': noise,
                                     'poschg': poschg, 'fitchg': fitchg, 'run': run,
                                     'bog-for-run': bog_for_run, 'bebc': bebc, 'rcs': None, 'arr': arr_value,
-                                    'ea-rmse': ea_rmse, 'foundpred-rmse': foundpred_rmse, 'truepred-rmse': truepred_rmse}
+                                    'fit-ea-rmse': fit_ea_rmse, 'fit-foundpred-rmse': fit_foundpred_rmse, 'fit-truepred-rmse': fit_truepred_rmse,
+                                    'pos-ea-rmse': pos_ea_rmse, 'pos-foundpred-rmse': pos_foundpred_rmse, 'pos-truepred-rmse': pos_truepred_rmse}
                             df.at[len(df)] = data
                             print("len: ", len(df), flush=True)
                             print(df.columns, flush=True)
