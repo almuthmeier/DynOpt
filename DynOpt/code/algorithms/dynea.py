@@ -10,6 +10,8 @@ import copy
 import math
 import warnings
 
+from code.utils.utils_prediction import calculate_n_train_samples,\
+    calculate_n_required_chgps_from_n_train_samples
 import numpy as np
 from utils import utils_dynopt
 from utils.utils_dynopt import environment_changed
@@ -298,12 +300,12 @@ class DynamicEA():
         TODO insert this function into dynpso
         '''
 
-        # TODO rename: n_finished_chgps
-        overall_n_train_data = len(self.best_found_pos_per_chgperiod)
+        n_past_chgps = len(self.best_found_pos_per_chgperiod)
+        overall_n_train_data = calculate_n_train_samples(
+            n_past_chgps, self.predict_diffs, self.n_time_steps)
 
         # prevent training with too few train data
-        if (overall_n_train_data <= self.n_required_train_data or self.predictor_name == "no") or\
-                (self.predict_diffs and overall_n_train_data <= self.n_required_train_data + 1):  # to build differences 1 item more is required
+        if (overall_n_train_data < self.n_required_train_data or self.predictor_name == "no"):
             my_pred_mode = "no"
             train_data = None
             prediction = None
@@ -311,17 +313,20 @@ class DynamicEA():
         else:
             my_pred_mode = self.predictor_name
 
+            # number of required change periods (to construct training data)
+            n_required_chgps = calculate_n_required_chgps_from_n_train_samples(
+                self.n_required_train_data, self.predict_diffs, self.n_time_steps)
+            best_found_vals_per_chgperiod = self.best_found_pos_per_chgperiod[-n_required_chgps:]
+
             # transform absolute values to differences
             if self.predict_diffs:
                 best_found_vals_per_chgperiod = np.subtract(
-                    self.best_found_pos_per_chgperiod[1:], self.best_found_pos_per_chgperiod[:-1])
-            else:
-                best_found_vals_per_chgperiod = self.best_found_pos_per_chgperiod
+                    best_found_vals_per_chgperiod[1:], best_found_vals_per_chgperiod[:-1])
 
             # scale data (the data are re-scaled directly after the
             # prediction in this iteration)
             scaler = fit_scaler(best_found_vals_per_chgperiod)
-            transf_best_found_pos_per_chgperiod = scaler.transform(
+            train_data = scaler.transform(
                 copy.copy(best_found_vals_per_chgperiod))
 
             # add noisy training data in order to make network more robust and
@@ -341,7 +346,6 @@ class DynamicEA():
                 noisy_series = None
 
             # train data
-            train_data = transf_best_found_pos_per_chgperiod[-self.n_required_train_data:]
             train_data = np.array(train_data)
             # train the model only when train_interval new data are available
             do_training = self.n_new_train_data >= self.train_interval

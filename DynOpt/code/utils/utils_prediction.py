@@ -124,7 +124,7 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
         num_channels = [nhid] * levels  # channel_sizes
         sequence_length = n_time_steps
         kernel_size = 3  # 2  # 3
-        lr = 2e-3  # learning rate # TODO
+        lr = 2e-4  # learning rate # TODO
         predictor = MyAutoTCN(in_channels, output_size, num_channels,
                               sequence_length, kernel_size, batch_size,
                               train_mc_runs, train_dropout, test_dropout, lr,
@@ -348,7 +348,6 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     train_in_data, train_out_data = shuffle_split_output(train_samples, returnseq,
                                                          n_time_steps, n_features, shuffle)
     n_train = len(train_in_data)
-
     #========================
     # Training
     import tensorflow as tf
@@ -572,3 +571,38 @@ def get_first_generation_idx_with_pred(overall_n_chgperiods, n_preds,
 
     # first generation of first change period with prediction
     return gens_of_chgperiods[first_chpg_idx][0]
+
+
+def calculate_n_train_samples(n_past_chgps, pred_diffs, n_time_steps):
+    '''
+    Calculates the number of training samples (input&output) that could be
+    produced from the finished change periods.
+    Inverse to calculate_n_required_chgps_from_n_train_samples()
+
+    @param n_past_chgps: number of change periods for that the EA already has
+    found a solution.
+    @param pred_diffs: True if not absolute positions but differences are predicted
+    @param n_time_steps: number of steps that are used to predict the next
+    @return scalar
+    '''
+    if pred_diffs:
+        return n_past_chgps - 1 - n_time_steps
+    else:
+        return n_past_chgps - n_time_steps
+
+
+def calculate_n_required_chgps_from_n_train_samples(n_train_samples, pred_diffs, n_time_steps):
+    '''
+    Calculates the number of change periods required to produce the desired 
+    number of training samples (input&output). 
+    Inverse to calculate_n_train_samples()
+
+    @param n_train_samples: required number of training samples
+    @param pred_diffs: True if not absolute positions but differences are predicted
+    @param n_time_steps: number of steps that are used to predict the next
+    @return scalar
+    '''
+    if pred_diffs:
+        return n_train_samples + n_time_steps + 1
+    else:
+        return n_train_samples + n_time_steps
