@@ -28,7 +28,7 @@ class MetricCalculator():
     def __init__(self, path_to_datasets=None, path_to_output=None,
                  benchmarkfunctions=None, poschgtypes=None, fitchgtypes=None,
                  dims=None, noises=None, path_addition=None, metric_filename=None,
-                 n_required_train_data=None, n_chgps=None, predict_diffs=None,
+                 n_required_train_data=None, predict_diffs=None,
                  only_for_preds=None):
         '''
         Initialize paths, properties of the experiments, etc.
@@ -59,7 +59,6 @@ class MetricCalculator():
             # see in specification (otherwise exception is thrown printing the
             # real value)
             n_required_train_data = 100
-            self.n_chgps = 200
             predict_diffs = True
         else:
             self.output_dir_path = path_to_output
@@ -75,14 +74,7 @@ class MetricCalculator():
             # predictions where made
             self.only_for_preds = only_for_preds
             n_required_train_data = n_required_train_data
-            self.n_chgps = n_chgps
             predict_diffs = predict_diffs  # TODO adapt script + parser
-
-        # compute number of predictions
-        if predict_diffs:
-            self.n_preds = self.n_chgps - (n_required_train_data + 2)
-        else:
-            self.n_preds = self.n_chgps - (n_required_train_data + 1)
 
     def compute_rmses(self, global_opt_per_chgperiod, best_found_per_chgperiod,
                       pred_opt_per_chgperiod, first_chgp_idx_with_pred):
@@ -251,14 +243,17 @@ class MetricCalculator():
                             best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
                             best_found_fit_per_chgperiod = file['best_found_fit_per_chgperiod']
                             file.close()
+
                             gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
                                 real_chgperiods_for_gens)
+                            n_preds = len(pred_opt_pos_per_chgperiod)
+                            n_chgps = len(best_found_pos_per_chgperiod)
+                            first_chgp_idx_with_pred = get_first_chgp_idx_with_pred(
+                                n_chgps, n_preds)
+                            first_gen_idx_with_pred = get_first_generation_idx_with_pred(
+                                n_chgps, n_preds, gens_of_chgperiods)
 
                             # arr, bebc
-                            first_chgp_idx_with_pred = get_first_chgp_idx_with_pred(
-                                self.n_chgps, self.n_preds)
-                            first_gen_idx_with_pred = get_first_generation_idx_with_pred(
-                                self.n_chgps, self.n_preds, gens_of_chgperiods)
                             (bebc, arr_value,
                              fit_ea_rmse, fit_foundpred_rmse, fit_truepred_rmse,
                              pos_ea_rmse, pos_foundpred_rmse, pos_truepred_rmse) = self.compute_metrics(best_found_fit_per_gen,
