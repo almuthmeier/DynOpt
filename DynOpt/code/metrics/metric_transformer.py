@@ -22,7 +22,8 @@ class MetricTransformer():
         # TODO(exp) set parameters as required
 
         self.metrics = ["bog-for-run", "bebc", "rcs", "arr",
-                        "ea-rmse", "foundpred-rmse", "truepred-rmse"]
+                        "fit-ea-rmse", "fit-foundpred-rmse", "fit-truepred-rmse",
+                        "pos-ea-rmse", "pos-foundpred-rmse", "pos-truepred-rmse"]
 
         # output and benchmark path
         if path_to_output is None:  # assumes that  all input arguments are none
@@ -35,6 +36,7 @@ class MetricTransformer():
             #self.output_dir_path = path_to_output + "ESANN_2019/"
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20_ohneDrop_mitNOundARR/"
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Robustness/output_2018-12-11/"
+            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/"
             # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy,griewank
             self.benchmarkfunctions = [
                 "rastrigin", "sphere", "mpbcorr"]
@@ -43,8 +45,10 @@ class MetricTransformer():
             self.fitchgtypes = ["none"]
             self.dims = [1, 5, 10, 50]
             self.noises = [0.0, 0.2]
-            self.metric_filename = "metric_db_noiseevalation_2018-12-14_rmses.csv"
-            self.output_file_name = "avg_metric_db_2018-12-11_rmses.csv"
+            #self.metric_filename = "metric_db_noiseevalation_2018-12-14_rmses.csv"
+            #self.output_file_name = "avg_metric_db_2018-12-11_rmses.csv"
+            self.metric_filename = "metric_db.csv"
+            self.output_file_name = "avg_metric_db.csv"
         else:
             self.output_dir_path = path_to_output
             self.benchmarkfunctions = benchmarkfunctions
@@ -58,21 +62,23 @@ class MetricTransformer():
     def make_table_with_selected_data(self):
         path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-23/"
         path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Robustness/output_2018-12-11/"
-        full_input_name = path_transformed_db + "avg_metric_db_2018-12-11_rmses.csv"
+        path_transformed_db = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/"
+        full_input_name = path_transformed_db + "avg_metric_db.csv"
         all_data = pd.read_csv(full_input_name)
 
         # functions that are combined into one file
         # , "tftlrnndense"]
         preds = ["no", "autoregressive", "tfrnn", "tftlrnn", "tftlrnndense"]
-        preds = ["no", "autoregressive", "tfrnn"]
-        functions = ["sphere", "mpbcorr", "rastrigin"]
-        algparams = ['steps_50', 'nonoise']
-        poschgs = ['mixture', 'sine']
-        dims = [2, 10]
+        preds = ["no", "autoregressive", "tcn"]
+        functions = ["sphere"]  # , "mpbcorr", "rastrigin"]
+        algparams = ['ersterTest']  # ['steps_50', 'nonoise']
+        poschgs = ['sinefreq']
+        dims = [2]
         noises = [0.05]
         #steps = 50
-        # "bog-for-run"  # , "bebc", "rcs", "arr" "ea-rmse","foundpred-rmse","truepred-rmse"
-        metric = "truepred-rmse"
+        # "bog-for-run"  # , "bebc", "rcs", "arr" "fit-ea-rmse","fit-foundpred-rmse","fit-truepred-rmse"
+        # "pos-ea-rmse","pos-foundpred-rmse","pos-truepred-rmse"
+        metric = "fit-truepred-rmse"
 
         full_output_file_name = path_transformed_db + "selection_fcts-" + \
             str(functions) + "metric-" + str(metric) + "_rmses.csv"

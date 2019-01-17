@@ -26,7 +26,7 @@ class StatisticalTestsCalculator():
         path_to_code = os.path.abspath(os.pardir)
         path_to_output = '/'.join(path_to_code.split('/')[:-1]) + "/output/"
 
-        self.metric_path = path_to_output + "EvoStar_2018/"
+        self.metric_path = path_to_output + "GECCO_2019/"
         self.metric_file_path = self.metric_path + "metric_db.csv"
         self.stattest_dir_path = self.metric_path + "stattests/"
 
@@ -114,7 +114,8 @@ class StatisticalTestsCalculator():
         experiments.
         '''
         metric_names = ['bog-for-run', 'bebc', 'rcs', 'arr',
-                        'ea-rmse', 'foundpred-rmse', 'truepred-rmse']
+                        'fit-ea-rmse', 'fit-foundpred-rmse', 'fit-truepred-rmse',
+                        'pos-ea-rmse', 'pos-foundpred-rmse', 'pos-truepred-rmse']
 
         # load result file containing results for all algorithms and problems
         df = pd.read_csv(self.metric_file_path, ',')
@@ -163,9 +164,12 @@ class StatisticalTestsCalculator():
                                           props1["noise"], props1["poschg"],
                                           props1["fitchg"], p_values["bog-for-run"],
                                           p_values["bebc"], p_values["rcs"],
-                                          p_values["arr"], p_values["ea-rmse"],
-                                          p_values["foundpred-rmse"],
-                                          p_values["truepred-rmse"],
+                                          p_values["arr"], p_values["fit-ea-rmse"],
+                                          p_values["fit-foundpred-rmse"],
+                                          p_values["fit-truepred-rmse"],
+                                          p_values["pos-ea-rmse"],
+                                          p_values["pos-foundpred-rmse"],
+                                          p_values["pos-truepred-rmse"],
                                           props1["expfilename"]],
                 print_to_file(result_file_name, metric_values_to_print)
 
