@@ -14,11 +14,13 @@ import numpy as np
 
 
 def rmse(true_vals, current_vals):
-    # https://stackoverflow.com/questions/17197492/root-mean-square-error-in-python/17221808 (16.1.19)
+    # https://stackoverflow.com/questions/17197492/root-mean-square-error-in-python/17221808
+    # (16.1.19)
     return np.sqrt(sklearn.metrics.mean_squared_error(true_vals, current_vals))
 
 
-def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen):
+def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen,
+        only_for_preds, first_chgp_idx_with_pred):
     '''
     ARR (absolute recovery rate) from the paper "Evolutionary dynamic 
     optimization: A survey of the state of the art", Trung Thanh Nguyen et al. 2012.
@@ -46,8 +48,13 @@ def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_
 
     n_chgperiods = len(generations_of_chgperiods)
 
+    chgp_idxs = np.arange(n_chgperiods)
+    if only_for_preds:
+        # index of change periods for that a prediction was made
+        chgp_idxs = chgp_idxs[first_chgp_idx_with_pred:]
+
     sum_over_changes = 0
-    for i in range(n_chgperiods):
+    for i in chgp_idxs:
         first_fitness = best_found_fit_per_gen[generations_of_chgperiods[i][0]]
         optimum_fitness = global_opt_fit_per_chgperiod[i]
 
@@ -67,12 +74,13 @@ def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_
             divisor = n_generations_of_change * diff_optimum_first
             summand = sum_over_generations / divisor
             sum_over_changes = sum_over_changes + summand
-    sum_over_changes = sum_over_changes / n_chgperiods
+    n_summed_chgps = len(chgp_idxs)
+    sum_over_changes = sum_over_changes / n_summed_chgps
 
     return sum_over_changes
 
 
-def avg_bog_for_one_run(best_found_fit_per_gen):
+def avg_bog_for_one_run(best_found_fit_per_gen, only_for_preds, first_gen_idx_with_pred):
     '''
     Averages the best found fitness values over all generations for one run.
 
@@ -82,6 +90,8 @@ def avg_bog_for_one_run(best_found_fit_per_gen):
     generation
     @return scalar
     '''
+    if only_for_preds:
+        best_found_fit_per_gen = best_found_fit_per_gen[first_gen_idx_with_pred:]
     return np.average(best_found_fit_per_gen)
 
 
@@ -175,7 +185,8 @@ def normalized_bog(avg_bog_per_alg_and_problem):
 
 
 def best_error_before_change(generations_of_chgperiods, global_opt_fit_per_chgperiod,
-                             best_found_fit_per_gen):
+                             best_found_fit_per_gen, only_for_preds,
+                             first_chgp_idx_with_pred):
     '''
     Best-error-before-change according to description in the paper 
     "Evolutionary dynamic optimization: A survey of the state of the art"
@@ -204,16 +215,20 @@ def best_error_before_change(generations_of_chgperiods, global_opt_fit_per_chgpe
         n_gens) + " but len(best_found_fit_per_gen): " + str(len(best_found_fit_per_gen))
 
     # =========================================================================
-    n_chgperiods = len(generations_of_chgperiods)
     sum_of_errors = 0
+    n_summed_chgps = 0
     for chgperiod, generations in generations_of_chgperiods.items():
+        if only_for_preds and chgperiod < first_chgp_idx_with_pred:
+            continue
+        n_summed_chgps += 1
         best_found_fit = np.min(best_found_fit_per_gen[generations])
         sum_of_errors += abs((best_found_fit) -
                              (global_opt_fit_per_chgperiod[chgperiod]))
-    return sum_of_errors / n_chgperiods
+    return sum_of_errors / n_summed_chgps
 
 
-def rel_conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen_and_alg):
+def rel_conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen_and_alg,
+                   only_for_preds, first_chgp_idx_with_pred):
     '''
     Measure of relative convergence speed of algorithms for one run of a 
     specific problem. Depends on the worst fitness value any algorithm achieved.
@@ -279,14 +294,16 @@ def rel_conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best
         speed_per_alg[alg] = __convergence_speed__(generations_of_chgperiods,
                                                    global_opt_fit_per_chgperiod,
                                                    best_found_fit_per_gen_and_alg[alg],
-                                                   worst_fit_per_chgperiod)
+                                                   worst_fit_per_chgperiod,
+                                                   only_for_preds, first_chgp_idx_with_pred)
     return speed_per_alg
 
 
 def __convergence_speed__(generations_of_chgperiods,
                           global_opt_fit_per_chgperiod,
                           best_found_fit_per_gen,
-                          worst_fit_per_chgperiod):
+                          worst_fit_per_chgperiod,
+                          only_for_preds, first_chgp_idx_with_pred):
     '''
     Internal method, called by rel_conv_speed().
 
@@ -310,7 +327,12 @@ def __convergence_speed__(generations_of_chgperiods,
     @return: scalar: convergence speed for this algorithm
     '''
     sum_norm_areas = 0
+    n_summed_chgps = 0
     for chgperiod_nr, gens in generations_of_chgperiods.items():
+        if only_for_preds and chgperiod_nr < first_chgp_idx_with_pred:
+            continue
+        n_summed_chgps += 1
+
         optimal_fit = global_opt_fit_per_chgperiod[chgperiod_nr]
         worst_fit = worst_fit_per_chgperiod[chgperiod_nr]
         best_worst_fit_diff = abs(optimal_fit - worst_fit)
@@ -333,4 +355,4 @@ def __convergence_speed__(generations_of_chgperiods,
             norm_area_for_change = area_for_change / max_area_for_change
             sum_norm_areas += norm_area_for_change
 
-    return sum_norm_areas / len(generations_of_chgperiods)
+    return sum_norm_areas / n_summed_chgps

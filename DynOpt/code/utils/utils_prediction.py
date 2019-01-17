@@ -542,3 +542,33 @@ def get_noisy_time_series(original_series, n_series, stddev_per_chgperiod):
     n_chgperiods, dims = original_series.shape
     return np.random.normal(loc=original_series, scale=stddev_per_chgperiod,
                             size=(n_series, n_chgperiods, dims))
+
+
+def get_first_chgp_idx_with_pred(overall_n_chgperiods, n_preds):
+    '''
+    Computes index of first change period for that a prediction was made
+
+    @param overall_n_chgperiods: number of change periods for that the EA was run
+    @param n_preds: number of change periods for that a prediction was made
+    @return scalar
+    '''
+    return np.arange(overall_n_chgperiods)[-n_preds]
+
+
+def get_first_generation_idx_with_pred(overall_n_chgperiods, n_preds,
+                                       gens_of_chgperiods):
+    '''
+    Computes index of first generation of the first change period for that a 
+    prediction was made.
+
+    @param overall_n_chgperiods: number of change periods for that the EA was run
+    @param n_preds: number of change periods for that a prediction was made
+    @param gens_of_chgperiods: dictionary: for each change period (even if the
+    EA did not detect it) a list of the corresponding generations
+    @return scalar
+    '''
+    first_chpg_idx = get_first_chgp_idx_with_pred(
+        overall_n_chgperiods, n_preds)
+
+    # first generation of first change period with prediction
+    return gens_of_chgperiods[first_chpg_idx][0]

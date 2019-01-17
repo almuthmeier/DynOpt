@@ -355,8 +355,7 @@ class DynamicEA():
                                                                                                  do_training, self.best_found_pos_per_chgperiod,
                                                                                                  self.predict_diffs, self.test_mc_runs)
 
-            self.pred_opt_pos_per_chgperiod.append(
-                copy.copy(prediction))
+            self.pred_opt_pos_per_chgperiod.append(copy.copy(prediction))
             self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
                 self.benchmarkfunction, prediction, gen_idx, self.experiment_data))
             if ep_unc is not None and self.use_uncs:

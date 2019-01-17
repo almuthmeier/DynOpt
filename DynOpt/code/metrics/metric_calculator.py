@@ -11,6 +11,8 @@ import os
 from os.path import isdir, join
 from posix import listdir
 
+from code.utils.utils_prediction import get_first_generation_idx_with_pred
+import matplotlib.pyplot as plt
 from metrics.metrics_dynea import best_error_before_change, arr,\
     rel_conv_speed, avg_bog_for_one_run, rmse
 import numpy as np
@@ -19,12 +21,15 @@ from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
 from utils.utils_files import select_experiment_files,\
     get_sorted_array_file_names_for_experiment_file_name, \
     get_info_from_array_file_name, get_run_number_from_array_file_name
+from utils.utils_prediction import get_first_chgp_idx_with_pred
 
 
 class MetricCalculator():
     def __init__(self, path_to_datasets=None, path_to_output=None,
                  benchmarkfunctions=None, poschgtypes=None, fitchgtypes=None,
-                 dims=None, noises=None, path_addition=None, metric_filename=None):
+                 dims=None, noises=None, path_addition=None, metric_filename=None,
+                 n_required_train_data=None, n_chgps=None, predict_diffs=None,
+                 only_for_preds=None):
         '''
         Initialize paths, properties of the experiments, etc.
         '''
@@ -38,17 +43,24 @@ class MetricCalculator():
                                         [:-1]) + "/datasets/"
             path_to_output = '/'.join(path_to_code.split('/')
                                       [:-1]) + "/output/"
-            self.output_dir_path = path_to_output + "ESANN_2019/"
-            self.benchmark_folder_path = path_to_datasets + "ESANN_2019/"
+            self.output_dir_path = path_to_output + "GECCO_2019/"
+            self.benchmark_folder_path = path_to_datasets + "GECCO_2019/"
             # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy,griewank
-            self.benchmarkfunctions = ["rosenbrock", "sphere"]
+            self.benchmarkfunctions = ["sphere"]
             # ["linear", "sine", "circle"]
-            self.poschgtypes = ["mixture", "linear"]
+            self.poschgtypes = ["sinefreq"]
             self.fitchgtypes = ["none"]
             self.dims = [2]
             self.noises = [0.0]
             self.path_addition = ""
             self.metric_filename = "metric_db.csv"
+            self.only_for_preds = True
+
+            # see in specification (otherwise exception is thrown printing the
+            # real value)
+            n_required_train_data = 100
+            self.n_chgps = 200
+            predict_diffs = True
         else:
             self.output_dir_path = path_to_output
             self.benchmark_folder_path = path_to_datasets
@@ -59,30 +71,45 @@ class MetricCalculator():
             self.noises = noises
             self.path_addition = path_addition  # for further subdirectories
             self.metric_filename = metric_filename
+            # True if metrics are computed only for change periods where
+            # predictions where made
+            self.only_for_preds = only_for_preds
+            n_required_train_data = n_required_train_data
+            self.n_chgps = n_chgps
+            predict_diffs = predict_diffs  # TODO adapt script + parser
 
-    def compute_metrics(self, best_found_fit_per_gen,
-                        global_opt_fit_per_chgperiod, gens_of_chgperiods,
-                        global_opt_pos_per_chgperiod,
-                        pred_opt_pos_per_chgperiod, best_found_pos_per_chgperiod):
+        # compute number of predictions
+        if predict_diffs:
+            self.n_preds = self.n_chgps - (n_required_train_data + 2)
+        else:
+            self.n_preds = self.n_chgps - (n_required_train_data + 1)
+
+    def compute_metrics(self, best_found_fit_per_gen, gens_of_chgperiods,
+                        global_opt_fit_per_chgperiod, global_opt_pos_per_chgperiod,
+                        pred_opt_pos_per_chgperiod, pred_opt_fit_per_chgperiod,
+                        best_found_pos_per_chgperiod, best_found_fit_per_chgperiod,
+                        first_chgp_idx_with_pred):
         '''
         Computes BEBC and ARR
         '''
-
         # bebc
-        bebc = best_error_before_change(
-            gens_of_chgperiods, global_opt_fit_per_chgperiod,  best_found_fit_per_gen)
+        bebc = best_error_before_change(gens_of_chgperiods, global_opt_fit_per_chgperiod,
+                                        best_found_fit_per_gen, self.only_for_preds,
+                                        first_chgp_idx_with_pred)
         print("bebc: ", bebc)
 
         # arr
         arr_value = arr(gens_of_chgperiods,
-                        global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                        global_opt_fit_per_chgperiod, best_found_fit_per_gen,
+                        self.only_for_preds, first_chgp_idx_with_pred)
         print("arr: ", arr_value)
 
         # RMSEs (do not compute it when prediction is None (e.g, for "no")
         n_found = len(best_found_pos_per_chgperiod)
-        relevant_glob_opt_pos_per_chgperiod = global_opt_pos_per_chgperiod[:n_found]
+        relevant_glob_opt_pos_per_chgperiod = global_opt_pos_per_chgperiod[
+            first_chgp_idx_with_pred:n_found]
         ea_rmse = rmse(relevant_glob_opt_pos_per_chgperiod,
-                       best_found_pos_per_chgperiod)
+                       best_found_pos_per_chgperiod[first_chgp_idx_with_pred:])
         print("ea-rmse: ", ea_rmse)
         foundpred_rmse = None
         truepred_rmse = None
@@ -92,9 +119,9 @@ class MetricCalculator():
             # compute rmse only for chgperiods where something was predicted
             assert n_predictions <= n_found, "n_predictions: " + \
                 str(n_predictions) + " n_found:" + str(n_found)
-            foundpred_rmse = rmse(best_found_pos_per_chgperiod[-n_predictions:],
+            foundpred_rmse = rmse(best_found_pos_per_chgperiod[first_chgp_idx_with_pred:],
                                   pred_opt_pos_per_chgperiod)
-            truepred_rmse = rmse(relevant_glob_opt_pos_per_chgperiod[-n_predictions:],
+            truepred_rmse = rmse(relevant_glob_opt_pos_per_chgperiod,
                                  pred_opt_pos_per_chgperiod)
         print("truepred-rmse: ", truepred_rmse)
         print("foundpred-rmse: ", foundpred_rmse)
@@ -196,23 +223,33 @@ class MetricCalculator():
                             best_found_fit_per_gen = file['best_found_fit_per_gen']
                             real_chgperiods_for_gens = file['real_chgperiods_for_gens']
                             pred_opt_pos_per_chgperiod = file['pred_opt_pos_per_chgperiod']
+                            pred_opt_fit_per_chgperiod = file['pred_opt_fit_per_chgperiod']
                             best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
+                            best_found_fit_per_chgperiod = file['best_found_fit_per_chgperiod']
                             file.close()
                             gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
                                 real_chgperiods_for_gens)
 
                             # arr, bebc
+                            first_chgp_idx_with_pred = get_first_chgp_idx_with_pred(
+                                self.n_chgps, self.n_preds)
+                            first_gen_idx_with_pred = get_first_generation_idx_with_pred(
+                                self.n_chgps, self.n_preds, gens_of_chgperiods)
                             bebc, arr_value, ea_rmse, foundpred_rmse, truepred_rmse = self.compute_metrics(best_found_fit_per_gen,
-                                                                                                           global_opt_fit_per_chgperiod,
                                                                                                            gens_of_chgperiods,
+                                                                                                           global_opt_fit_per_chgperiod,
                                                                                                            global_opt_pos_per_chgperiod,
                                                                                                            pred_opt_pos_per_chgperiod,
-                                                                                                           best_found_pos_per_chgperiod)
+                                                                                                           pred_opt_fit_per_chgperiod,
+                                                                                                           best_found_pos_per_chgperiod,
+                                                                                                           best_found_fit_per_chgperiod,
+                                                                                                           first_chgp_idx_with_pred)
                             # averaged bog for this run (not the average bog as
                             # defined) (should not be used other than as average
                             # over all runs)
-                            bog_for_run = avg_bog_for_one_run(
-                                best_found_fit_per_gen)
+                            bog_for_run = avg_bog_for_one_run(best_found_fit_per_gen,
+                                                              self.only_for_preds,
+                                                              first_gen_idx_with_pred)
                             data = {'expfilename': exp_file_name,
                                     'arrayfilename': array_file_name,
                                     'function': benchmarkfunction, 'predictor': predictor,
@@ -250,7 +287,8 @@ class MetricCalculator():
                             new_dict[alg] = best_found_fit_per_gen_and_run_and_alg[alg][run]
 
                         rcs_per_alg = rel_conv_speed(
-                            gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict)
+                            gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict,
+                            self.only_for_preds, first_chgp_idx_with_pred)
                         print("rcs_per_alg ", rcs_per_alg, flush=True)
 
                         # store RCS data
