@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="ks-""$1"
+#SBATCH --job-name="ks-${1}"
 #SBATCH --ntasks=8
 #SBATCH --mem=32G
 #SBATCH --time=3-00:00
-#SBATCH --output="slurm_ks-""$1"".%j.out"
-#SBATCH --error="slurm_ks-""$1"".%j.err"
+#SBATCH --output="slurm_ks-${1}.%j.out"
+#SBATCH --error="slurm_ks-${1}.%j.err"
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
@@ -14,7 +14,7 @@
 numberfilters=(27, 16, 8)
 for f in "${numberfilters[@]}"
 do
-	./run.sh $f $1 &
+	./run_server.sh $f $1 &
 done
 
 wait
