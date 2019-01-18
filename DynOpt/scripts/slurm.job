@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="scaling01"
+#SBATCH --job-name="scaling2"
 #SBATCH --ntasks=8
 #SBATCH --mem=32G
 #SBATCH --time=3-00:00
-#SBATCH --output="slurm_scaling01.%j.out"
-#SBATCH --error="slurm_scaling01.%j.err"
+#SBATCH --output="slurm_scaling2.%j.out"
+#SBATCH --error="slurm_scaling2.%j.err"
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
@@ -108,7 +108,7 @@ predictor=tcn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 # static
 
-algnameaddition="_""range-0-1" 
+algnameaddition="_""range-0-2" 
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
 outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-18/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
