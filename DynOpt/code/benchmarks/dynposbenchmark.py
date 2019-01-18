@@ -21,8 +21,7 @@ import os
 import sys
 import warnings
 
-from benchmarks.circlemovement import create_circle_movement_points,\
-    plot_movement
+from benchmarks.circlemovement import create_circle_movement_points
 from benchmarks.movingoptgenerator import start_mixture
 from benchmarks.sine_generator import generate_sine_fcts_for_multiple_dimensions
 import matplotlib.pyplot as plt

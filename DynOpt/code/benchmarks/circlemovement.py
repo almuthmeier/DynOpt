@@ -9,7 +9,7 @@ Created on Aug 4, 2018
 '''
 from sklearn import preprocessing
 
-import matplotlib.pyplot as plt
+
 import numpy as np
 
 
@@ -17,6 +17,7 @@ def plot_movement(points):
     '''
     Visualization of all movement points.
     '''
+    import matplotlib.pyplot as plt
     fig = plt.figure()
     ax = fig.add_subplot(111)
     color = range(len(points))
