@@ -32,7 +32,7 @@ python3.5 metrics_input_parser.py -benchmarkfunctionfolderpath="$benchmarkfuncti
 -dims="$dims" \
 -noises="$noises" \
 -pathaddition="$pathaddition" \
--metricfilename="$metricfilename"\ 
+-metricfilename="$metricfilename" \ 
 -onlyforpreds="$onlyforpreds" & 
 
 # -----------------------------------------------------------------------------
