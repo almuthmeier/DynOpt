@@ -117,16 +117,20 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                                            returnseq, batch_size, apply_tl, with_dense_first,
                                            tl_learn_rate)
     elif mode == "tcn":
-        nhid = 27
-        levels = 5  # 6  # 5  # 8  # 4
+        kernel_size = 3  # 2  # 3
+        # 5  # 6  # 5  # 8  # 4
+        # #levels like in the paper "an Empirical Evaluation of Generic
+        # Convolutional and Reccurent Networks for Sequence Modeling
+        levels = math.ceil(math.log(n_time_steps / (kernel_size - 1), 2))
+        print("\nk: ", kernel_size, flush=True)
+        print("levels: ", levels, flush=True)
+        nhid = 16  # number filters
         in_channels = n_features  # for each dimension one channel
         output_size = n_features  # n_classes
         num_channels = [nhid] * levels  # channel_sizes
-        sequence_length = n_time_steps
-        kernel_size = 3  # 2  # 3
-        lr = 2e-4  # learning rate # TODO
+        lr = 0.002  # 2e-4  # learning rate # TODO
         predictor = MyAutoTCN(in_channels, output_size, num_channels,
-                              sequence_length, kernel_size, batch_size,
+                              n_time_steps, kernel_size, batch_size,
                               train_mc_runs, train_dropout, test_dropout, lr,
                               init=False, use_uncs=use_uncs)
     else:
@@ -181,7 +185,9 @@ def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler
         # throws exception:  "ValueError: x already contains a constant" if the
         # training data contain values similar to zero
         try:
-            model_fit = model.fit(maxlags=max_lag)
+            # TODO choose one of both lines!!!
+            #model_fit = model.fit(maxlags=max_lag)
+            model_fit = model.fit()
         except ValueError:
             # "ValueError: x already contains a constant"
             # if max_lag = n_time_steps
@@ -593,8 +599,8 @@ def calculate_n_train_samples(n_past_chgps, pred_diffs, n_time_steps):
 
 def calculate_n_required_chgps_from_n_train_samples(n_train_samples, pred_diffs, n_time_steps):
     '''
-    Calculates the number of change periods required to produce the desired 
-    number of training samples (input&output). 
+    Calculates the number of finished change periods required to produce the 
+    desired number of training samples (input&output). 
     Inverse to calculate_n_train_samples()
 
     @param n_train_samples: required number of training samples
