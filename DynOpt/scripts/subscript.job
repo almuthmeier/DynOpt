@@ -6,7 +6,7 @@
 #SBATCH --time=3-00:00
 
 
-numberfilters=(27, 16, 8)
+numberfilters=(27 16 8)
 for f in "${numberfilters[@]}"
 do
 	./run_server.sh $f $1 &
