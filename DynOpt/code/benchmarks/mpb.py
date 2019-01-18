@@ -196,13 +196,13 @@ def start_creating_problem(func_name=None, output_dir_path=None):
     Call this function to create and save MPB-functions with different settings)
     @param func_name: "mpbnoisy" or "mpbrand" or "mpbcorr"
     '''
-    np.random.seed(4)
+    np.random.seed(987)
     # ==================================
     # TODO(exp)
     # "EvoStar_2018" or "GECCO_2018" or "ESANN_2019" (must be equivalent to directory)
     conference = "GECCO_2019"
-    min_range = 100
-    max_range = 200
+    min_range = 0
+    max_range = 100
     func_name = "mpbcorr" if func_name is None else func_name
     if func_name == "mpbrand":
         # settings for experiments "mpbrand"
@@ -224,11 +224,11 @@ def start_creating_problem(func_name=None, output_dir_path=None):
     elif func_name == "mpbcorr":
         # settings for experiments "mpbcorr" (with correlation factor)
         chg_periods = [10000]
-        dims = [2, 10]
+        dims = [2, 5, 10, 20, 50]
         peaks = [10]
         lens_movement_vector = [0.6]
         use_correlation = True  # TODO adapt file name
-        correlation_factors = [0.95]  # in range [0,1]
+        correlation_factors = [0.9, 0.95, 1.0]  # in range [0,1]
         # convert correlation to noise
         noise_strengths = np.subtract(1, correlation_factors)
     # ==================================

@@ -11,7 +11,7 @@
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
 
-benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/Robustness/data_2018-12-11"
+benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-18"
 
 
 # -----------------------------------------------------------------------------
