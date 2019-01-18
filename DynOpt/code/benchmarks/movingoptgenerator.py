@@ -209,7 +209,8 @@ def correct_values(values, min_value, max_value):
     #    values), " max_val: ", np.max(values))
     min_in_scaled = np.min(values)
     max_in_scaled = np.max(values)
-    assert min_value <= min_in_scaled, "current min: " + \
+    # test whether min_value <= min_in_scaled
+    assert min_value - min_in_scaled <= 0.0000001, "current min: " + \
         str(min_in_scaled) + "but allowed min is: " + str(min_value)
     # test wheter max_in_scaled <= max_value
     assert max_in_scaled - max_value <= 0.000001, "current max: " + str(max_in_scaled) + \
