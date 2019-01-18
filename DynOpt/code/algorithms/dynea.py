@@ -10,8 +10,6 @@ import copy
 import math
 import warnings
 
-from code.utils.utils_prediction import calculate_n_train_samples,\
-    calculate_n_required_chgps_from_n_train_samples
 import numpy as np
 from utils import utils_dynopt
 from utils.utils_dynopt import environment_changed
@@ -19,6 +17,8 @@ from utils.utils_ea import dominant_recombination, gaussian_mutation,\
     mu_plus_lambda_selection, adapt_sigma
 from utils.utils_prediction import build_predictor,\
     predict_next_optimum_position, get_noisy_time_series, fit_scaler
+from utils.utils_prediction import calculate_n_train_samples,\
+    calculate_n_required_chgps_from_n_train_samples
 from utils.utils_transferlearning import get_variables_and_names
 
 

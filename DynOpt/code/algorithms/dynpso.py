@@ -9,9 +9,9 @@ Created on Dec 13, 2017
 
 import copy
 
-from code.utils.my_scaler import MyMinMaxScaler
 import numpy as np
 from utils import utils_dynopt
+from utils.my_scaler import MyMinMaxScaler
 from utils.utils_dynopt import environment_changed, replace_worst_individuals
 from utils.utils_prediction import build_predictor,\
     predict_next_optimum_position
