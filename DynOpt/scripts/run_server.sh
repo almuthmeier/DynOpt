@@ -61,7 +61,7 @@ useuncs=False				# if True -> TCN with automatic learning of aleatoric and epist
 							# ep. unc. is used as standard deviation for re-initializing the population after a change
 trainmcruns=20				# only used if useuncs; number of Monte Carlo runs during training
 testmcruns=5				# only used if useuncs; number of Monte Carlo runs during testing/prediction
-traindropout=0.1			# dropout rate for training
+traindropout=0.05			# dropout rate for training
 testdropout=0.1				# only used if useuncs; dropout rate for testing/prediction
 kernelsize=$2 			# kernel size for TCN
 nkernels=$1				# number of kernels for TCN (same in every layer)
