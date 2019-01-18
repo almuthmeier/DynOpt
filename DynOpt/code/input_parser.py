@@ -46,6 +46,8 @@ def define_parser_arguments():
     parser.add_argument("-outputdirectory", type=str)
     # path to output folder
     parser.add_argument("-outputdirectorypath", type=str)
+    parser.add_argument("-lbound", type=float)
+    parser.add_argument("-ubound", type=float)
 
     # run only some experiments of all for the benchmark problem
     parser.add_argument("-poschgtypes", type=string_list_type)
@@ -80,6 +82,8 @@ def define_parser_arguments():
     parser.add_argument("-useuncs", type=str)
     parser.add_argument("-trainmcruns", type=int)
     parser.add_argument("-testmcruns", type=int)
+    parser.add_argument("-traindropout", type=float)
+    parser.add_argument("-testdropout", type=float)
 
     # for ANN predictor
     # fixed20 or dyn1.3
@@ -230,7 +234,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 43:
+    if n_current_inputs != 47:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
@@ -245,8 +249,8 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.benchmarkfunctionfolderpath = args.benchmarkfunctionfolderpath
     comparator.outputdirectory = args.outputdirectory
     comparator.outputdirectorypath = args.outputdirectorypath
-    comparator.lbound = None  # TODO # fixed or dependent from benchmark?
-    comparator.ubound = None  # TODO
+    comparator.lbound = args.lbound
+    comparator.ubound = args.ubound
 
     # run only some experiments of all for the benchark problem
     comparator.poschgtypes = args.poschgtypes
@@ -282,8 +286,8 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.useuncs = args.useuncs == 'True'
     comparator.trainmcruns = args.trainmcruns if comparator.useuncs else 0
     comparator.testmcruns = args.testmcruns if comparator.useuncs else 0
-    comparator.traindropout = 0.1  # TODO
-    comparator.testdropout = 0.1 if comparator.useuncs else 0.0  # TODO
+    comparator.traindropout = args.traindropout
+    comparator.testdropout = args.testdropout if comparator.useuncs else 0.0
 
     # for ANN predictor
     if (args.predictor == "rnn" or args.predictor == "tfrnn" or

@@ -39,8 +39,8 @@ class PredictorComparator(object):
         self.benchmarkfunctionfolderpath = None  # string
         self.outputdirectory = None  # string
         self.outputdirectorypath = None  # string
-        self.lbound = None  # int
-        self.ubound = None  # int
+        self.lbound = None  # float
+        self.ubound = None  # float
 
         # run only some experiments of all for the benchmark problem
         self.poschgtypes = None  # str
