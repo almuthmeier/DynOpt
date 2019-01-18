@@ -52,6 +52,7 @@ def define_parser_arguments():
     parser.add_argument("-noises", type=float_list_type)
     parser.add_argument("-pathaddition", type=str)
     parser.add_argument("-metricfilename", type=str)
+    parser.add_argument("-onlyforpreds", type=str)
     return parser
 
 
@@ -65,7 +66,8 @@ def read_input_values(parser):
             args.dims,
             args.noises,
             args.pathaddition,
-            args.metricfilename)
+            args.metricfilename,
+            args.onlyforpreds == 'True')
 
 
 def run_parser():

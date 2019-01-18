@@ -11,15 +11,16 @@
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
 
-benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/Robustness/data_2018-12-11/"
-outputpath="/raid/almuth/Uncertainty/Ausgaben/Robustness/output_2018-12-11/"
-benchmarkfunctions=mpbcorr,rastrigin,sphere
-poschgtypes=sine,mixture
+benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-18/"
+outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-18/"
+benchmarkfunctions=sphere
+poschgtypes=sinefreq
 fitchgtypes=none
-dims=2,10
-noises=0.05
-pathaddition="firsttest/"
-metricfilename="metric_db_noiseevalation_2018-12-14_rmses.csv"
+dims=10
+noises=0.0
+pathaddition="scaling/"
+metricfilename="metric_db_scaling_2019-01-18.csv"
+onlyforpreds="True"			# True if metrics should be computed only over change periods where a prediction was made
 
 # -----------------------------------------------------------------------------
 
@@ -31,8 +32,8 @@ python3.5 metrics_input_parser.py -benchmarkfunctionfolderpath="$benchmarkfuncti
 -dims="$dims" \
 -noises="$noises" \
 -pathaddition="$pathaddition" \
--metricfilename="$metricfilename" &
-
+-metricfilename="$metricfilename"\ 
+-onlyforpreds="$onlyforpreds" & 
 
 # -----------------------------------------------------------------------------
 #
