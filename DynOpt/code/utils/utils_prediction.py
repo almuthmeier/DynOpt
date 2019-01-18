@@ -525,7 +525,7 @@ def get_n_neurons(n_neurons_type, dim):
 
 
 def fit_scaler(data_for_fitting):
-    scaler = MyMinMaxScaler(feature_range=(0, 1))
+    scaler = MyMinMaxScaler(feature_range=(-1, 1))
     scaler.fit(data_for_fitting)
     return scaler
 
