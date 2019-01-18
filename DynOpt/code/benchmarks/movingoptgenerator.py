@@ -186,8 +186,11 @@ def correct_values(values, min_value, max_value):
     else:
         #print("at least one not valid")
         # +/-1 to prevent AssertionErrors caused by rounding errors
-        min_value_for_scaler = min_value + 1
-        max_value_for_scaler = max_value - 1
+        # -> +/-1 introduces new excpetion: "ValueError: Minimum of desired
+        # feature range must be smaller than maximum. Got (84.80001171045868,
+        # 84). -> Therefore used without +-1 and adapted assertions.
+        min_value_for_scaler = min_value  # + 1
+        max_value_for_scaler = max_value  # - 1
         # re-use max/min values in data if valid, otherwise all functions would
         # be in same range
         if lowest_val_valid:
@@ -208,7 +211,8 @@ def correct_values(values, min_value, max_value):
     max_in_scaled = np.max(values)
     assert min_value <= min_in_scaled, "current min: " + \
         str(min_in_scaled) + "but allowed min is: " + str(min_value)
-    assert max_in_scaled <= max_value, "current max: " + str(max_in_scaled) + \
+    # test wheter max_in_scaled <= max_value
+    assert max_in_scaled - max_value <= 0.000001, "current max: " + str(max_in_scaled) + \
         " but allowed max is: " + str(max_value)
     return values
 # =============================================================================
@@ -655,7 +659,11 @@ def section_functions(n_points, available_base_functions, mixture_fcts,
             v = correct_values(v, min_value, max_value)
 
         values = np.concatenate((values, copy.copy(v)))
-        assert min_value <= np.min(values) and np.max(values) <= max_value
+        # assert min_value <= np.min(values) and np.max(values) <= max_value
+        # -> is written with the following line because of rounding errors
+        assert min_value - \
+            np.min(values) <= 0.000001 and np.max(
+                values) - max_value <= 0.000001
 
     # prevent jumps between sections by inserting small linear sections
     assert np.sum(n_points_per_sect) == n_points
