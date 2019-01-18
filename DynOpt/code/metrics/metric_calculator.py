@@ -28,7 +28,6 @@ class MetricCalculator():
     def __init__(self, path_to_datasets=None, path_to_output=None,
                  benchmarkfunctions=None, poschgtypes=None, fitchgtypes=None,
                  dims=None, noises=None, path_addition=None, metric_filename=None,
-                 n_required_train_data=None, predict_diffs=None,
                  only_for_preds=None):
         '''
         Initialize paths, properties of the experiments, etc.
@@ -56,10 +55,6 @@ class MetricCalculator():
             self.metric_filename = "metric_db.csv"
             self.only_for_preds = True
 
-            # see in specification (otherwise exception is thrown printing the
-            # real value)
-            n_required_train_data = 100
-            predict_diffs = True
         else:
             self.output_dir_path = path_to_output
             self.benchmark_folder_path = path_to_datasets
@@ -73,8 +68,6 @@ class MetricCalculator():
             # True if metrics are computed only for change periods where
             # predictions where made
             self.only_for_preds = only_for_preds
-            n_required_train_data = n_required_train_data
-            predict_diffs = predict_diffs  # TODO adapt script + parser
 
     def compute_rmses(self, global_opt_per_chgperiod, best_found_per_chgperiod,
                       pred_opt_per_chgperiod, first_chgp_idx_with_pred):
@@ -324,10 +317,11 @@ class MetricCalculator():
 def start_computing_metrics(benchmarkfunctionfolderpath=None, outputpath=None,
                             benchmarkfunctions=None, poschgtypes=None,
                             fitchgtypes=None, dims=None, noises=None,
-                            path_addition=None, metric_filename=None):
+                            path_addition=None, metric_filename=None, only_for_preds=None):
     calculator = MetricCalculator(benchmarkfunctionfolderpath, outputpath,
                                   benchmarkfunctions, poschgtypes, fitchgtypes,
-                                  dims, noises, path_addition, metric_filename)
+                                  dims, noises, path_addition, metric_filename,
+                                  only_for_preds)
     calculator.compute_and_save_all_metrics()
     print("saved metric database", flush=True)
 
