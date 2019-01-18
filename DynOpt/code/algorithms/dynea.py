@@ -30,7 +30,8 @@ class DynamicEA():
                  timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
                  n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps,
                  add_noisy_train_data, train_interval, n_required_train_data, use_uncs,
-                 train_mc_runs, test_mc_runs, train_dropout, test_dropout):
+                 train_mc_runs, test_mc_runs, train_dropout, test_dropout,
+                 kernel_size, n_kernels, lr):
         '''
         Initialize a DynamicEA object.
         @param benchmarkfunction: (string)
@@ -79,6 +80,11 @@ class DynamicEA():
         self.test_mc_runs = test_mc_runs
         self.train_dropout = train_dropout
         self.test_dropout = test_dropout
+
+        # TCN
+        self.kernel_size = kernel_size
+        self.n_kernels = n_kernels
+        self.lr = lr
 
         # transfer learning
         self.apply_tl = apply_tl  # True if pre-trained model should be used
@@ -382,7 +388,8 @@ class DynamicEA():
                                     self.return_seq, self.apply_tl, self.n_layers,
                                     self.n_epochs, self.tl_rnn_type, self.n_tllayers,
                                     self.with_dense_first, self.tl_learn_rate, self.use_uncs,
-                                    self.train_mc_runs, self.train_dropout, self.test_dropout)
+                                    self.train_mc_runs, self.train_dropout, self.test_dropout,
+                                    self.kernel_size, self.n_kernels, self.lr)
         sess = None
         if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
                 self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn":

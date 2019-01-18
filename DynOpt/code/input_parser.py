@@ -84,6 +84,9 @@ def define_parser_arguments():
     parser.add_argument("-testmcruns", type=int)
     parser.add_argument("-traindropout", type=float)
     parser.add_argument("-testdropout", type=float)
+    parser.add_argument("-kernelsize", type=int)
+    parser.add_argument("-nkernels", type=int)
+    parser.add_argument("-lr", type=float)
 
     # for ANN predictor
     # fixed20 or dyn1.3
@@ -150,14 +153,14 @@ def initialize_comparator_manually(comparator):
     comparator.algorithm = "dynea"
     comparator.repetitions = 1
     comparator.chgperiodrepetitions = 1
-    comparator.chgperiods = 200
+    comparator.chgperiods = 19
     comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "GECCO_2019/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_no/"
+    comparator.outputdirectory = "ersterTest/ea_tcn/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "GECCO_2019/" + "sphere/"
     comparator.lbound = 0
@@ -192,16 +195,19 @@ def initialize_comparator_manually(comparator):
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense"
-    comparator.predictor = "no"
-    comparator.timesteps = 50
+    comparator.predictor = "tcn"
+    comparator.timesteps = 2
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 50
-    comparator.nrequiredtraindata = 100
+    comparator.nrequiredtraindata = 4
     comparator.useuncs = False
     comparator.trainmcruns = 10 if comparator.useuncs else 0
     comparator.testmcruns = 3 if comparator.useuncs else 0
     comparator.traindropout = 0.1
     comparator.testdropout = 0.1 if comparator.useuncs else 0.0
+    comparator.kernelsize = 3
+    comparator.nkernels = 16
+    comparator.lr = 0.002
 
     # for ANN predictor
     if (comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or
@@ -234,7 +240,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 47:
+    if n_current_inputs != 50:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
@@ -288,6 +294,9 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.testmcruns = args.testmcruns if comparator.useuncs else 0
     comparator.traindropout = args.traindropout
     comparator.testdropout = args.testdropout if comparator.useuncs else 0.0
+    comparator.kernelsize = args.kernelsize
+    comparator.nkernels = args.nkernels
+    comparator.lr = args.lr
 
     # for ANN predictor
     if (args.predictor == "rnn" or args.predictor == "tfrnn" or
@@ -365,7 +374,13 @@ def run_parser():
                                        comparator.predictor,
                                        comparator.benchmarkfunction,
                                        comparator.day, comparator.time,
-                                       comparator.noises[0])  # TODO assumes that only one noise value is in the array
+                                       # TODO assumes that only one noise value
+                                       # is in the array
+                                       comparator.noises[0],
+                                       comparator.kernelsize, comparator.nkernels,
+                                       comparator.lr, comparator.epochs,
+                                       comparator.batchsize, comparator.traindropout,
+                                       comparator.testdropout)
     print(log_file_name)
     print("Write log and errors to file ", log_file_name, flush=True)
     orig_stdout = sys.stdout

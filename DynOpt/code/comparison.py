@@ -76,6 +76,9 @@ class PredictorComparator(object):
         self.testmcruns = None  # int
         self.traindropout = None  # float
         self.testdropout = None  # float
+        self.kernelsize = None  # int
+        self.nkernels = None  # int
+        self.lr = None  # float
 
         # ANN predictor
         self.neuronstype = None  # string
@@ -140,7 +143,8 @@ class PredictorComparator(object):
                             self.chgperiodrepetitions, self.addnoisytraindata,
                             self.traininterval, self.nrequiredtraindata, self.useuncs,
                             self.trainmcruns, self.testmcruns,
-                            self.traindropout, self.testdropout)
+                            self.traindropout, self.testdropout,
+                            self.kernelsize, self.nkernels, self.lr)
         elif self.algorithm == "dynpso":
             alg = DynamicPSO(self.benchmarkfunction, dimensionality,
                              n_generations, self.experiment_data, self.predictor,
@@ -164,7 +168,9 @@ class PredictorComparator(object):
         arrays_file_name = convert_exp_to_arrays_file_name(
             self.predictor, self.exp_file_name, self.day, self.time,
             repetition_ID, self.chgperiods, self.lenchgperiod,
-            self.ischgperiodrandom)
+            self.ischgperiodrandom, self.kernelsize, self.nkernels, self.lr,
+            self.epochs, self.batchsize, self.traindropout, self.testdropout)
+
         # TODO(dev) extend if necessary, e.g, for computing prediction quality
         # (what if an algorithm doesn't provide one of the variables? (e.g.
         # because it doesn't have change detection?)

@@ -86,13 +86,15 @@ def shuffle_split_output(samples, returnseq, ntimesteps, n_features, shuffle):
 def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                     returnseq, apply_tl, n_overall_layers, epochs, rnn_type,
                     ntllayers, with_dense_first, tl_learn_rate, use_uncs,
-                    train_mc_runs, train_dropout, test_dropout):
+                    train_mc_runs, train_dropout, test_dropout, kernel_size,
+                    nhid, lr):
     '''
     Creates the desired prediction model.
     @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense, tcn
     @param batch_size: batch size for the RNN
     @param n_time_steps: number of time steps to use for prediction/training
     @param n_features: dimensionality of the solution space
+    @param nhid: number of filters
     '''
     if mode == "no":
         predictor = None
@@ -117,18 +119,18 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                                            returnseq, batch_size, apply_tl, with_dense_first,
                                            tl_learn_rate)
     elif mode == "tcn":
-        kernel_size = 3  # 2  # 3
+        # kernel_size = 3  # 2  # 3
         # 5  # 6  # 5  # 8  # 4
         # #levels like in the paper "an Empirical Evaluation of Generic
         # Convolutional and Reccurent Networks for Sequence Modeling
         levels = math.ceil(math.log(n_time_steps / (kernel_size - 1), 2))
         print("\nk: ", kernel_size, flush=True)
         print("levels: ", levels, flush=True)
-        nhid = 16  # number filters
+        # nhid = 16  # number filters
         in_channels = n_features  # for each dimension one channel
         output_size = n_features  # n_classes
         num_channels = [nhid] * levels  # channel_sizes
-        lr = 0.002  # 2e-4  # learning rate # TODO
+        # lr = 0.002  # 2e-4  # learning rate # TODO
         predictor = MyAutoTCN(in_channels, output_size, num_channels,
                               n_time_steps, kernel_size, batch_size,
                               train_mc_runs, train_dropout, test_dropout, lr,

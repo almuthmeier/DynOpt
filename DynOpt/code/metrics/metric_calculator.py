@@ -41,7 +41,8 @@ class MetricCalculator():
                                         [:-1]) + "/datasets/"
             path_to_output = '/'.join(path_to_code.split('/')
                                       [:-1]) + "/output/"
-            self.output_dir_path = path_to_output + "GECCO_2019/"
+            self.output_dir_path = path_to_output + \
+                "GECCO_2019/"
             self.benchmark_folder_path = path_to_datasets + "GECCO_2019/"
             # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy,griewank
             self.benchmarkfunctions = ["sphere"]
@@ -140,8 +141,10 @@ class MetricCalculator():
         in one file.
         '''
         # order of columns should is meaningless
-        column_names = ['function', 'predictor',
-                        'algparams', 'alg', 'dim', 'chgperiods', 'len_c_p',
+        column_names = ['function', 'dim', 'predictor',
+                        'algparams', 'alg',
+                        'ks', 'kernels', 'lr', 'epochs', 'bs', 'traindrop', 'testdrop',
+                        'chgperiods', 'len_c_p',
                         'ischgperiodrandom', 'veclen', 'peaks', 'noise',
                         'poschg', 'fitchg', 'run', 'bog-for-run', 'bebc', 'rcs', 'arr',
                         'fit-ea-rmse', 'fit-foundpred-rmse', 'fit-truepred-rmse',
@@ -216,7 +219,8 @@ class MetricCalculator():
                         # get general info from one arbitrary array file
                         (predictor, benchmark, d, chgperiods, lenchgperiod,
                             ischgperiodrandom, veclen, peaks, noise, poschg,
-                            fitchg,  _, _, run) = get_info_from_array_file_name(array_names[0])
+                            fitchg,  _, _, run, kernel_size, n_kernels, l_rate,
+                            n_epochs, batch_size, train_drop, test_drop) = get_info_from_array_file_name(array_names[0])
                         assert benchmarkfunction == benchmark, "benchmark names unequal; benchmarkfunction: " + \
                             str(benchmarkfunction) + \
                             " and benchmark: " + str(benchmark)
@@ -267,6 +271,9 @@ class MetricCalculator():
                                     'arrayfilename': array_file_name,
                                     'function': benchmarkfunction, 'predictor': predictor,
                                     'algparams': subdir, 'alg': alg, 'dim': dim,
+                                    'ks': kernel_size, 'kernels': n_kernels, 'lr': l_rate,
+                                    'epochs': n_epochs, 'bs': batch_size,
+                                    'traindrop': train_drop, 'testdrop': test_drop,
                                     'chgperiods': chgperiods, 'len_c_p': lenchgperiod,
                                     'ischgperiodrandom': ischgperiodrandom,
                                     'veclen': veclen, 'peaks': peaks, 'noise': noise,

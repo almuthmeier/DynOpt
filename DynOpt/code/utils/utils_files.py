@@ -6,6 +6,7 @@ from os.path import isfile, join
 from posix import listdir
 import re
 import warnings
+
 import numpy as np
 
 
@@ -48,15 +49,25 @@ def get_metrics_file_name(metrics_file_path, predictor_name, benchmarkfunction, 
         day + '_' + time + ".csv"
 
 
-def get_logs_file_name(logs_file_path, predictor_name, benchmarkfunction, day, time, noise):
-    return logs_file_path + predictor_name + "_" + benchmarkfunction + "_" + \
-        "noise-" + "{:.2f}".format(noise) + "_" + \
-        day + '_' + time.replace(":", "-") + ".txt" % noise
+def get_logs_file_name(logs_file_path, predictor_name, benchmarkfunction,
+                       day, time, noise,
+                       ks, n_kernels, lr, n_epochs, bs, train_drop, test_drop):
+
+    beginning = logs_file_path + predictor_name + "_" + benchmarkfunction + "_" + \
+        "noise-" + "{:.2f}".format(noise) + "_"
+    between = "ks-" + str(ks) + "_kernels-" + str(n_kernels) + "_lr-" + "{:.3f}".format(lr) + \
+        "_epochs-" + str(n_epochs) + "_bs-" + str(bs) + "_traindrop-" + "{:.1f}".format(train_drop) + \
+        "_testdrop-" + "{:.1f}".format(test_drop) + "_"
+    ending = day + '_' + time.replace(":", "-") + ".txt" % noise
+
+    return beginning + between + ending
 
 
 def convert_exp_to_arrays_file_name(predictor, exp_file_name, day, time,
                                     repetition_ID, chgperiods, lenchgperiod,
-                                    ischgperiodrandom):
+                                    ischgperiodrandom,
+                                    kernel_size, n_kernels, lr, epochs,
+                                    batchsize, traindropout, testdropout):
     '''
         generate array file name from the experiment file name with some
         replacements
@@ -65,7 +76,7 @@ def convert_exp_to_arrays_file_name(predictor, exp_file_name, day, time,
     arrays_file_name = predictor + "_" + exp_file_name
     # replace date and time with start date and time;
     # \d is the same as [0-9]
-    # {2} means that the previous regular expression must occour exactly 2 times
+    # {2} means that the previous regular expression must occur exactly 2 times
     arrays_file_name = re.sub(
         "_\d{4}-\d{2}-\d{2}_\d{2}:\d{2}.npz", "_" + day + "_" + time + ".npz", arrays_file_name)
     # append the repetition number at the end before the file ending
@@ -81,6 +92,19 @@ def convert_exp_to_arrays_file_name(predictor, exp_file_name, day, time,
     arrays_file_name = re.sub(
         "_chgperiods-[0-9]+_", n_periods + len_periods + israndom + "_", arrays_file_name)
 
+    # append network specification (used for TCN)
+    if predictor == 'tcn':
+        # insert tcn_string before the date
+        date_start_idx = re.search(
+            "_\d{4}-\d{2}-\d{2}_\d{2}:\d{2}", arrays_file_name).start()
+        tcn_string = "_ks-" + str(kernel_size) + "_kernels-" + str(n_kernels) + \
+            "_lr-" + str(lr) + "_epochs-" + str(epochs) + "_bs-" + str(batchsize) + \
+            "_traindrop-" + str(traindropout) + "_testdrop-" + str(testdropout)
+
+        arrays_file_name = arrays_file_name[:date_start_idx] + \
+            tcn_string + arrays_file_name[date_start_idx:]
+        #kernel_size, n_kernels, lr, epochs,
+        #batchsize, traindropout, testdropout
     return arrays_file_name
 
 
@@ -100,6 +124,8 @@ def get_info_from_array_file_name(array_file_name):
     rnn_mpbnoisy_d-2_chgperiods-10_lenchgperiod-20_ischgperiodrandom-False_veclen-0.6_peaks-10_noise-0.0_2018-05-24_10:22_00.npz
     gdbg_f-0_t-1_d-5_chgperiods-100_peaks-10_2018-07-03_12:25
     rnn_rosenbrock_d-2_chgperiods-10_lenchgperiod-20_ischgperiodrandom-False_pch-linear_fch-none_2018-05-24_10:27_00.npz
+
+    tcn_sphere_d-2_chgperiods-19_lenchgperiod-20_ischgperiodrandom-False_pch-sinefreq_fch-none_ks-3_kernels-16_lr-0.002_epochs-80_bs-32_traindrop-0.1_testdrop-0.0_2019-01-18_15:06_00.npz
     @return tupel, the extracted information
     '''
 
@@ -137,6 +163,23 @@ def get_info_from_array_file_name(array_file_name):
         fitchg = re.search('fch-[a-z]+', array_file_name).group().split('-')[1]
     except AttributeError:
         fitchg = None
+    try:
+        kernel_size = re.search(
+            '_ks-[0-9]+', array_file_name).group().split('-')[1]
+        n_kernels = re.search(
+            '_kernels-[0-9]+', array_file_name).group().split('-')[1]
+        l_rate = re.search('_lr-[0-9]+\.[0-9]+',
+                           array_file_name).group().split('-')[1]
+        n_epochs = re.search(
+            '_epochs-[0-9]+', array_file_name).group().split('-')[1]
+        batch_size = re.search(
+            '_bs-[0-9]+', array_file_name).group().split('-')[1]
+        train_drop = re.search(
+            '_traindrop-[0-9]+\.[0-9]+', array_file_name).group().split('-')[1]
+        test_drop = re.search(
+            '_testdrop-[0-9]+\.[0-9]+', array_file_name).group().split('-')[1]
+    except AttributeError:
+        kernel_size = n_kernels = l_rate = n_epochs = batch_size = train_drop = test_drop = None
 
     # get further info (without keys): predictor, benchmark, date, time, run
     # TODO(dev) here the order of the info in the file name is important
@@ -146,7 +189,8 @@ def get_info_from_array_file_name(array_file_name):
     run = get_run_number_from_array_file_name(array_file_name)
 
     return (predictor, benchmark, dim, chgperiods, lenchgperiod,
-            ischgperiodrandom, veclen, peaks, noise, poschg, fitchg, date, time, run)
+            ischgperiodrandom, veclen, peaks, noise, poschg, fitchg, date, time, run,
+            kernel_size, n_kernels, l_rate, n_epochs, batch_size, train_drop, test_drop)
 
 
 def get_sorted_array_file_names_for_experiment_file_name(exp_file_name, arrays_path):

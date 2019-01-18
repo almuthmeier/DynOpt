@@ -228,11 +228,11 @@ def start_computing_avgs_stddevs(path_to_output=None,
     calculator = MetricTransformer(path_to_output, benchmarkfunctions, poschgtypes, fitchgtypes,
                                    dims, noises, metric_filename, output_file_name)
     # Step 1)
-    # calculator.compute_avg_and_stddev()
-    #print("saved metric database", flush=True)
+    calculator.compute_avg_and_stddev()
+    print("saved metric database", flush=True)
 
     # Step 2)
-    calculator.make_table_with_selected_data()
+    #calculator.make_table_with_selected_data()
 
 
 if __name__ == '__main__':
