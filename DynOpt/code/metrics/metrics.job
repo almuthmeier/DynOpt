@@ -18,7 +18,7 @@ poschgtypes=sinefreq
 fitchgtypes=none
 dims=10
 noises=0.0
-pathaddition="scaling/"
+pathaddition="scaling/first/"
 metricfilename="metric_db_scaling_2019-01-18.csv"
 onlyforpreds="True"			# True if metrics should be computed only over change periods where a prediction was made
 

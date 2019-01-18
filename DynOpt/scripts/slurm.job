@@ -75,7 +75,7 @@ testdropout=0.1				# only used if useuncs; dropout rate for testing/prediction
 
 # ANN predictor
 neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
-epochs=5					# number of training epochs for the RNN prediction model
+epochs=80					# number of training epochs for the RNN prediction model
 batchsize=32				# batch size for RNN model
 nlayers=2					# overall number of layers (incl. tl layers)
 tlmodelpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/models_2018-11-19/"	# path to the pre-trained transfer learning model
@@ -86,7 +86,7 @@ ngpus=1    					# number of GPUs to use (for RNN model)
 ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any experiment are run parallel)  
 
 # output paths
-pathaddition="scaling" #"firsttest"	# "stepevaluation"
+pathaddition="scaling/first" #"firsttest"	# "stepevaluation"
 #pathadditions="$pathaddition/steps""_""$timesteps"
 pathadditions="$pathaddition/"
 
