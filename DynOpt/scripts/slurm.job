@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --gres=gpu:1
-#SBATCH --job-name="scaling"
+#SBATCH --job-name="scaling01"
 #SBATCH --ntasks=8
 #SBATCH --mem=32G
 #SBATCH --time=3-00:00
-#SBATCH --output="slurm_scaling.%j.out"
-#SBATCH --error="slurm_scaling.%j.err"
+#SBATCH --output="slurm_scaling01.%j.out"
+#SBATCH --error="slurm_scaling01.%j.err"
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
