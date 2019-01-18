@@ -35,9 +35,6 @@ def generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed,
             desired_med_acc, min_val, max_val))
 
     data = np.transpose(np.array(values_per_dim))
-
-    plt.plot(data)
-    plt.show()
     return data
 
 
