@@ -327,15 +327,18 @@ class PredictorComparator(object):
         return chgperiods_for_gens
 
     def extract_data_from_file(self, experiment_file_path):
+        '''
+        Returns data only for the required number of change periods
+        '''
         exp_file = np.load(experiment_file_path)
 
         global_opt_fit_per_chgperiod = exp_file['global_opt_fit_per_chgperiod']
         global_opt_pos_per_chgperiod = exp_file['global_opt_pos_per_chgperiod']
         orig_global_opt_pos = exp_file['orig_global_opt_pos']
 
-        experiment_data = {'global_opt_fit_per_chgperiod': global_opt_fit_per_chgperiod,
-                           'global_opt_pos_per_chgperiod': global_opt_pos_per_chgperiod,
-                           'orig_global_opt_pos': orig_global_opt_pos}
+        experiment_data = {'global_opt_fit_per_chgperiod': global_opt_fit_per_chgperiod[:self.chgperiods],
+                           'global_opt_pos_per_chgperiod': global_opt_pos_per_chgperiod[:self.chgperiods],
+                           'orig_global_opt_pos': orig_global_opt_pos[:self.chgperiods]}
 
         # additional data for some benchmark functions # TODO(dev)
         if self.benchmarkfunction == "sphere" or self.benchmarkfunction == \
@@ -348,9 +351,9 @@ class PredictorComparator(object):
             heights = exp_file['heights']
             widths = exp_file['widths']
             positions = exp_file['positions']
-            experiment_data['heights'] = heights
-            experiment_data['widths'] = widths
-            experiment_data['positions'] = positions
+            experiment_data['heights'] = heights[:self.chgperiods]
+            experiment_data['widths'] = widths[:self.chgperiods]
+            experiment_data['positions'] = positions[:self.chgperiods]
 
         exp_file.close()
         return experiment_data
