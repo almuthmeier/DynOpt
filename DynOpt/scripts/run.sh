@@ -73,9 +73,9 @@ trainmcruns=20				# only used if useuncs; number of Monte Carlo runs during trai
 testmcruns=5				# only used if useuncs; number of Monte Carlo runs during testing/prediction
 traindropout=0.1			# dropout rate for training
 testdropout=0.1				# only used if useuncs; dropout rate for testing/prediction
-kernelsize = 3				# kernel size for TCN
-nkernels = 16				# number of kernels for TCN (same in every layer)
-lr = 0.002					# leanring rate of TCN
+kernelsize=3				# kernel size for TCN
+nkernels=16					# number of kernels for TCN (same in every layer)
+lr=0.002					# leanring rate of TCN
 
 # ANN predictor
 neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
