@@ -164,6 +164,7 @@ def initialize_comparator_manually(comparator):
     comparator.poschgtypes = np.array(["sinefreq"])
     comparator.fitchgtypes = np.array(["none"])
     comparator.dims = np.array([2])
+    # TODO must not be a list (otherwise: log-file name is wrong)
     comparator.noises = np.array([0.0])
 
     # PSO
@@ -204,7 +205,7 @@ def initialize_comparator_manually(comparator):
             comparator.predictor == "tcn"):
         # (not everything is necessary for every predictor)
         comparator.neuronstype = "fixed20"
-        comparator.epochs = 1
+        comparator.epochs = 80
         comparator.batchsize = 32
         comparator.n_layers = 1
         # apply transfer learning only for tftlrnn
