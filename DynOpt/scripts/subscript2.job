@@ -15,7 +15,7 @@ poschgt="sinefreq"
 
 for f in "${functions[@]}"
 do
-	./run_server.sh $1 $2 $3 $f $poschgt &
+	./run_server.sh "$1" "$2" "$3" "$f" "$poschgt" &
 done
 
 wait
