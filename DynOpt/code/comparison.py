@@ -386,9 +386,7 @@ class PredictorComparator(object):
         # dimensionality, position/fitness change type ...
         benchmark_path = self.benchmarkfunctionfolderpath + self.benchmarkfunction + "/"
         selected_exp_files = self.select_exp_files(benchmark_path)
-        print("noise: ", self.noises, flush=True)
         print("selected_exp_files: ", selected_exp_files)
-        exit(0)
         # only for logging
         n_experiments = len(selected_exp_files)
         exp_counter = 1
