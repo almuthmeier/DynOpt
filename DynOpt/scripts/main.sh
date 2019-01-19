@@ -26,13 +26,15 @@ algnameaddition2="_auto"
 useuncs1="False"
 useuncs2="True"
 
+#sbatch --job-name="Md$d-tcn" --output="slurm_mpbcorr_d$d-tcn.%j.out" --error="slurm_mpbcorr_d$d-tcn.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$d" &
+#sbatch --job-name="Md$d-auto" --output="slurm_mpbcorr_d$d-auto.%j.out" --error="slurm_mpbcorr_d$d-auto.%j.err" subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$d" &
+
 # ----------------------------------------------------------------------------
 
 
 for d in "${dims[@]}"
 do
-	sbatch --job-name="Md$d-tcn" --output="slurm_mpbcorr_d$d-tcn.%j.out" --error="slurm_mpbcorr_d$d-tcn.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$d" &
-	sbatch --job-name="Md$d-auto" --output="slurm_mpbcorr_d$d-auto.%j.out" --error="slurm_mpbcorr_d$d-auto.%j.err" subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$d" &
+	sbatch --job-name="test" --output="test.%j.out" --error="test.%j.err" subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$d" &	
 done
 
 wait
