@@ -193,131 +193,147 @@ class MetricCalculator():
 
                 # algorithm parameter settings, e.g. "c1c2c3_1.49"
                 for subdir in direct_cild_dirs:
-                    print("        subdir: ", subdir, flush=True)
-                    if subdir == "steps_100":
-                        continue
-                    subdir_path = output_dir_for_benchmark_funct + subdir + "/"
-                    # different alg types/predictors
-                    alg_types = [d for d in listdir(subdir_path) if (
-                        isdir(join(subdir_path, d)))]
-                    # dictionary: for each algorithm  a list of 1d numpy arrays
-                    # (for each run the array of best found fitness values)
-                    best_found_fit_per_gen_and_run_and_alg = {
-                        key: [] for key in alg_types}
-                    array_file_names_per_run_and_alg = {
-                        key: [] for key in alg_types}
-                    print("        alg_types: ", alg_types, flush=True)
-                    # algorithms with predictor types, e.g. "ea_no"
-                    for alg in alg_types:
-                        print("            alg: ", alg, flush=True)
-                        # read all array files for the runs of the experiment
-                        arrays_path = subdir_path + alg + "/arrays/"
-                        array_names = get_sorted_array_file_names_for_experiment_file_name(exp_file_name,
-                                                                                           arrays_path)
-                        print("array_names: ", array_names, flush=True)
-
-                        # get general info from one arbitrary array file
-                        (predictor, benchmark, d, chgperiods, lenchgperiod,
-                            ischgperiodrandom, veclen, peaks, noise, poschg,
-                            fitchg,  _, _, run, kernel_size, n_kernels, l_rate,
-                            n_epochs, batch_size, train_drop, test_drop) = get_info_from_array_file_name(array_names[0])
-                        assert benchmarkfunction == benchmark, "benchmark names unequal; benchmarkfunction: " + \
-                            str(benchmarkfunction) + \
-                            " and benchmark: " + str(benchmark)
-                        assert dim == d, "dimensionality unequal; dim: " + \
-                            str(dim) + " and d: " + str(d)
-
-                        for array_file_name in array_names:
-                            run = get_run_number_from_array_file_name(
-                                array_file_name)
-
-                            file = np.load(arrays_path + array_file_name)
-                            best_found_fit_per_gen = file['best_found_fit_per_gen']
-                            real_chgperiods_for_gens = file['real_chgperiods_for_gens']
-                            pred_opt_pos_per_chgperiod = file['pred_opt_pos_per_chgperiod']
-                            pred_opt_fit_per_chgperiod = file['pred_opt_fit_per_chgperiod']
-                            best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
-                            best_found_fit_per_chgperiod = file['best_found_fit_per_chgperiod']
-                            file.close()
-
-                            gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
-                                real_chgperiods_for_gens)
-                            n_preds = len(pred_opt_pos_per_chgperiod)
-                            n_chgps = len(best_found_pos_per_chgperiod)
-                            first_chgp_idx_with_pred = get_first_chgp_idx_with_pred(
-                                n_chgps, n_preds)
-                            first_gen_idx_with_pred = get_first_generation_idx_with_pred(
-                                n_chgps, n_preds, gens_of_chgperiods)
-
-                            # arr, bebc
-                            (bebc, arr_value,
-                             fit_ea_rmse, fit_foundpred_rmse, fit_truepred_rmse,
-                             pos_ea_rmse, pos_foundpred_rmse, pos_truepred_rmse) = self.compute_metrics(best_found_fit_per_gen,
-                                                                                                        gens_of_chgperiods,
-                                                                                                        global_opt_fit_per_chgperiod,
-                                                                                                        global_opt_pos_per_chgperiod,
-                                                                                                        pred_opt_pos_per_chgperiod,
-                                                                                                        pred_opt_fit_per_chgperiod,
-                                                                                                        best_found_pos_per_chgperiod,
-                                                                                                        best_found_fit_per_chgperiod,
-                                                                                                        first_chgp_idx_with_pred)
-                            # averaged bog for this run (not the average bog as
-                            # defined) (should not be used other than as average
-                            # over all runs)
-                            bog_for_run = avg_bog_for_one_run(best_found_fit_per_gen,
-                                                              self.only_for_preds,
-                                                              first_gen_idx_with_pred)
-                            data = {'expfilename': exp_file_name,
-                                    'arrayfilename': array_file_name,
-                                    'function': benchmarkfunction, 'predictor': predictor,
-                                    'algparams': subdir, 'alg': alg, 'dim': dim,
-                                    'ks': kernel_size, 'kernels': n_kernels, 'lr': l_rate,
-                                    'epochs': n_epochs, 'bs': batch_size,
-                                    'traindrop': train_drop, 'testdrop': test_drop,
-                                    'chgperiods': chgperiods, 'len_c_p': lenchgperiod,
-                                    'ischgperiodrandom': ischgperiodrandom,
-                                    'veclen': veclen, 'peaks': peaks, 'noise': noise,
-                                    'poschg': poschg, 'fitchg': fitchg, 'run': run,
-                                    'bog-for-run': bog_for_run, 'bebc': bebc, 'rcs': None, 'arr': arr_value,
-                                    'fit-ea-rmse': fit_ea_rmse, 'fit-foundpred-rmse': fit_foundpred_rmse, 'fit-truepred-rmse': fit_truepred_rmse,
-                                    'pos-ea-rmse': pos_ea_rmse, 'pos-foundpred-rmse': pos_foundpred_rmse, 'pos-truepred-rmse': pos_truepred_rmse}
-                            df.at[len(df)] = data
-                            print("len: ", len(df), flush=True)
-                            print(df.columns, flush=True)
-                            # store data for bog and rcs
-                            best_found_fit_per_gen_and_run_and_alg[alg].append(
-                                best_found_fit_per_gen)
-                            array_file_names_per_run_and_alg[alg].append(
-                                array_file_name)
-                        # bog (as defined)
-                        # bog_avg, bog_dev = avg_best_of_generation(
-                        #    best_found_fit_per_gen_and_run_and_alg[alg])
-                        #print("bog: ", bog_avg,flush=True)
-
-                    # rcs
-                    keys = list(best_found_fit_per_gen_and_run_and_alg.keys())
-                    runs = len(best_found_fit_per_gen_and_run_and_alg[keys[0]])
-
-                    # compute RCS
-                    for run in range(runs):
-                        # convert dict to new one that contains for each
-                        # algorithm only one 1d numpy array (the best found
-                        # fitness per generation)
-                        new_dict = {}
-                        for alg in keys:
-                            new_dict[alg] = best_found_fit_per_gen_and_run_and_alg[alg][run]
-
-                        rcs_per_alg = rel_conv_speed(
-                            gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict,
-                            self.only_for_preds, first_chgp_idx_with_pred)
-                        print("rcs_per_alg ", rcs_per_alg, flush=True)
-
-                        # store RCS data
-                        for alg in keys:
-                            df.loc[(df['arrayfilename'] == array_file_names_per_run_and_alg[alg][run]),
-                                   ['rcs']] = rcs_per_alg[alg]
+                    for ks in [2, 3, 4, 5, 6, 7]:
+                        for filters in [27, 16, 8]:
+                            df = self.evaluate_subdirs(subdir, output_dir_for_benchmark_funct,
+                                                       df, exp_file_name, benchmarkfunction,
+                                                       dim, global_opt_fit_per_chgperiod,
+                                                       global_opt_pos_per_chgperiod,
+                                                       ks, filters)
         # save data frame into file (index=False --> no row indices)
         df.to_csv(self.output_dir_path + self.metric_filename, index=False)
+
+    def evaluate_subdirs(self, subdir, output_dir_for_benchmark_funct, df,
+                         exp_file_name, benchmarkfunction, dim,
+                         global_opt_fit_per_chgperiod, global_opt_pos_per_chgperiod,
+                         ks, filters):
+        print("        subdir: ", subdir, flush=True)
+        if subdir == "steps_100":
+            continue
+        subdir_path = output_dir_for_benchmark_funct + subdir + "/"
+        # different alg types/predictors
+        alg_types = [d for d in listdir(subdir_path) if (
+            isdir(join(subdir_path, d)))]
+        # dictionary: for each algorithm  a list of 1d numpy arrays
+        # (for each run the array of best found fitness values)
+        best_found_fit_per_gen_and_run_and_alg = {
+            key: [] for key in alg_types}
+        array_file_names_per_run_and_alg = {
+            key: [] for key in alg_types}
+        print("        alg_types: ", alg_types, flush=True)
+        # algorithms with predictor types, e.g. "ea_no"
+        for alg in alg_types:
+            print("            alg: ", alg, flush=True)
+            # read all array files for the runs of the experiment
+            arrays_path = subdir_path + alg + "/arrays/"
+            array_names = get_sorted_array_file_names_for_experiment_file_name(exp_file_name,
+                                                                               arrays_path)
+            print("array_names: ", array_names, flush=True)
+
+            for array_file_name in array_names:
+                (predictor, benchmark, d, chgperiods, lenchgperiod,
+                 ischgperiodrandom, veclen, peaks, noise, poschg,
+                 fitchg,  _, _, run, kernel_size, n_kernels, l_rate,
+                 n_epochs, batch_size, train_drop, test_drop) = get_info_from_array_file_name(array_file_name)
+
+                if n_kernels != filters or kernel_size != ks:
+                    continue
+
+                assert benchmarkfunction == benchmark, "benchmark names unequal; benchmarkfunction: " + \
+                    str(benchmarkfunction) + \
+                    " and benchmark: " + str(benchmark)
+                assert dim == d, "dimensionality unequal; dim: " + \
+                    str(dim) + " and d: " + str(d)
+
+                # run = get_run_number_from_array_file_name(
+                #    array_file_name)
+
+                file = np.load(arrays_path + array_file_name)
+                best_found_fit_per_gen = file['best_found_fit_per_gen']
+                real_chgperiods_for_gens = file['real_chgperiods_for_gens']
+                pred_opt_pos_per_chgperiod = file['pred_opt_pos_per_chgperiod']
+                pred_opt_fit_per_chgperiod = file['pred_opt_fit_per_chgperiod']
+                best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
+                best_found_fit_per_chgperiod = file['best_found_fit_per_chgperiod']
+                file.close()
+
+                gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
+                    real_chgperiods_for_gens)
+                n_preds = len(pred_opt_pos_per_chgperiod)
+                n_chgps = len(best_found_pos_per_chgperiod)
+                first_chgp_idx_with_pred = get_first_chgp_idx_with_pred(
+                    n_chgps, n_preds)
+                first_gen_idx_with_pred = get_first_generation_idx_with_pred(
+                    n_chgps, n_preds, gens_of_chgperiods)
+
+                # arr, bebc
+                (bebc, arr_value,
+                 fit_ea_rmse, fit_foundpred_rmse, fit_truepred_rmse,
+                 pos_ea_rmse, pos_foundpred_rmse, pos_truepred_rmse) = self.compute_metrics(best_found_fit_per_gen,
+                                                                                            gens_of_chgperiods,
+                                                                                            global_opt_fit_per_chgperiod,
+                                                                                            global_opt_pos_per_chgperiod,
+                                                                                            pred_opt_pos_per_chgperiod,
+                                                                                            pred_opt_fit_per_chgperiod,
+                                                                                            best_found_pos_per_chgperiod,
+                                                                                            best_found_fit_per_chgperiod,
+                                                                                            first_chgp_idx_with_pred)
+                # averaged bog for this run (not the average bog as
+                # defined) (should not be used other than as average
+                # over all runs)
+                bog_for_run = avg_bog_for_one_run(best_found_fit_per_gen,
+                                                  self.only_for_preds,
+                                                  first_gen_idx_with_pred)
+                data = {'expfilename': exp_file_name,
+                        'arrayfilename': array_file_name,
+                        'function': benchmarkfunction, 'predictor': predictor,
+                        'algparams': subdir, 'alg': alg, 'dim': dim,
+                        'ks': kernel_size, 'kernels': n_kernels, 'lr': l_rate,
+                        'epochs': n_epochs, 'bs': batch_size,
+                        'traindrop': train_drop, 'testdrop': test_drop,
+                        'chgperiods': chgperiods, 'len_c_p': lenchgperiod,
+                        'ischgperiodrandom': ischgperiodrandom,
+                        'veclen': veclen, 'peaks': peaks, 'noise': noise,
+                        'poschg': poschg, 'fitchg': fitchg, 'run': run,
+                        'bog-for-run': bog_for_run, 'bebc': bebc, 'rcs': None, 'arr': arr_value,
+                        'fit-ea-rmse': fit_ea_rmse, 'fit-foundpred-rmse': fit_foundpred_rmse, 'fit-truepred-rmse': fit_truepred_rmse,
+                        'pos-ea-rmse': pos_ea_rmse, 'pos-foundpred-rmse': pos_foundpred_rmse, 'pos-truepred-rmse': pos_truepred_rmse}
+                df.at[len(df)] = data
+                print("len: ", len(df), flush=True)
+                print(df.columns, flush=True)
+                # store data for bog and rcs
+                best_found_fit_per_gen_and_run_and_alg[alg].append(
+                    best_found_fit_per_gen)
+                array_file_names_per_run_and_alg[alg].append(
+                    array_file_name)
+            # bog (as defined)
+            # bog_avg, bog_dev = avg_best_of_generation(
+            #    best_found_fit_per_gen_and_run_and_alg[alg])
+            #print("bog: ", bog_avg,flush=True)
+
+        # rcs
+        keys = list(best_found_fit_per_gen_and_run_and_alg.keys())
+        runs = len(best_found_fit_per_gen_and_run_and_alg[keys[0]])
+
+        # compute RCS
+        for run in range(runs):
+            # convert dict to new one that contains for each
+            # algorithm only one 1d numpy array (the best found
+            # fitness per generation)
+            new_dict = {}
+            for alg in keys:
+                new_dict[alg] = best_found_fit_per_gen_and_run_and_alg[alg][run]
+
+            rcs_per_alg = rel_conv_speed(
+                gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict,
+                self.only_for_preds, first_chgp_idx_with_pred)
+            print("rcs_per_alg ", rcs_per_alg, flush=True)
+
+            # store RCS data
+            for alg in keys:
+                df.loc[(df['arrayfilename'] == array_file_names_per_run_and_alg[alg][run]),
+                       ['rcs']] = rcs_per_alg[alg]
+        return df
 
 
 def start_computing_metrics(benchmarkfunctionfolderpath=None, outputpath=None,
