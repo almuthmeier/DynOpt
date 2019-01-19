@@ -240,7 +240,7 @@ def get_sorted_array_file_names_for_experiment_file_name(exp_file_name, arrays_p
         selected_files = [f for f in listdir(arrays_path) if (isfile(join(
             arrays_path, f)) and f.endswith('.npz') and function in f
             and ("_d-" + str(dim) + "_") in f and ("_veclen-" + str(veclen) + "_")in f
-            and ("_peaks-" + peaks + "_") in f and ("_noise-" + str(noise) + "_") in f)]
+            and ("_peaks-" + peaks + "_") in f and ("_noise-" + "{:.2f}".format(noise) + "_") in f)]
     else:
         warnings.warn("unknown benchmark function")
     return np.sort(selected_files)
@@ -278,7 +278,7 @@ def select_experiment_files(benchmark_path, benchmarkfunction, poschgtypes,
             benchmarkfunction == "mpbcorr":
         selected_exp_files = [f for f in all_experiment_files if (
                               any(("_d-" + str(dim) + "_") in f for dim in dims) and
-                              any(("_noise-" + str(noise) + "_") in f for noise in noises))]
+                              any(("_noise-" + "{:.2f}".format(noise) + "_") in f for noise in noises))]
     return selected_exp_files
 
 
