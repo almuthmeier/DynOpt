@@ -43,12 +43,12 @@ def create_problems(output_parent_dir_path=None):
     # -------------------------------------------------------------------------
     # TODO(exp) parameters to adjust
     n_chg_periods = 10000
-    dims = [2, 5, 10, 20, 50]  # [1, 2, 5]  # , 10, 50]
-    functions = [sphere, rastrigin, griewank]  # , rastrigin]
+    dims = [2, 5, 10, 20]  # [1, 2, 5]  # , 10, 50]
+    functions = [sphere, rastrigin, rosenbrock]  # , rastrigin]
     # functions = [sphere]  # , rastrigin]
     pos_chng_types = ['pch-linear', 'pch-sine',
                       'pch-circle', 'pch-mixture', 'pch-sinefreq']
-    pos_chng_types = ['pch-sinefreq', 'pch-mixture']
+    pos_chng_types = ['pch-sinefreq']  # , 'pch-mixture']
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "GECCO_2019"

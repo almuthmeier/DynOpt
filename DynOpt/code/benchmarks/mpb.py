@@ -224,11 +224,11 @@ def start_creating_problem(func_name=None, output_dir_path=None):
     elif func_name == "mpbcorr":
         # settings for experiments "mpbcorr" (with correlation factor)
         chg_periods = [10000]
-        dims = [2, 5, 10, 20, 50]
+        dims = [2, 5, 10, 20]
         peaks = [10]
         lens_movement_vector = [0.6]
         use_correlation = True  # TODO adapt file name
-        correlation_factors = [0.9, 0.95, 1.0]  # in range [0,1]
+        correlation_factors = [0.95, 0.99, 1.0]  # in range [0,1]
         # convert correlation to noise
         noise_strengths = np.subtract(1, correlation_factors)
     # ==================================
