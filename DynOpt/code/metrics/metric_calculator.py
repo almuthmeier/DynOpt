@@ -236,7 +236,12 @@ class MetricCalculator():
                  fitchg,  _, _, run, kernel_size, n_kernels, l_rate,
                  n_epochs, batch_size, train_drop, test_drop) = get_info_from_array_file_name(array_file_name)
 
-                if n_kernels != filters or kernel_size != ks:
+                print("n_kernels: ", n_kernels,
+                      " ks: ", kernel_size, flush=True)
+
+                print(l_rate, ", ",  n_epochs, ", ", batch_size,
+                      ", ", train_drop, ", ", test_drop, flush=True)
+                if n_kernels != filters and kernel_size != ks:
                     continue
 
                 assert benchmarkfunction == benchmark, "benchmark names unequal; benchmarkfunction: " + \

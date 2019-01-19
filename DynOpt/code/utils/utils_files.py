@@ -166,16 +166,34 @@ def get_info_from_array_file_name(array_file_name):
     try:
         kernel_size = re.search(
             '_ks-[0-9]+', array_file_name).group().split('-')[1]
+    except AttributeError:
+        fitchg = None
+    try:
         n_kernels = re.search(
             '_kernels-[0-9]+', array_file_name).group().split('-')[1]
+    except AttributeError:
+        fitchg = None
+    try:
         l_rate = re.search('_lr-[0-9]+\.[0-9]+',
                            array_file_name).group().split('-')[1]
+    except AttributeError:
+        fitchg = None
+    try:
         n_epochs = re.search(
             '_epochs-[0-9]+', array_file_name).group().split('-')[1]
+    except AttributeError:
+        fitchg = None
+    try:
         batch_size = re.search(
             '_bs-[0-9]+', array_file_name).group().split('-')[1]
+    except AttributeError:
+        fitchg = None
+    try:
         train_drop = re.search(
             '_traindrop-[0-9]+\.[0-9]+', array_file_name).group().split('-')[1]
+    except AttributeError:
+        fitchg = None
+    try:
         test_drop = re.search(
             '_testdrop-[0-9]+\.[0-9]+', array_file_name).group().split('-')[1]
     except AttributeError:
