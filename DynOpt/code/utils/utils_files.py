@@ -244,6 +244,10 @@ def get_sorted_array_file_names_for_experiment_file_name(exp_file_name, arrays_p
     return np.sort(selected_files)
 
 
+def get_array_names_for_ks_and_filters(array_names, ks, n_filters):
+    return [f for f in array_names and ("_ks-" + str(ks)) in f and ("_kernels-" + str(n_filters)) in f]
+
+
 def select_experiment_files(benchmark_path, benchmarkfunction, poschgtypes,
                             fitchgtypes, dims, noises):
     '''

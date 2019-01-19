@@ -11,6 +11,7 @@ import os
 from os.path import isdir, join
 from posix import listdir
 
+from code.utils.utils_files import get_array_names_for_ks_and_filters
 from metrics.metrics_dynea import best_error_before_change, arr,\
     rel_conv_speed, avg_bog_for_one_run, rmse
 import numpy as np
@@ -228,6 +229,8 @@ class MetricCalculator():
             arrays_path = subdir_path + alg + "/arrays/"
             array_names = get_sorted_array_file_names_for_experiment_file_name(exp_file_name,
                                                                                arrays_path)
+            array_names = get_array_names_for_ks_and_filters(
+                array_names, ks, filters)
             print("array_names: ", array_names, flush=True)
 
             for array_file_name in array_names:
@@ -241,8 +244,8 @@ class MetricCalculator():
 
                 print(l_rate, ", ",  n_epochs, ", ", batch_size,
                       ", ", train_drop, ", ", test_drop, flush=True)
-                if n_kernels != filters and kernel_size != ks:
-                    continue
+                # if n_kernels != filters and kernel_size != ks:
+                #    continue
 
                 assert benchmarkfunction == benchmark, "benchmark names unequal; benchmarkfunction: " + \
                     str(benchmarkfunction) + \
