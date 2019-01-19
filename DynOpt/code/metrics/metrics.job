@@ -12,14 +12,14 @@
 
 
 benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-18/"
-outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-18/"
+outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-18_filter-ks/"
 benchmarkfunctions=sphere
 poschgtypes=sinefreq
 fitchgtypes=none
 dims=10
 noises=0.0
-pathaddition="scaling/"
-metricfilename="metric_db_scaling_2019-01-18.csv"
+pathaddition="architecture/"
+metricfilename="metric_db_architecture-filterks_2019-01-18.csv"
 onlyforpreds="True"			# True if metrics should be computed only over change periods where a prediction was made
 
 # -----------------------------------------------------------------------------
