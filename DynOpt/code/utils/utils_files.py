@@ -49,12 +49,14 @@ def get_metrics_file_name(metrics_file_path, predictor_name, benchmarkfunction, 
         day + '_' + time + ".csv"
 
 
-def get_logs_file_name(logs_file_path, predictor_name, benchmarkfunction,
+def get_logs_file_name(logs_file_path, predictor_name, benchmarkfunction, dims,
+                       poschgtype,
                        day, time, noise,
                        ks, n_kernels, lr, n_epochs, bs, train_drop, test_drop):
 
-    beginning = logs_file_path + predictor_name + "_" + benchmarkfunction + "_" + \
-        "noise-" + "{:.2f}".format(noise) + "_"
+    beginning = logs_file_path + predictor_name + "_" + benchmarkfunction + \
+        "_d-" + str(dims) + "_pch-" + str(poschgtype) + \
+        "_noise-" + "{:.2f}".format(noise) + "_"
     between = "ks-" + str(ks) + "_kernels-" + str(n_kernels) + "_lr-" + "{:.3f}".format(lr) + \
         "_epochs-" + str(n_epochs) + "_bs-" + str(bs) + "_traindrop-" + "{:.3f}".format(train_drop) + \
         "_testdrop-" + "{:.3}".format(test_drop) + "_"

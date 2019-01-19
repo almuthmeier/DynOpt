@@ -373,6 +373,8 @@ def run_parser():
     log_file_name = get_logs_file_name(comparator.logs_file_path,
                                        comparator.predictor,
                                        comparator.benchmarkfunction,
+                                       # TODO
+                                       comparator.dims[0], comparator.poschgtypes[0],
                                        comparator.day, comparator.time,
                                        # TODO assumes that only one noise value
                                        # is in the array
