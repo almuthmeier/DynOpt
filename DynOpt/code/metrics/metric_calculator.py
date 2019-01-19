@@ -86,7 +86,7 @@ class MetricCalculator():
             first_chgp_idx_with_pred:n_found]
         ea_rmse = rmse(relevant_glob_opt_per_chgperiod,
                        best_found_per_chgperiod[first_chgp_idx_with_pred:])
-        print("ea-rmse: ", ea_rmse)
+        print("                    ea-rmse: ", ea_rmse)
         foundpred_rmse = None
         truepred_rmse = None
         if not len(pred_opt_per_chgperiod) == 0:
@@ -99,8 +99,8 @@ class MetricCalculator():
                                   pred_opt_per_chgperiod)
             truepred_rmse = rmse(relevant_glob_opt_per_chgperiod,
                                  pred_opt_per_chgperiod)
-        print("truepred-rmse: ", truepred_rmse)
-        print("foundpred-rmse: ", foundpred_rmse)
+        print("                    truepred-rmse: ", truepred_rmse)
+        print("                    foundpred-rmse: ", foundpred_rmse)
         return ea_rmse, foundpred_rmse, truepred_rmse
 
     def compute_metrics(self, best_found_fit_per_gen, gens_of_chgperiods,
@@ -115,13 +115,13 @@ class MetricCalculator():
         bebc = best_error_before_change(gens_of_chgperiods, global_opt_fit_per_chgperiod,
                                         best_found_fit_per_gen, self.only_for_preds,
                                         first_chgp_idx_with_pred)
-        print("bebc: ", bebc)
+        print("                    bebc: ", bebc)
 
         # arr
         arr_value = arr(gens_of_chgperiods,
                         global_opt_fit_per_chgperiod, best_found_fit_per_gen,
                         self.only_for_preds, first_chgp_idx_with_pred)
-        print("arr: ", arr_value)
+        print("                    arr: ", arr_value)
 
         # fitness RMSEs
         fit_ea_rmse, fit_foundpred_rmse, fit_truepred_rmse = self.compute_rmses(
@@ -158,7 +158,7 @@ class MetricCalculator():
             # load experiment files for the benchmark function to get
             # information about real global optimum
             print("", flush=True)
-            print("benchmark: ", benchmarkfunction, flush=True)
+            print("\n\n\nbenchmark: ", benchmarkfunction, flush=True)
             experiment_files = select_experiment_files(self.benchmark_folder_path + benchmarkfunction,
                                                        benchmarkfunction,
                                                        self.poschgtypes,
@@ -224,7 +224,7 @@ class MetricCalculator():
         print("        alg_types: ", alg_types, flush=True)
         # algorithms with predictor types, e.g. "ea_no"
         for alg in alg_types:
-            print("            alg: ", alg, flush=True)
+            print("            \n\nalg: ", alg, flush=True)
             # read all array files for the runs of the experiment
             arrays_path = subdir_path + alg + "/arrays/"
             array_names = get_sorted_array_file_names_for_experiment_file_name(exp_file_name,
@@ -232,9 +232,11 @@ class MetricCalculator():
             if ks is not None and filters is not None:
                 array_names = get_array_names_for_ks_and_filters(
                     array_names, ks, filters)
-            print("array_names: ", array_names, flush=True)
+            print("                array_names: ", array_names, flush=True)
 
             for array_file_name in array_names:
+                print("                    results for array_name: ",
+                      array_file_name)
                 (predictor, benchmark, d, chgperiods, lenchgperiod,
                  ischgperiodrandom, veclen, peaks, noise, poschg,
                  fitchg,  _, _, run, kernel_size, n_kernels, l_rate,
@@ -300,8 +302,8 @@ class MetricCalculator():
                         'fit-ea-rmse': fit_ea_rmse, 'fit-foundpred-rmse': fit_foundpred_rmse, 'fit-truepred-rmse': fit_truepred_rmse,
                         'pos-ea-rmse': pos_ea_rmse, 'pos-foundpred-rmse': pos_foundpred_rmse, 'pos-truepred-rmse': pos_truepred_rmse}
                 df.at[len(df)] = data
-                print("len: ", len(df), flush=True)
-                print(df.columns, flush=True)
+                #print("len: ", len(df), flush=True)
+                #print(df.columns, flush=True)
                 # store data for bog and rcs
                 best_found_fit_per_gen_and_run_and_alg[alg].append(
                     best_found_fit_per_gen)
