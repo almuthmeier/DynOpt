@@ -56,8 +56,8 @@ def get_logs_file_name(logs_file_path, predictor_name, benchmarkfunction,
     beginning = logs_file_path + predictor_name + "_" + benchmarkfunction + "_" + \
         "noise-" + "{:.2f}".format(noise) + "_"
     between = "ks-" + str(ks) + "_kernels-" + str(n_kernels) + "_lr-" + "{:.3f}".format(lr) + \
-        "_epochs-" + str(n_epochs) + "_bs-" + str(bs) + "_traindrop-" + "{:.1f}".format(train_drop) + \
-        "_testdrop-" + "{:.1f}".format(test_drop) + "_"
+        "_epochs-" + str(n_epochs) + "_bs-" + str(bs) + "_traindrop-" + "{:.3f}".format(train_drop) + \
+        "_testdrop-" + "{:.3}".format(test_drop) + "_"
     ending = day + '_' + time.replace(":", "-") + ".txt" % noise
 
     return beginning + between + ending
