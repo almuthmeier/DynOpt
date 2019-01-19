@@ -209,7 +209,7 @@ class MetricCalculator():
                          ks, filters):
         print("        subdir: ", subdir, flush=True)
         if subdir == "steps_100":
-            continue
+            return
         subdir_path = output_dir_for_benchmark_funct + subdir + "/"
         # different alg types/predictors
         alg_types = [d for d in listdir(subdir_path) if (
