@@ -1,6 +1,7 @@
 #!/bin/bash
 
-lrates=(0.001 0.002 0.004)
+#lrates=(0.001 0.002 0.004)
+lrates=(0.004)
 
 for lr in "${lrates[@]}"
 do
