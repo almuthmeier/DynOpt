@@ -16,23 +16,24 @@
 # ----------------------------------------------------------------------------
 # sphere, rastrigin, rosenbrock
 
-functions=(sphere rastrigin rosenbrock)
-poschgt="sinefreq"
-n=0.00
+#functions=(sphere rastrigin rosenbrock)
+#poschgt="sinefreq"
+#n=0.00
+#for f in "${functions[@]}"
 
 # ----------------------------------------------------------------------------
 # MPB
 
-#f="mpbcorr"
-#poschgt="none"
-#noises=(0.00 0.01 0.05)
-#for n in "${noises[@]}"
+f="mpbcorr"
+poschgt="none"
+noises=(0.00 0.01 0.05)
+
 
 # ----------------------------------------------------------------------------
 
 
 
-for f in "${functions[@]}"
+for n in "${noises[@]}"
 do
 	./run_server.sh "$1" "$2" "$3" "$4" "$f" "$poschgt" "$n"&
 done
