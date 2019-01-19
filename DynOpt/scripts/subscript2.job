@@ -5,11 +5,17 @@
 #SBATCH --mem=32G
 #SBATCH --time=3-00:00
 
+# input parameters:
+#  $1 -> predictor type
+#  $2 -> algnameaddition
+#  $3 -> dimension
 
-dropout=(0.01 0.05 0.1)
-for d in "${dropout[@]}"
+functions=(sphere rastrigin rosenbrock)
+poschgt="sinefreq"
+
+for f in "${functions[@]}"
 do
-	./run_server.sh $1 $2 $d &
+	./run_server.sh $1 $2 $3 $f $poschgt &
 done
 
 wait

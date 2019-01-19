@@ -1,11 +1,18 @@
 #!/bin/bash
 
-#lrates=(0.001 0.002 0.004)
-lrates=(0.004)
+dims=(2 5 10 20)
 
-for lr in "${lrates[@]}"
+
+
+
+pred="tcn"
+algnameaddition1=""
+algnameaddition2="_auto"
+
+for d in "${dims[@]}"
 do
-	./subscript1.sh $lr &
+	sbatch --job-name="d$d-tcn" --output="slurm_d$d-auto.%j.out" --error="slurm_d$d-auto.%j.err" subscript2.job $pred $algnameaddition1 $d &
+	sbatch --job-name="d$d-auto" --output="slurm_d$d-auto.%j.out" --error="slurm_d$d-auto.%j.err" subscript2.job $pred $algnameaddition2 $d &
 done
 
 wait
