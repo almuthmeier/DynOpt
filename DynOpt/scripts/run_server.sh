@@ -3,8 +3,10 @@
 # like slurm.job but no .job-script
 
 # is called by subscript.job with input parameters
-# 	$1 -> number of filters
-# 	$2 -> kernel size
+# 	$1 -> learning rate
+# 	$2 -> batch size
+# 	$2 -> dropout rate
+
 
 #------------------------------------------------------------------------------
 # Parameters
@@ -61,16 +63,16 @@ useuncs=False				# if True -> TCN with automatic learning of aleatoric and epist
 							# ep. unc. is used as standard deviation for re-initializing the population after a change
 trainmcruns=20				# only used if useuncs; number of Monte Carlo runs during training
 testmcruns=5				# only used if useuncs; number of Monte Carlo runs during testing/prediction
-traindropout=0.05			# dropout rate for training
-testdropout=0.1				# only used if useuncs; dropout rate for testing/prediction
-kernelsize=$2 			# kernel size for TCN
-nkernels=$1				# number of kernels for TCN (same in every layer)
-lr=0.002					# leanring rate of TCN
+traindropout=$3				# dropout rate for training
+testdropout=$3				# only used if useuncs; dropout rate for testing/prediction
+kernelsize=6	 			# kernel size for TCN
+nkernels=27					# number of kernels for TCN (same in every layer)
+lr=$1						# leanring rate of TCN
 
 # ANN predictor
 neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
 epochs=80					# number of training epochs for the RNN prediction model
-batchsize=32				# batch size for RNN model
+batchsize=$2				# batch size for RNN model
 nlayers=2					# overall number of layers (incl. tl layers)
 tlmodelpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/models_2018-11-19/"	# path to the pre-trained transfer learning model
 ntllayers=1					# number of layers in the transfer learning model
@@ -80,7 +82,7 @@ ngpus=1    					# number of GPUs to use (for RNN model)
 ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any experiment are run parallel)  
 
 # output paths
-pathaddition="architecture/filters-ks" #"firsttest"	# "stepevaluation"
+pathaddition="architecture/trainparams" #"firsttest"	# "stepevaluation"
 #pathadditions="$pathaddition/steps""_""$timesteps"
 pathadditions="$pathaddition/"
 
@@ -104,7 +106,7 @@ predictor=tcn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense
 
 algnameaddition="" 
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-18_filter-ks/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-18_trainparams/$benchmarkfunction/"		# path to output folder
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)

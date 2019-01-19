@@ -1,9 +1,10 @@
 #!/bin/bash
 
-kernelsizes=(2 3 4 5 6 7)
-for k in "${kernelsizes[@]}"
+lrates=(0.001 0.002 0.004)
+
+for lr in "${lrates[@]}"
 do
-	sbatch --job-name="ks-$k" --output="slurm_ks-$k.%j.out" --error="slurm_ks-$k.%j.err" subscript.job $k &
+	./subscript1.sh $lr &
 done
 
 wait
