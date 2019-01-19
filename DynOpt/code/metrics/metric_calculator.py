@@ -235,7 +235,7 @@ class MetricCalculator():
             print("                array_names: ", array_names, flush=True)
 
             for array_file_name in array_names:
-                print("                    results for array_name: ",
+                print("                    \nresults for array_name: ",
                       array_file_name)
                 (predictor, benchmark, d, chgperiods, lenchgperiod,
                  ischgperiodrandom, veclen, peaks, noise, poschg,
@@ -330,7 +330,7 @@ class MetricCalculator():
             rcs_per_alg = rel_conv_speed(
                 gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict,
                 self.only_for_preds, first_chgp_idx_with_pred)
-            print("rcs_per_alg ", rcs_per_alg, flush=True)
+            print("                    rcs_per_alg ", rcs_per_alg, flush=True)
 
             # store RCS data
             for alg in keys:
