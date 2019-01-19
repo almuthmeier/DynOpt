@@ -9,7 +9,8 @@
 # input parameters:
 #  $1 -> predictor type
 #  $2 -> algnameaddition
-#  $3 -> dimension
+#  $3 -> whether uncertainties are used
+#  $4 -> dimension
 
 
 # ----------------------------------------------------------------------------
@@ -34,7 +35,7 @@ noises=(0.00 0.01 0.05)
 
 for n in "${noises[@]}"
 do
-	./run_server.sh "$1" "$2" "$3" "$f" "$poschgt" "$n"&
+	./run_server.sh "$1" "$2" "$3" "$4" "$f" "$poschgt" "$n"&
 done
 
 wait
