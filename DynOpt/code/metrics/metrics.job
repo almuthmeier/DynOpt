@@ -13,7 +13,7 @@
 
 benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/"
 outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-19_zusammengefuehrt_srr/"
-benchmarkfunctions=sphere,rosenbrock,rastrigin
+benchmarkfunctions=sphere,rosenbrock #,rastrigin
 poschgtypes=sinefreq
 fitchgtypes=none
 dims=2,5,10,20
