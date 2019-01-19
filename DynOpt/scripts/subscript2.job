@@ -3,12 +3,18 @@
 #  $2 -> algnameaddition
 #  $3 -> dimension
 
-functions=(sphere rastrigin rosenbrock)
-poschgt="sinefreq"
+# functions=(sphere rastrigin rosenbrock)
+# poschgt="sinefreq"
+# n=0.00
 
-for f in "${functions[@]}"
+f="mpbcorr"
+poschgt="none"
+noises=(0.00 0.01 0.05)
+
+#for f in "${functions[@]}"
+for n in "${noises[@]}"
 do
-	./run_server.sh "$1" "$2" "$3" "$f" "$poschgt" &
+	./run_server.sh "$1" "$2" "$3" "$f" "$poschgt" "$n"&
 done
 
 wait

@@ -8,6 +8,7 @@
 #  $3 -> dimension
 #  $4 -> function
 #  $5 -> position change type
+#  $6 -> noise
 
 
 #------------------------------------------------------------------------------
@@ -88,15 +89,15 @@ ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any ex
 # output paths
 pathaddition="architecture/trainparams" #"firsttest"	# "stepevaluation"
 #pathadditions="$pathaddition/steps""_""$timesteps"
-pathadditions="$pathaddition/"
+pathadditions="$pathaddition"
 
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # Set 1
 benchmarkfunction=$4	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
-poschgtypes=$5		# linear,sine,circle,mixture,sinefreq position change type; comma-separated integers
-noises=0.00					# noise, required only for mpb-benchmarks; comma-separated floats
+poschgtypes=$5			# linear,sine,circle,mixture,sinefreq position change type; comma-separated integers
+noises=$6				# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
