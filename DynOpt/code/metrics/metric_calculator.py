@@ -237,7 +237,7 @@ class MetricCalculator():
                  n_epochs, batch_size, train_drop, test_drop) = get_info_from_array_file_name(array_file_name)
 
                 print("n_kernels: ", n_kernels,
-                      " ks: ", kernel_size, flush=True)
+                      " ks: ", kernel_size, " but must be: ks: ", ks, " and filters: ", filters, flush=True)
 
                 print(l_rate, ", ",  n_epochs, ", ", batch_size,
                       ", ", train_drop, ", ", test_drop, flush=True)

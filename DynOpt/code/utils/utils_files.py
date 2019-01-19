@@ -197,7 +197,7 @@ def get_info_from_array_file_name(array_file_name):
         test_drop = re.search(
             '_testdrop-[0-9]+\.[0-9]+', array_file_name).group().split('-')[1]
     except AttributeError:
-        kernel_size = n_kernels = l_rate = n_epochs = batch_size = train_drop = test_drop = None
+        test_drop = None
 
     # get further info (without keys): predictor, benchmark, date, time, run
     # TODO(dev) here the order of the info in the file name is important
