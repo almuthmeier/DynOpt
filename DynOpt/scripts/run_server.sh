@@ -19,7 +19,7 @@
 
 # benchmark problem
 algorithm="dynea" 			# dynea or dynpso
-repetitions=5				# number runs for each experiment
+repetitions=20				# number runs for each experiment
 chgperiodrepetitions=1		# number runs for each change period
 chgperiods=554				# number of change periods 
 lenchgperiod=30				# number of generations per change period; has to be
@@ -68,7 +68,7 @@ nrequiredtraindata=128		# number of training data that is used for training
 useuncs=$3					# if True -> TCN with automatic learning of aleatoric and epistemic uncertainty is used;
 							# ep. unc. is used as standard deviation for re-initializing the population after a change
 trainmcruns=50				# only used if useuncs; number of Monte Carlo runs during training
-testmcruns=7				# only used if useuncs; number of Monte Carlo runs during testing/prediction
+testmcruns=10				# only used if useuncs; number of Monte Carlo runs during testing/prediction
 traindropout=0.1			# dropout rate for training
 testdropout=0.1				# only used if useuncs; dropout rate for testing/prediction
 kernelsize=6	 			# kernel size for TCN
@@ -112,7 +112,7 @@ predictor=$1				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn
 
 algnameaddition=$2
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-19_algcomp/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-19_20reps/$benchmarkfunction/"		# path to output folder
 #outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/output_2019-01-19_algcomp/$benchmarkfunction/"
 #------------------------------------------------------------------------------
 
