@@ -169,32 +169,32 @@ def get_info_from_array_file_name(array_file_name):
         kernel_size = int(re.search(
             '_ks-[0-9]+', array_file_name).group().split('-')[1])
     except AttributeError:
-        fitchg = None
+        kernel_size = None
     try:
         n_kernels = int(re.search(
             '_kernels-[0-9]+', array_file_name).group().split('-')[1])
     except AttributeError:
-        fitchg = None
+        n_kernels = None
     try:
         l_rate = float(re.search('_lr-[0-9]+\.[0-9]+',
                                  array_file_name).group().split('-')[1])
     except AttributeError:
-        fitchg = None
+        l_rate = None
     try:
         n_epochs = int(re.search(
             '_epochs-[0-9]+', array_file_name).group().split('-')[1])
     except AttributeError:
-        fitchg = None
+        n_epochs = None
     try:
         batch_size = int(re.search(
             '_bs-[0-9]+', array_file_name).group().split('-')[1])
     except AttributeError:
-        fitchg = None
+        batch_size = None
     try:
         train_drop = float(re.search(
             '_traindrop-[0-9]+\.[0-9]+', array_file_name).group().split('-')[1])
     except AttributeError:
-        fitchg = None
+        train_drop = None
     try:
         test_drop = float(re.search(
             '_testdrop-[0-9]+\.[0-9]+', array_file_name).group().split('-')[1])
