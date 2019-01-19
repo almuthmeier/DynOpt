@@ -194,20 +194,20 @@ class MetricCalculator():
 
                 # algorithm parameter settings, e.g. "c1c2c3_1.49"
                 for subdir in direct_cild_dirs:
-                    for ks in [2, 3, 4, 5, 6, 7]:
-                        for filters in [27, 16, 8]:
-                            df = self.evaluate_subdirs(subdir, output_dir_for_benchmark_funct,
-                                                       df, exp_file_name, benchmarkfunction,
-                                                       dim, global_opt_fit_per_chgperiod,
-                                                       global_opt_pos_per_chgperiod,
-                                                       ks, filters)
+                    # for ks in [2, 3, 4, 5, 6, 7]: # TODO only for evaluation of ks and filters
+                    #    for filters in [27, 16, 8]:
+                    df = self.evaluate_subdirs(subdir, output_dir_for_benchmark_funct,
+                                               df, exp_file_name, benchmarkfunction,
+                                               dim, global_opt_fit_per_chgperiod,
+                                               global_opt_pos_per_chgperiod,
+                                               None, None)
         # save data frame into file (index=False --> no row indices)
         df.to_csv(self.output_dir_path + self.metric_filename, index=False)
 
     def evaluate_subdirs(self, subdir, output_dir_for_benchmark_funct, df,
                          exp_file_name, benchmarkfunction, dim,
                          global_opt_fit_per_chgperiod, global_opt_pos_per_chgperiod,
-                         ks, filters):
+                         ks=None, filters=None):
         print("        subdir: ", subdir, flush=True)
         if subdir == "steps_100":
             return
@@ -229,8 +229,9 @@ class MetricCalculator():
             arrays_path = subdir_path + alg + "/arrays/"
             array_names = get_sorted_array_file_names_for_experiment_file_name(exp_file_name,
                                                                                arrays_path)
-            array_names = get_array_names_for_ks_and_filters(
-                array_names, ks, filters)
+            if ks is not None and filters is not None:
+                array_names = get_array_names_for_ks_and_filters(
+                    array_names, ks, filters)
             print("array_names: ", array_names, flush=True)
 
             for array_file_name in array_names:
@@ -238,14 +239,6 @@ class MetricCalculator():
                  ischgperiodrandom, veclen, peaks, noise, poschg,
                  fitchg,  _, _, run, kernel_size, n_kernels, l_rate,
                  n_epochs, batch_size, train_drop, test_drop) = get_info_from_array_file_name(array_file_name)
-
-                print("n_kernels: ", n_kernels,
-                      " ks: ", kernel_size, " but must be: ks: ", ks, " and filters: ", filters, flush=True)
-
-                print(l_rate, ", ",  n_epochs, ", ", batch_size,
-                      ", ", train_drop, ", ", test_drop, flush=True)
-                # if n_kernels != filters and kernel_size != ks:
-                #    continue
 
                 assert benchmarkfunction == benchmark, "benchmark names unequal; benchmarkfunction: " + \
                     str(benchmarkfunction) + \
