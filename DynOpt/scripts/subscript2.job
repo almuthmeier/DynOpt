@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:0
 #SBATCH --ntasks=8
-#SBATCH --mem=32G
+#SBATCH --mem=8G
 #SBATCH --time=3-00:00
 
 
@@ -26,7 +26,7 @@
 
 f="mpbcorr"
 poschgt="none"
-noises=(0.00 0.01 0.05)
+noises=("0.00" "0.01" "0.05")
 
 
 # ----------------------------------------------------------------------------
