@@ -2,7 +2,6 @@
 
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=8
-#SBATCH --mem=48G
 #SBATCH --time=3-00:00
 
 
@@ -16,24 +15,24 @@
 # ----------------------------------------------------------------------------
 # sphere, rastrigin, rosenbrock
 
-#functions=(sphere rastrigin rosenbrock)
-#poschgt="sinefreq"
-#n=0.00
-#for f in "${functions[@]}"
+functions=(sphere rastrigin rosenbrock)
+poschgt="sinefreq"
+n=0.00
+
 
 # ----------------------------------------------------------------------------
 # MPB
 
-f="mpbcorr"
-poschgt="none"
-noises=(0.00 0.01 0.05)
-
+#f="mpbcorr"
+#poschgt="none"
+#noises=(0.00 0.01 0.05)
+#for n in "${noises[@]}"
 
 # ----------------------------------------------------------------------------
 
 
 
-for n in "${noises[@]}"
+for f in "${functions[@]}"
 do
 	./run_server.sh "$1" "$2" "$3" "$4" "$f" "$poschgt" "$n"&
 done
