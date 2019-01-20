@@ -2,7 +2,7 @@
 
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=8
-#SBATCH --mem=32G
+#SBATCH --mem=48G
 #SBATCH --time=3-00:00
 
 
