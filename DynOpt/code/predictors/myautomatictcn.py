@@ -198,7 +198,8 @@ class MyAutoTCN():
                                                    self.dropout_pl: dropout})
             total_loss += l
             steps += 1
-            train_writer.add_summary(summary, steps)
+            if train_writer is not None:
+                train_writer.add_summary(summary, steps)
 
             if (batch_idx > 0 and batch_idx % log_interval == 0):
                 avg_loss = total_loss / log_interval

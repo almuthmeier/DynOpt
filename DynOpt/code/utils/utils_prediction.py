@@ -360,7 +360,8 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     # Training
     import tensorflow as tf
     log_interval = 1
-    file_writer = tf.summary.FileWriter('./log/train', sess.graph)
+    #file_writer = tf.summary.FileWriter('./log/train', sess.graph)
+    file_writer = None
     if do_training:
         print("train_CNN", flush=True)
         predictor.train(n_epochs, sess, train_in_data, train_out_data,
