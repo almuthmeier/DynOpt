@@ -27,8 +27,8 @@ algnameaddition2b="_auto_36-2"
 useuncs1="False"
 useuncs2="True"
 epuncfactor1=0.0
-epuncfactor2a=-1 #dynamic
-epuncfactor2b=0.47 #(36.16%)
+epuncfactor2a=0.01 #(0.8%)
+epuncfactor2b=0.1 #(8%)
 
 
 
@@ -54,8 +54,8 @@ epuncfactor2b=0.47 #(36.16%)
 
 for d in "${dims[@]}"
 do
-	sbatch --mem=45G --job-name="d$d-dyn-auto" --output="slurm_d$d-dyn-auto.%j.out" --error="slurm_d$d-dyn-auto.%j.err" subscript2.job "$pred2" "$algnameaddition2a" "$useuncs2" "$epuncfactor2a" "$d" &
-	sbatch --mem=45G --job-name="d$d-047-auto" --output="slurm_d$d-047-auto.%j.out" --error="slurm_d$d-047-auto.%j.err" subscript2.job "$pred2" "$algnameaddition2b" "$useuncs2" "$epuncfactor2b" "$d" &
+	sbatch --mem=45G --job-name="d$d-001-auto" --output="slurm_d$d-001-auto.%j.out" --error="slurm_d$d-001-auto.%j.err" subscript2.job "$pred2" "$algnameaddition2a" "$useuncs2" "$epuncfactor2a" "$d" &
+	sbatch --mem=45G --job-name="d$d-01-auto" --output="slurm_d$d-01-auto.%j.out" --error="slurm_d$d-01-auto.%j.err" subscript2.job "$pred2" "$algnameaddition2b" "$useuncs2" "$epuncfactor2b" "$d" &
 done
 
 wait
