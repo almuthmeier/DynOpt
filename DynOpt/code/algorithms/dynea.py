@@ -31,7 +31,7 @@ class DynamicEA():
                  n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps,
                  add_noisy_train_data, train_interval, n_required_train_data, use_uncs,
                  train_mc_runs, test_mc_runs, train_dropout, test_dropout,
-                 kernel_size, n_kernels, lr):
+                 kernel_size, n_kernels, lr, ep_unc_factor):
         '''
         Initialize a DynamicEA object.
         @param benchmarkfunction: (string)
@@ -107,6 +107,7 @@ class DynamicEA():
         self.add_noisy_train_data = add_noisy_train_data
         self.n_noisy_series = 20  # TODO
         self.use_uncs = use_uncs  # True if uncertainties should be trained, predicted and used
+        self.ep_unc_factor = ep_unc_factor
         # ---------------------------------------------------------------------
         # for EA (fixed values)
         # ---------------------------------------------------------------------
@@ -254,6 +255,7 @@ class DynamicEA():
                     mean = 0.0
                     # convert predictive variance to standard deviation
                     sigma = np.sqrt(self.epist_unc_per_chgperiod[-1])
+                    sigma *= self.ep_unc_factor
                     noisy_optimum_positions = np.array(
                         [gaussian_mutation(pred_optimum_position, mean,
                                            sigma, self.pred_np_rnd_generator)
