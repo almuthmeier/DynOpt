@@ -54,8 +54,8 @@ sbatch --mem=45G --job-name="Md$d-b-auto" --output="slurm_mpbcorr_d$d-b-auto.%j.
 
 for d in "${dims[@]}"
 do
-	sbatch --mem=45G --job-name="d$d-a-auto" --output="slurm_d$d-a-auto.%j.out" --error="slurm_d$d-a-auto.%j.err" subscript2.job "$pred2" "$algnameaddition2a" "$useuncs2" "$epuncfactor2a" "$d" &
-	sbatch --mem=45G --job-name="d$d-b-auto" --output="slurm_d$d-b-auto.%j.out" --error="slurm_d$d-b-auto.%j.err" subscript2.job "$pred2" "$algnameaddition2b" "$useuncs2" "$epuncfactor2b" "$d" &
+	sbatch --mem=45G --job-name="d$d-dyn-auto" --output="slurm_d$d-dyn-auto.%j.out" --error="slurm_d$d-dyn-auto.%j.err" subscript2.job "$pred2" "$algnameaddition2a" "$useuncs2" "$epuncfactor2a" "$d" &
+	sbatch --mem=45G --job-name="d$d-047-auto" --output="slurm_d$d-047-auto.%j.out" --error="slurm_d$d-047-auto.%j.err" subscript2.job "$pred2" "$algnameaddition2b" "$useuncs2" "$epuncfactor2b" "$d" &
 done
 
 wait
