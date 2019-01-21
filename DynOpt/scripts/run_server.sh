@@ -68,7 +68,8 @@ traininterval=75			# number of change periods that must have passed before predi
 nrequiredtraindata=128		# number of training data that is used for training
 useuncs=$3					# if True -> TCN with automatic learning of aleatoric and epistemic uncertainty is used;
 							# ep. unc. is used as standard deviation for re-initializing the population after a change
-epuncfactor=$4				# factor for standard deviation (for re-initializing the population)						
+epuncfactor=$4				# factor for standard deviation (for re-initializing the population)
+							# If epuncfactor < 0 the predictive uncertainty is multiplied by factors of different levels (like for the other predictors) when the population is re-initialized)			
 trainmcruns=50				# only used if useuncs; number of Monte Carlo runs during training
 testmcruns=10				# only used if useuncs; number of Monte Carlo runs during testing/prediction
 traindropout=0.1			# dropout rate for training
@@ -114,8 +115,8 @@ predictor=$1				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn
 
 algnameaddition=$2
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-21_sigmas/$benchmarkfunction/"		# path to output folder
-#outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/output_2019-01-21_sigmas/$benchmarkfunction/"
+outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-21_sigmas_dyn/$benchmarkfunction/"		# path to output folder
+#outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/output_2019-01-21_sigmas_dyn/$benchmarkfunction/"
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
