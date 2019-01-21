@@ -16,9 +16,9 @@
 # ----------------------------------------------------------------------------
 # sphere, rastrigin, rosenbrock
 
-#functions=(sphere rastrigin rosenbrock)
-#poschgt="sinefreq"
-#n=0.00
+functions=(sphere rastrigin rosenbrock)
+poschgt="sinefreq"
+n=0.00
 
 
 # ----------------------------------------------------------------------------
