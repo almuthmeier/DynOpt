@@ -6,10 +6,11 @@
 #  $1 -> predictor type
 #  $2 -> algnameaddition
 #  $3 -> whether uncertainties are used
-#  $4 -> dimension
-#  $5 -> function
-#  $6 -> position change type
-#  $7 -> noise
+#  $4 -> factor for standard deviation
+#  $5 -> dimension
+#  $6 -> function
+#  $7 -> position change type
+#  $8 -> noise
 
 
 #------------------------------------------------------------------------------
@@ -41,7 +42,7 @@ ubound=100					# maximum bound of the benchmark's range
 
 # run only some experiments of all for the benchmark problem (the next four parameters are lists)
 fitchgtypes=none			# fitness change type; comma-separated integers
-dims=$4						# dimensionality of fitness function; comma-separated integers
+dims=$5						# dimensionality of fitness function; comma-separated integers
 
 # PSO
 c1=1.496180					# influence of particle's best solution 
@@ -67,6 +68,7 @@ traininterval=75			# number of change periods that must have passed before predi
 nrequiredtraindata=128		# number of training data that is used for training
 useuncs=$3					# if True -> TCN with automatic learning of aleatoric and epistemic uncertainty is used;
 							# ep. unc. is used as standard deviation for re-initializing the population after a change
+epuncfactor=$4				# factor for standard deviation (for re-initializing the population)						
 trainmcruns=50				# only used if useuncs; number of Monte Carlo runs during training
 testmcruns=10				# only used if useuncs; number of Monte Carlo runs during testing/prediction
 traindropout=0.1			# dropout rate for training
@@ -96,9 +98,9 @@ pathadditions="$pathaddition"
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # Set 1
-benchmarkfunction=$5	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
-poschgtypes=$6			# linear,sine,circle,mixture,sinefreq position change type; comma-separated integers
-noises=$7				# noise, required only for mpb-benchmarks; comma-separated floats
+benchmarkfunction=$6	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+poschgtypes=$7			# linear,sine,circle,mixture,sinefreq position change type; comma-separated integers
+noises=$8				# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
@@ -153,6 +155,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -traininterval="$traininterval" \
 -nrequiredtraindata="$nrequiredtraindata" \
 -useuncs="$useuncs" \
+-epuncfactor="$epuncfactor" \
 -trainmcruns="$trainmcruns" \
 -testmcruns="$testmcruns" \
 -traindropout="$traindropout" \
