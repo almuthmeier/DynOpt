@@ -12,14 +12,14 @@
 
 
 benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/"
-outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-19_zusammengefuehrt_srr/"
-benchmarkfunctions=sphere,rosenbrock #,rastrigin
+outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-19_20reps_ohneFehler_zusammengefuehrt/"
+benchmarkfunctions=sphere,rosenbrock,rastrigin#,mpbcorr
 poschgtypes=sinefreq
 fitchgtypes=none
 dims=2,5,10,20
 noises=0.0
 pathaddition="architecture/"
-metricfilename="metric_db_algcomp_2019-01-19.csv"
+metricfilename="metric_db_algcomp_2019-01-21.csv"
 onlyforpreds="True"			# True if metrics should be computed only over change periods where a prediction was made
 
 # -----------------------------------------------------------------------------
