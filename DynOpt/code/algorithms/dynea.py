@@ -55,6 +55,7 @@ class DynamicEA():
         RNN prediction model
         @param epochs: (int) number of epochs to train the RNN predicton model
         @param batch_size: (int) batch size for the RNN predictor
+        @patam ep_unc_factor: if < 0: different sigma levels are used
         '''
         # ---------------------------------------------------------------------
         # for the problem
@@ -251,7 +252,8 @@ class DynamicEA():
                 # immigrants randomly in the area around the optimum (in case
                 # of TCN the area is bound to the predicitve variance)
                 two_third = math.ceil((n_remaining_immigrants / 3) * 2)
-                if self.epist_unc_per_chgperiod is not [] and self.use_uncs:
+                if (self.epist_unc_per_chgperiod is not [] and self.use_uncs and
+                        self.ep_unc_factor > 0):
                     mean = 0.0
                     # convert predictive variance to standard deviation
                     sigma = np.sqrt(self.epist_unc_per_chgperiod[-1])
@@ -266,16 +268,21 @@ class DynamicEA():
                     # insert new generated noisy neighbors of the predicted
                     # optimum (noise has different levels (equal number of
                     # immigrants per noise level)
-                    noise_steps = [1, 10, 100, 1000]
-                    n_noise_steps = len(noise_steps)
-                    n_immigrants_per_noise = two_third // n_noise_steps
+                    sigmas = [0.01, 0.1, 1.0, 10.0]
+                    n_immigrants_per_noise = two_third // len(sigmas)
                     mean = 0.0
-                    for i in noise_steps:
+                    for s in sigmas:
                         if n_immigrants_per_noise > 0:
-                            sigma = i * 0.01  # sigma -> 0.01, 0.1, 1.0, 10.0
+                            if self.use_uncs and self.epist_unc_per_chgperiod is not []:
+                                # this case can only be reached if
+                                # self.ep_unc_factor  < 0
+
+                                # convert predictive variance to standard
+                                # deviation and multiply with sigma-factor
+                                s *= np.sqrt(self.epist_unc_per_chgperiod[-1])
                             noisy_optimum_positions = np.array(
                                 [gaussian_mutation(pred_optimum_position, mean,
-                                                   sigma, self.pred_np_rnd_generator)
+                                                   s, self.pred_np_rnd_generator)
                                  for _ in range(n_immigrants_per_noise)])
                             immigrants = np.concatenate(
                                 (immigrants, noisy_optimum_positions))
