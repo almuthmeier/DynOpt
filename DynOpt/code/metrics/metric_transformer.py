@@ -37,25 +37,16 @@ class MetricTransformer():
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20_ohneDrop_mitNOundARR/"
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Robustness/output_2018-12-11/"
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/"
-            # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy,griewank
-            self.benchmarkfunctions = [
-                "rastrigin", "sphere", "mpbcorr"]
-            # ["linear", "sine", "circle"]
-            self.poschgtypes = ["sine"]  # , "linear"]
-            self.fitchgtypes = ["none"]
-            self.dims = [1, 5, 10, 50]
-            self.noises = [0.0, 0.2]
+            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-18_trainparams/"
+            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_zusammengefuehrt_srr/"
+            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_20reps_ohneFehler_zusammengefuehrt/"
+            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
             #self.metric_filename = "metric_db_noiseevalation_2018-12-14_rmses.csv"
             #self.output_file_name = "avg_metric_db_2018-12-11_rmses.csv"
-            self.metric_filename = "metric_db.csv"
-            self.output_file_name = "avg_metric_db.csv"
+            self.metric_filename = "metric_db_sigmas_2019-01-22.csv"
+            self.output_file_name = "avg_metric_db_sigmas_2019-01-22.csv"
         else:
             self.output_dir_path = path_to_output
-            self.benchmarkfunctions = benchmarkfunctions
-            self.poschgtypes = poschgtypes
-            self.fitchgtypes = fitchgtypes
-            self.dims = dims
-            self.noises = noises
             self.metric_filename = metric_filename
             self.output_file_name = output_file_name
 
@@ -63,6 +54,10 @@ class MetricTransformer():
         path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-23/"
         path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Robustness/output_2018-12-11/"
         path_transformed_db = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/"
+        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-18_trainparams/"
+        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_zusammengefuehrt_srr/"
+        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_20reps_ohneFehler_zusammengefuehrt/"
+        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
         full_input_name = path_transformed_db + "avg_metric_db.csv"
         all_data = pd.read_csv(full_input_name)
 
@@ -142,7 +137,7 @@ class MetricTransformer():
         df.to_csv(full_output_file_name, index=False)
 
     def convert_buffer_to_rows(self, buffer, all_cols, col_idx_exp_filename,
-                               col_idx_run, col_idx_metrics_dict, data, line):
+                               col_idx_run, col_idx_metrics_dict, data, line, use_std):
         print("predictor: ", buffer[-1][1])
         buffered_df = pd.DataFrame(buffer, columns=all_cols)
         # compute average/stddev column-wise
@@ -152,26 +147,29 @@ class MetricTransformer():
         print("stddev: ", stddevs[0])
         # cut experiment and array file name
         avg_row = copy.deepcopy(buffer[-1][:col_idx_exp_filename])
-        std_row = copy.deepcopy(buffer[-1][:col_idx_exp_filename])
+
         # insert label
         avg_row[col_idx_run] = "avg"
-        std_row[col_idx_run] = "std"
+
         # insert average/stddev values
         for m in self.metrics:
             avg_row[col_idx_metrics_dict[m]] = averages[m]
-            std_row[col_idx_metrics_dict[m]] = stddevs[m]
-
         # empty the buffer and start filling it again
         data.append(avg_row)
-        data.append(std_row)
 
+        if use_std:  # do same for standard deviation
+            std_row = copy.deepcopy(buffer[-1][:col_idx_exp_filename])
+            std_row[col_idx_run] = "std"
+            for m in self.metrics:
+                std_row[col_idx_metrics_dict[m]] = stddevs[m]
+            data.append(std_row)
         # last time the function is called line is None
         if line is not None:
             buffer = []
             buffer.append(line.values.flatten())
             return buffer
 
-    def compute_avg_and_stddev(self):
+    def compute_avg_and_stddev(self, use_std):
         '''
         Step 1)
 
@@ -184,6 +182,7 @@ class MetricTransformer():
         col_idx_arrayfilename = whole_file.columns.get_loc('arrayfilename')
         col_idx_exp_filename = whole_file.columns.get_loc('expfilename')
         col_idx_run = whole_file.columns.get_loc('run')
+        col_idx_alg = whole_file.columns.get_loc('alg')
         col_idx_metrics_dict = {
             m: whole_file.columns.get_loc(m) for m in self.metrics}
 
@@ -201,24 +200,63 @@ class MetricTransformer():
                 # compare array file name to see whether the current line is
                 # a further run of the same experiment
                 curr_array_f_name = line[col_idx_arrayfilename].values[0]
+                curr_alg = line[col_idx_alg].values[0]
                 prev_array_f_name = buffer[-1][col_idx_arrayfilename]
+                prev_alg = buffer[-1][col_idx_alg]
                 # cut repetition and file ending
                 curr_array_f_name = curr_array_f_name.split("_")[:-1]
                 prev_array_f_name = prev_array_f_name.split("_")[:-1]
 
-                if curr_array_f_name == prev_array_f_name:  # further run for exp
+                # experiment file for different variants of TCNs can have same
+                # names since the all start with "tcn"
+                if curr_array_f_name == prev_array_f_name and curr_alg == prev_alg:
+                    # further run for exp
                     buffer.append(line.values.flatten())
                 else:  # all repetitions saved, so compute average + stddev
                     buffer = self.convert_buffer_to_rows(buffer, all_cols, col_idx_exp_filename,
-                                                         col_idx_run, col_idx_metrics_dict, data, line)
+                                                         col_idx_run, col_idx_metrics_dict, data, line, use_std)
 
         self.convert_buffer_to_rows(buffer, all_cols, col_idx_exp_filename,
-                                    col_idx_run, col_idx_metrics_dict, data, None)
+                                    col_idx_run, col_idx_metrics_dict, data, None, use_std)
         df = pd.DataFrame(data, columns=all_cols[:col_idx_exp_filename])
         df.to_csv(self.output_dir_path + self.output_file_name, index=False)
 
     def function_has_noise_param(self, f):
         return f == "mpbcorr"
+
+    def sort_rows(self):
+        # https://stackoverflow.com/questions/13838405/custom-sorting-in-pandas-dataframe
+        # https://stackoverflow.com/questions/44123874/dataframe-object-has-no-attribute-sort
+        # (22.1.19)
+        '''
+        Sorts the rows according to the desired order in the columns:
+        function, dim , alg, run
+
+        TODO: has to be adapted to the needs
+        '''
+        # load
+        full_path = self.output_dir_path + self.output_file_name
+        df = pd.read_csv(full_path)
+
+        # sort
+        df['function'] = pd.Categorical(
+            df['function'], ["sphere", "rosenbrock", "rastrigin"])
+        df['dim'] = pd.Categorical(df['dim'], [2, 5, 10, 20])
+        df['alg'] = pd.Categorical(df['alg'], ["dynea_tcn_auto_dynsig",
+                                               "dynea_tcn_auto_00-8",
+                                               "dynea_tcn_auto_08-0",
+                                               "dynea_tcn_auto_36-2",
+                                               "dynea_tcn_auto",
+                                               "dynea_tcn_auto_90-0",
+                                               "dynea_tcn_auto_95-4",
+                                               "dynea_tcn",
+                                               "dynea_autoregressive",
+                                               "dynea_no"])
+        df['run'] = pd.Categorical(df['run'], ["avg", "std"])
+        df = df.sort_values(["function", "dim", "alg", "run"])
+
+        # save
+        df.to_csv(self.output_dir_path + "sorted_rows.csv", index=False)
 
 
 def start_computing_avgs_stddevs(path_to_output=None,
@@ -228,11 +266,16 @@ def start_computing_avgs_stddevs(path_to_output=None,
     calculator = MetricTransformer(path_to_output, benchmarkfunctions, poschgtypes, fitchgtypes,
                                    dims, noises, metric_filename, output_file_name)
     # Step 1)
-    calculator.compute_avg_and_stddev()
+    use_std = False
+    calculator.compute_avg_and_stddev(use_std)
     print("saved metric database", flush=True)
 
+    # Step 1b)
+    # sort rows
+    calculator.sort_rows()
+    
     # Step 2)
-    #calculator.make_table_with_selected_data()
+    # calculator.make_table_with_selected_data()
 
 
 if __name__ == '__main__':
