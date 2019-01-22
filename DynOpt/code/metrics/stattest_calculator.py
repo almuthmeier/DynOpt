@@ -25,9 +25,10 @@ class StatisticalTestsCalculator():
         # path to "..../DynOpt/code"
         path_to_code = os.path.abspath(os.pardir)
         path_to_output = '/'.join(path_to_code.split('/')[:-1]) + "/output/"
-
         self.metric_path = path_to_output + "GECCO_2019/"
-        self.metric_file_path = self.metric_path + "metric_db.csv"
+
+        self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
+        self.metric_file_path = self.metric_path + "metric_db_sigmas_2019-01-22.csv"
         self.stattest_dir_path = self.metric_path + "stattests/"
 
     def select_rows_for_alg(self, df, alg, exp):
@@ -62,7 +63,8 @@ class StatisticalTestsCalculator():
         for name in names_of_unique_columns:
             value = first_row[name]
             if name == "poschg":
-                print(type(value))
+                # print(type(value))
+                pass
             if (type(value) is np.float64 or type(value) is float) and math.isnan(value):
                 # replace nan-values (i.e. empty cells) with empty string
                 value = ''
@@ -96,8 +98,17 @@ class StatisticalTestsCalculator():
             first_metrics_file_line.remove("arrayfilename")
             first_metrics_file_line.remove("run")
             first_metrics_file_line.remove("predictor")
+            first_metrics_file_line.remove("ks")
+            first_metrics_file_line.remove("kernels")
+            first_metrics_file_line.remove("lr")
+            first_metrics_file_line.remove("epochs")
+            first_metrics_file_line.remove("bs")
+            first_metrics_file_line.remove("traindrop")
+            first_metrics_file_line.remove("testdrop")
+
             # skip first column that only contains the row indices
-            first_metrics_file_line = first_metrics_file_line[1:]
+            # is no longer the index, but the function name
+            # first_metrics_file_line = first_metrics_file_line[1:]
             # make one string where the entries are comma-separated
             first_metrics_file_line_onestring = ','.join(
                 first_metrics_file_line)
