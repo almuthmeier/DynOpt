@@ -375,7 +375,7 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     reshaped_sample_x = prediction_series.reshape(
         n_sampl, n_time_steps, n_features)
     if test_mc_runs > 0:
-        (pred_var, avg_al_uncs,
+        (pred_var, avg_al_unc,
          pred_mean, predictions) = evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
                                                                    reshaped_sample_x,
                                                                    test_mc_runs,
@@ -383,6 +383,7 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
                                                                    predict_diffs)
         sample_y_hat = pred_mean
         pred_var = pred_var.flatten()
+        avg_al_unc = avg_al_unc.flatten()
     else:
         sample_y_hat, aleat_unc = predictor.predict(
             sess, reshaped_sample_x, n_sampl, n_features)
@@ -391,11 +392,12 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
             sample_y_hat = np.add(
                 best_found_pos_per_chgperiod[-1], sample_y_hat)
         pred_var = None
+        avg_al_unc = aleat_unc.flatten()
     # convert 2d-arrays with format [1, n_dims] to 1d arrays with [n_dims]
     next_optimum = sample_y_hat.flatten()
 
     #========================
-    return next_optimum, pred_var
+    return next_optimum, pred_var, avg_al_unc
 
 
 def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
@@ -483,6 +485,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     train_error = None
     train_err_per_epoch = None
     ep_unc = None
+    avg_al_unc = None
     if mode == "rnn":
         prediction = predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size,
                                       n_time_steps, n_features, scaler, predictor)
@@ -498,17 +501,17 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
         prediction, train_error, train_err_per_epoch = predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
                                                                           n_features, scaler, predictor, returnseq, shuffle)
     elif mode == "tcn":
-        prediction, ep_unc = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
-                                              n_time_steps, n_features, scaler, predictor,
-                                              shuffle, do_training,
-                                              best_found_pos_per_chgperiod, predict_diffs,
-                                              test_mc_runs)
+        prediction, ep_unc, avg_al_unc = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
+                                                          n_time_steps, n_features, scaler, predictor,
+                                                          shuffle, do_training,
+                                                          best_found_pos_per_chgperiod, predict_diffs,
+                                                          test_mc_runs)
 
     # convert predicted difference into position (tcn has already re-scaled the values
     # in the sub-functions)
     if predict_diffs and mode != "tcn":
         prediction = np.add(best_found_pos_per_chgperiod[-1], prediction)
-    return prediction, train_error, train_err_per_epoch, ep_unc
+    return prediction, train_error, train_err_per_epoch, ep_unc, avg_al_unc
 
 
 def get_n_neurons(n_neurons_type, dim):
