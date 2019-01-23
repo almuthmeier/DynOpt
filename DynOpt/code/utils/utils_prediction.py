@@ -427,14 +427,8 @@ def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
 
     # =====================
     # re-scale data, transform differences to absolute positions
-    for i in range(len(predictions)):
-        # format [n_mc_runs, n_data, dims]
-        predictions[i] = scaler.inverse_transform(predictions[i], False)
-        #aleat_uncts[i] = scaler.inverse_transform(aleat_uncts[i], True)
-    # redo differences
-    if pred_diffs:
-        predictions = np.add(best_found_pos_per_chgperiod[-1], predictions)
-
+    predictions, aleat_uncts = rescale_tcn_auto_results(
+        scaler, predictions, aleat_uncts, pred_diffs, best_found_pos_per_chgperiod)
     # =====================
     # predictive mean/variance according to S. Oehmckes paper
     pred_mean = np.average(predictions, axis=0)
@@ -462,6 +456,17 @@ def evaluate_tcn(sess, predictor, in_data):
         sess, in_data, n_data, n_features)
 
     return total_pred, aleat_unc
+
+
+def rescale_tcn_auto_results(scaler, predictions, aleat_uncts, pred_diffs, best_found_pos_per_chgperiod):
+    for i in range(len(predictions)):
+        # format [n_mc_runs, n_data, dims]
+        predictions[i] = scaler.inverse_transform(predictions[i], False)
+        aleat_uncts[i] = scaler.inverse_transform(aleat_uncts[i], True)
+    # redo differences
+    if pred_diffs:
+        predictions = np.add(best_found_pos_per_chgperiod[-1], predictions)
+    return predictions, aleat_uncts
 
 
 def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_epochs, batch_size,
