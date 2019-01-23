@@ -22,7 +22,7 @@ dims=(2 5 10 20)
 pred1="tcn"
 pred2="tcn"
 algnameaddition1=""								# TCN
-algnameaddition2a="_auto_1sig"				# AutoTCN variants
+algnameaddition2a="_auto_oalskal"				# AutoTCN variants
 algnameaddition2b="_auto_rmse"
 useuncs1="False"
 useuncs2="True"
@@ -57,8 +57,8 @@ epuncfactor2b=999 #rmse
 
 for d in "${dims[@]}"
 do
-	sbatch --mem=45G --job-name="d$d-1sig_auto" --output="slurm_d$d-1sig_auto.%j.out" --error="slurm_d$d-1sig_auto.%j.err" subscript2.job "$pred2" "$algnameaddition2a" "$useuncs2" "$epuncfactor2a" "$d" &
-	sbatch --mem=45G --job-name="d$d-rmse_auto" --output="slurm_d$d-rmse_auto.%j.out" --error="slurm_d$d-rmse_auto.%j.err" subscript2.job "$pred2" "$algnameaddition2b" "$useuncs2" "$epuncfactor2b" "$d" &
+	sbatch --mem=45G --job-name="d$d-oalskal" --output="slurm_d$d-oalskal.%j.out" --error="slurm_d$d-oalskal.%j.err" subscript2.job "$pred2" "$algnameaddition2a" "$useuncs2" "$epuncfactor2a" "$d" &
+	#sbatch --mem=45G --job-name="d$d-rmse_auto" --output="slurm_d$d-rmse_auto.%j.out" --error="slurm_d$d-rmse_auto.%j.err" subscript2.job "$pred2" "$algnameaddition2b" "$useuncs2" "$epuncfactor2b" "$d" &
 done
 
 wait

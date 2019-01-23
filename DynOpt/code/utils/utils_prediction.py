@@ -430,7 +430,7 @@ def evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
     for i in range(len(predictions)):
         # format [n_mc_runs, n_data, dims]
         predictions[i] = scaler.inverse_transform(predictions[i], False)
-        aleat_uncts[i] = scaler.inverse_transform(aleat_uncts[i], True)
+        #aleat_uncts[i] = scaler.inverse_transform(aleat_uncts[i], True)
     # redo differences
     if pred_diffs:
         predictions = np.add(best_found_pos_per_chgperiod[-1], predictions)
