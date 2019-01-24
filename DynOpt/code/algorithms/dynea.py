@@ -166,6 +166,8 @@ class DynamicEA():
         self.train_error_per_chgperiod = []
         # training error per epoch for each chgperiod (if prediction was done)
         self.train_error_for_epochs_per_chgperiod = []
+        # stores the population of the (beginning of the) last generation
+        self.population_of_last_gen = None
 
         # ---------------------------------------------------------------------
         # for EA (evaluation of variance) (repetitions of change periods
@@ -228,13 +230,30 @@ class DynamicEA():
         self.sigma = self.init_sigma
 
     def adapt_population(self, curr_gen, my_pred_mode):
+        sigma_factors = [0.01, 0.1, 1.0, 10.0]
         # create new random individual
         n_immigrants = self.mu
         random_immigrants = self.ea_np_rnd_generator.uniform(self.lbound,
                                                              self.ubound, (n_immigrants, self.dim))
         if my_pred_mode == "no" or n_immigrants == 0:
-            # randomly
-            immigrants = random_immigrants
+
+            use_position_noise = True  # True if no_VAR should be executed
+            if use_position_noise:
+                # add to current individuals a noise with standard
+                # deviation (x_t - x_t-1)
+                assert n_immigrants == self.mu
+                # averages over all dimensions (separately for individuals)
+                avg_squared_diffs = np.average(np.square(
+                    self.population - self.population_of_last_gen), axis=1)
+                # one entry for each individual
+                sigmas = np.sqrt(avg_squared_diffs)
+                mean = 0
+                immigrants = np.array(
+                    [gaussian_mutation(x, mean, float(s), self.pred_np_rnd_generator)
+                     for x, s in zip(self.population, sigmas)])
+            else:
+                # completely random
+                immigrants = random_immigrants
 
         elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive" or \
                 my_pred_mode == "tfrnn" or my_pred_mode == "tftlrnn" or \
@@ -275,10 +294,9 @@ class DynamicEA():
                     # insert new generated noisy neighbors of the predicted
                     # optimum (noise has different levels (equal number of
                     # immigrants per noise level)
-                    sigmas = [0.01, 0.1, 1.0, 10.0]
-                    n_immigrants_per_noise = two_third // len(sigmas)
+                    n_immigrants_per_noise = two_third // len(sigma_factors)
                     mean = 0.0
-                    for s in sigmas:
+                    for z in sigma_factors:
                         if n_immigrants_per_noise > 0:
                             if self.use_uncs and self.epist_unc_per_chgperiod is not []:
                                 # this case can only be reached if
@@ -286,10 +304,10 @@ class DynamicEA():
 
                                 # convert predictive variance to standard
                                 # deviation and multiply with sigma-factor
-                                s *= np.sqrt(self.epist_unc_per_chgperiod[-1])
+                                z *= np.sqrt(self.epist_unc_per_chgperiod[-1])
                             noisy_optimum_positions = np.array(
                                 [gaussian_mutation(pred_optimum_position, mean,
-                                                   s, self.pred_np_rnd_generator)
+                                                   z, self.pred_np_rnd_generator)
                                  for _ in range(n_immigrants_per_noise)])
                             immigrants = np.concatenate(
                                 (immigrants, noisy_optimum_positions))
@@ -501,6 +519,9 @@ class DynamicEA():
                     self.population_fitness)
 
             self.detected_chgperiods_for_gens.append(self.detected_n_changes)
+
+            # save start population
+            self.population_of_last_gen = copy.copy(self.population)
 
             # create la offsprings
             offspring_population = np.zeros((self.la, self.dim))
