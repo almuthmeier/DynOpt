@@ -417,7 +417,9 @@ class DynamicEA():
                     self.n_tllayers)
                 saver = tf.train.Saver(tl_variables)
             # start session
-            sess = tf.Session()
+            config = tf.ConfigProto()
+            config.gpu_options.allow_growth = True
+            sess = tf.Session(config=config)
             # initialize empty model (otherwise exception)
             sess.run(tf.global_variables_initializer())
             sess.run(tf.local_variables_initializer())
@@ -535,7 +537,7 @@ class DynamicEA():
             self.best_found_pos_per_gen[i] = copy.copy(
                 self.population[min_fitness_index])
         if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
-                self.predictor_name == "tftlrnndense":
+                self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn":
             sess.close()
             tf.reset_default_graph()
 
