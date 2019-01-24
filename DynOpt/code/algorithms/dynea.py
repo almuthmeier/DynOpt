@@ -253,7 +253,7 @@ class DynamicEA():
 
         if self.reinitialization_mode == "pred-RND":
             # -> one sigma for all dimensions
-            sigma = float(1.0)
+            sigma = 1.0
         elif self.reinitialization_mode == "pred-UNC":
             # convert predictive variance to standard deviation
             # -> different sigma per dimension
@@ -266,8 +266,7 @@ class DynamicEA():
             avg_squared_diff = np.average(np.square(np.array(
                 self.best_found_pos_per_chgperiod[-n_preds:]) - np.array(self.pred_opt_pos_per_chgperiod)))
 
-            sigma = float(np.sqrt(avg_squared_diff))
-            assert type(sigma) == float
+            sigma = np.sqrt(avg_squared_diff)  # scalar
         else:
             warnings.warn("unknown reinitialization mode: " +
                           self.reinitialization_mode)
