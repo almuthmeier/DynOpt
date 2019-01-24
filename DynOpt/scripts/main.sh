@@ -72,7 +72,7 @@ reinimode1="no-PRE"
 
 for d in "${dims[@]}"
 do
-	sbatch --mem=35G --job-name="d$d-no_npPRE" --output="slurm_d$d-no_npPRE.%j.out" --error="slurm_d$d-no_npPRE.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
+	sbatch --mem=16G --job-name="d$d-no_npPRE" --output="slurm_d$d-no_npPRE.%j.out" --error="slurm_d$d-no_npPRE.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
 done
 
 wait
