@@ -264,7 +264,7 @@ def TemporalConvNet(input_layer, num_channels, sequence_length, kernel_size=2,
     num_levels = len(num_channels)
     counters = {}
     for i in range(num_levels):
-        print(i)
+        print(i, flush=True)
         dilation_size = 2 ** i
         out_channels = num_channels[i]
         input_layer = TemporalBlock(input_layer, out_channels, kernel_size, stride=1, dilation_rate=dilation_size,
