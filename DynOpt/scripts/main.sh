@@ -1,21 +1,20 @@
 #!/bin/bash
 
 dims=(2 5 10 20)
-
+zfactors=0.01,0.1,1.0,10.0
 
 # ----------------------------------------------------------------------------
 # no, ar
 
-pred1="no"
-pred2="autoregressive"
-algnameaddition1="_noVAR"
-algnameaddition2="_predDEV"
-useuncs1="False"
-useuncs2="False"
-epuncfactor=0.0		# unused
-reinimode1="no-VAR"
-reinimode2="pred-DEV"
-zfactors=0.01,0.1,1.0,10.0
+#pred1="no"
+#pred2="autoregressive"
+#algnameaddition1="_noVAR"
+#algnameaddition2="_predDEV"
+#useuncs1="False"
+#useuncs2="False"
+#epuncfactor=0.0		# unused
+#reinimode1="no-VAR"
+#reinimode2="pred-DEV"
 
 #./subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
 #./subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
@@ -25,19 +24,17 @@ zfactors=0.01,0.1,1.0,10.0
 # ----------------------------------------------------------------------------
 # tcn, autotcn
 
-#pred1="tcn"
-#pred2="tcn"
-#algnameaddition1="_predDEV"								# TCN
-#algnameaddition2a="_auto_oalskal"				# AutoTCN variants
-#algnameaddition2b="_auto_rmse"
-#useuncs1="False"
-#useuncs2="True"
-#epuncfactor1=0.0 # unused
-#epuncfactor2a=1  # unused
-#epuncfactor2b=999 #rmse (unused
-
-#reinimode="pred-DEV"
-#zfactors=0.01,0.1,1.0,10.0
+pred1="tcn"
+red2="tcn"
+algnameaddition1="_predDEV"								# TCN
+algnameaddition2a="_auto_oalskal"				# AutoTCN variants
+algnameaddition2b="_auto_rmse"
+useuncs1="False"
+useuncs2="True"
+epuncfactor1=0.0 # unused
+epuncfactor2a=1  # unused
+epuncfactor2b=999 #rmse (unused
+reinimode="pred-DEV"
 
 
 # for sphere
@@ -75,8 +72,7 @@ zfactors=0.01,0.1,1.0,10.0
 
 for d in "${dims[@]}"
 do
-	./subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
-	./subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
+	sbatch --mem=35G --job-name="d$d-tcn_predDEV" --output="slurm_d$d-tcn_predDEV.%j.out" --error="slurm_d$d-tcn_predDEV.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor1" "$reinimode" "$zfactors" "$d" &
 done
 
 wait
