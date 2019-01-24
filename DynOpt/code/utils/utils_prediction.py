@@ -383,6 +383,8 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
         pred_var = pred_var.flatten()
         avg_al_unc = avg_al_unc.flatten()
     else:
+        # this case is executed also if the normal TCN ist trained (without
+        # uncertainty estimation)
         sample_y_hat, aleat_unc = predictor.predict(
             sess, reshaped_sample_x, n_sampl, n_features)
         sample_y_hat = scaler.inverse_transform(sample_y_hat, False)
@@ -390,7 +392,8 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
             sample_y_hat = np.add(
                 best_found_pos_per_chgperiod[-1], sample_y_hat)
         pred_var = None
-        avg_al_unc = aleat_unc.flatten()
+        if aleat_unc is not None:
+            avg_al_unc = aleat_unc.flatten()
     # convert 2d-arrays with format [1, n_dims] to 1d arrays with [n_dims]
     next_optimum = sample_y_hat.flatten()
 
