@@ -124,8 +124,6 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
         # #levels like in the paper "an Empirical Evaluation of Generic
         # Convolutional and Reccurent Networks for Sequence Modeling
         levels = math.ceil(math.log(n_time_steps / (kernel_size - 1), 2))
-        print("\nk: ", kernel_size, flush=True)
-        print("levels: ", levels, flush=True)
         # nhid = 16  # number filters
         in_channels = n_features  # for each dimension one channel
         output_size = n_features  # n_classes
@@ -358,7 +356,7 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     n_train = len(train_in_data)
     #========================
     # Training
-    import tensorflow as tf
+    #import tensorflow as tf
     log_interval = 1
     #file_writer = tf.summary.FileWriter('./log/train', sess.graph)
     file_writer = None
