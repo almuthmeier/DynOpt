@@ -104,7 +104,7 @@ pathadditions="$pathaddition"
 # Set 1
 benchmarkfunction=$8	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
 poschgtypes=$9			# linear,sine,circle,mixture,sinefreq position change type; comma-separated integers
-noises=$10				# noise, required only for mpb-benchmarks; comma-separated floats
+noises=${10}			# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
