@@ -156,14 +156,14 @@ def initialize_comparator_manually(comparator):
     comparator.algorithm = "dynea"
     comparator.repetitions = 1
     comparator.chgperiodrepetitions = 1
-    comparator.chgperiods = 180
+    comparator.chgperiods = 50
     comparator.lenchgperiod = 10
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "GECCO_2019/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_no/"
+    comparator.outputdirectory = "ersterTest/ea_tcn_auto/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "GECCO_2019/" + "sphere/"
     comparator.lbound = 0
@@ -195,13 +195,13 @@ def initialize_comparator_manually(comparator):
         comparator.sigma = 1.0
         comparator.trechenberg = 5
         comparator.tau = 0.5
-        # "no_RND" "no_VAR" "pred_RND" "pred_UNC" "pred_VAR" "pred_DEV"
-        comparator.reinitializationmode = "no_RND"
+        # "no_RND" "no_VAR" "no_PRE" "pred_RND" "pred_UNC" "pred_DEV"
+        comparator.reinitializationmode = "pred_DEV"
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense"
-    comparator.predictor = "no"
+    comparator.predictor = "tcn"
     comparator.timesteps = 4
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 5
