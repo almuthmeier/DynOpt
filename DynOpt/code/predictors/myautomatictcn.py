@@ -173,7 +173,7 @@ class MyAutoTCN():
             if shuffle_between_epochs:
                 X_train, Y_train = self.shuffle_data(X_train, Y_train, n_train)
             self.train_prediction(ep, sess, X_train, Y_train,
-                                  n_train, log_interval, train_writer, self.train_dropout)
+                                  n_train, log_interval, train_writer)
 
         if self.use_uncs:
             # train noise layer
@@ -182,9 +182,9 @@ class MyAutoTCN():
                     X_train, Y_train = self.shuffle_data(
                         X_train, Y_train, n_train)
                 self.train_noise(ep, sess, X_train, Y_train,
-                                 n_train, log_interval, train_writer, self.train_dropout)
+                                 n_train, log_interval, train_writer)
 
-    def train_prediction(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
+    def train_prediction(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer):
         steps = 0
         total_loss = 0
         start_time = time.time()
@@ -195,7 +195,7 @@ class MyAutoTCN():
             summary, _, p, l = sess.run([self.pred_merged, self.pred_update_step,
                                          self.out_layer, self.pred_loss],
                                         feed_dict={self.input_pl: x, self.output_pl: y,
-                                                   self.dropout_pl: dropout})
+                                                   self.dropout_pl: self.train_dropout})
             total_loss += l
             steps += 1
             if train_writer is not None:
@@ -212,7 +212,7 @@ class MyAutoTCN():
                 start_time = time.time()
                 total_loss = 0
 
-    def train_noise(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer, dropout):
+    def train_noise(self, epoch, sess, X_train, Y_train, n_train, log_interval, train_writer):
         if not self.use_uncs:
             warnings.warn("noise can not be trained since not activated!")
 
@@ -226,7 +226,7 @@ class MyAutoTCN():
             al_uncs = []
             for _ in range(self.n_train_mc_runs - 1):
                 p, al_unc = sess.run([self.out_layer, self.noise_out_layer], feed_dict={self.input_pl: x,
-                                                                                        self.dropout_pl: dropout})
+                                                                                        self.dropout_pl: self.train_dropout})
                 preds.append(p)
                 al_uncs.append(al_unc)
 
@@ -234,7 +234,7 @@ class MyAutoTCN():
             _, _, _, l = sess.run([self.noise_update_step, self.out_layer,
                                    self.noise_out_layer, self.noise_loss],
                                   feed_dict={self.input_pl: x, self.output_pl: y,
-                                             self.dropout_pl: dropout,
+                                             self.dropout_pl: self.train_dropout,
                                              self.preds_pl: preds,
                                              self.al_uncs_pl: al_uncs})
 
