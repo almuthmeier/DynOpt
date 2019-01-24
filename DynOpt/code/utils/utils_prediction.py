@@ -372,6 +372,7 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     n_sampl = 1  # should be 1
     reshaped_sample_x = prediction_series.reshape(
         n_sampl, n_time_steps, n_features)
+    avg_al_unc = None
     if test_mc_runs > 0:
         (pred_var, avg_al_unc,
          pred_mean, predictions) = evaluate_tcn_with_epistemic_unc(sess, predictor, scaler,
