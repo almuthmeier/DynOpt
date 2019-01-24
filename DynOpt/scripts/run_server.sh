@@ -7,11 +7,12 @@
 #  $2 -> algnameaddition
 #  $3 -> whether uncertainties are used
 #  $4 -> factor for standard deviation
-#  $5 -> dimension
-#  $6 -> function
-#  $7 -> position change type
-#  $8 -> noise
-
+#  $5 -> re-initialization mode
+#  $6 -> sigma factor
+#  $7 -> dimension
+#  $8 -> function
+#  $9 -> position change type
+#  $10 -> noise
 
 #------------------------------------------------------------------------------
 # Parameters
@@ -42,7 +43,7 @@ ubound=100					# maximum bound of the benchmark's range
 
 # run only some experiments of all for the benchmark problem (the next four parameters are lists)
 fitchgtypes=none			# fitness change type; comma-separated integers
-dims=$5						# dimensionality of fitness function; comma-separated integers
+dims=$7						# dimensionality of fitness function; comma-separated integers
 
 # PSO
 c1=1.496180					# influence of particle's best solution 
@@ -60,8 +61,8 @@ mean=0.0					# mutation mean
 sigma=1.0					# mutation strength
 trechenberg=5				# number of generations during that the number of successful mutations is counted
 tau=0.5						# 0 < tau < 1, for Rechenberg
-reinitializationmode="no-RND" # mode for re-initialization of the population: "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV"
-sigmafactors=0.01,0.1,1.0,10 # list of floats, factors for the sigma environment for random population re-initialization
+reinitializationmode=$5		# mode for re-initialization of the population: "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV"
+sigmafactors=$6				# list of floats, factors for the sigma environment for random population re-initialization
 
 # predictor
 timesteps=50				# number of previous optima used for the predictions
@@ -101,9 +102,9 @@ pathadditions="$pathaddition"
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # Set 1
-benchmarkfunction=$6	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
-poschgtypes=$7			# linear,sine,circle,mixture,sinefreq position change type; comma-separated integers
-noises=$8				# noise, required only for mpb-benchmarks; comma-separated floats
+benchmarkfunction=$8	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+poschgtypes=$9			# linear,sine,circle,mixture,sinefreq position change type; comma-separated integers
+noises=$10				# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================
@@ -117,8 +118,8 @@ predictor=$1				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn
 
 algnameaddition=$2
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-23_aleat-ohne-skalierung/$benchmarkfunction/"		# path to output folder
-#outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/output_2019-01-21_sigmas_dyn/$benchmarkfunction/"
+outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-24_reini/$benchmarkfunction/"		# path to output folder
+#outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/output_2019-01-24_reini/$benchmarkfunction/"
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)

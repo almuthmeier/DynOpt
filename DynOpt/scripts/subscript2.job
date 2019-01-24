@@ -10,7 +10,9 @@
 #  $2 -> algnameaddition
 #  $3 -> whether uncertainties are used
 #  $4 -> factor for standard deviation
-#  $5 -> dimension
+#  $5 -> re-initialization mode
+#  $6 -> sigma factor
+#  $7 -> dimension
 
 
 # ----------------------------------------------------------------------------
@@ -37,7 +39,7 @@ n=0.00
 
 for f in "${functions[@]}"
 do
-	./run_server.sh "$1" "$2" "$3" "$4" "$5" "$f" "$poschgt" "$n"&
+	./run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$f" "$poschgt" "$n"&
 done
 
 wait

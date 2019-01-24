@@ -109,6 +109,8 @@ class DynamicEA():
         self.add_noisy_train_data = add_noisy_train_data
         self.n_noisy_series = 20  # TODO
         self.use_uncs = use_uncs  # True if uncertainties should be trained, predicted and used
+        # TODO now unused, but could be used (and was used) to evaluate
+        # specific factors
         self.ep_unc_factor = ep_unc_factor
         # ---------------------------------------------------------------------
         # for EA (fixed values)
