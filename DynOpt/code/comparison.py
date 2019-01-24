@@ -64,6 +64,8 @@ class PredictorComparator(object):
         self.sigma = None  # float
         self.trechenberg = None  # int
         self.tau = None  # float
+        self.reinitializationmode = None  # string
+        self.sigmafactors = None
 
         # predictor
         self.predictor = None  # string
@@ -137,7 +139,9 @@ class PredictorComparator(object):
                             self.lbound, self.ubound,
                             alg_np_rnd_generator, pred_np_rnd_generator,
                             self.mu, self.la, self.ro, self.mean, self.sigma,
-                            self.trechenberg, self.tau, self.timesteps,
+                            self.trechenberg, self.tau,
+                            self.reinitializationmode, self.sigmafactors,
+                            self.timesteps,
                             n_neurons, self.epochs, self.batchsize,
                             self.n_layers, self.apply_tl, self.n_tllayers,
                             full_tl_model_name, self.tl_learn_rate,

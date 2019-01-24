@@ -60,6 +60,8 @@ mean=0.0					# mutation mean
 sigma=1.0					# mutation strength
 trechenberg=5				# number of generations during that the number of successful mutations is counted
 tau=0.5						# 0 < tau < 1, for Rechenberg
+reinitializationmode="no_RND" # mode for re-initialization of the population: "no_RND" "no_VAR" "pred_RND" "pred_UNC" "pred_VAR" "pred_DEV"
+sigmafactors=0.01,0.1,1.0,10 # list of floats, factors for the sigma environment for random population re-initialization
 
 # predictor
 timesteps=50				# number of previous optima used for the predictions
@@ -150,6 +152,8 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -sigma="$sigma" \
 -trechenberg="$trechenberg" \
 -tau="$tau" \
+-reinitializationmode="$reinitializationmode" \
+-sigmafactors="$sigmafactors" \
 -predictor="$predictor" \
 -timesteps="$timesteps" \
 -addnoisytraindata="$addnoisytraindata" \

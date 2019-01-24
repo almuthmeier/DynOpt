@@ -71,6 +71,8 @@ def define_parser_arguments():
     parser.add_argument("-sigma", type=float)
     parser.add_argument("-trechenberg", type=int)
     parser.add_argument("-tau", type=float)
+    parser.add_argument("-reinitializationmode", type=str)
+    parser.add_argument("-sigmafactors", type=float_list_type)
 
     # for predictor
     # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn
@@ -154,14 +156,14 @@ def initialize_comparator_manually(comparator):
     comparator.algorithm = "dynea"
     comparator.repetitions = 1
     comparator.chgperiodrepetitions = 1
-    comparator.chgperiods = 19
-    comparator.lenchgperiod = 20
+    comparator.chgperiods = 180
+    comparator.lenchgperiod = 10
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "GECCO_2019/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_tcn/"
+    comparator.outputdirectory = "ersterTest/ea_no/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "GECCO_2019/" + "sphere/"
     comparator.lbound = 0
@@ -186,25 +188,28 @@ def initialize_comparator_manually(comparator):
 
     # EA
     elif comparator.algorithm == "dynea":
-        comparator.mu = 5
-        comparator.la = 10
+        comparator.mu = 50
+        comparator.la = 100
         comparator.ro = 2
         comparator.mean = 0.0
         comparator.sigma = 1.0
         comparator.trechenberg = 5
         comparator.tau = 0.5
+        # "no_RND" "no_VAR" "pred_RND" "pred_UNC" "pred_VAR" "pred_DEV"
+        comparator.reinitializationmode = "no_RND"
+        comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense"
-    comparator.predictor = "tcn"
-    comparator.timesteps = 2
+    comparator.predictor = "no"
+    comparator.timesteps = 4
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
-    comparator.traininterval = 50
-    comparator.nrequiredtraindata = 4
-    comparator.useuncs = False
+    comparator.traininterval = 5
+    comparator.nrequiredtraindata = 10
+    comparator.useuncs = True
     comparator.epuncfactor = 1  # 68%
-    comparator.trainmcruns = 10 if comparator.useuncs else 0
-    comparator.testmcruns = 3 if comparator.useuncs else 0
+    comparator.trainmcruns = 5 if comparator.useuncs else 0
+    comparator.testmcruns = 5 if comparator.useuncs else 0
     comparator.traindropout = 0.1
     comparator.testdropout = 0.1 if comparator.useuncs else 0.0
     comparator.kernelsize = 3
@@ -218,7 +223,7 @@ def initialize_comparator_manually(comparator):
         # (not everything is necessary for every predictor)
         comparator.neuronstype = "fixed20"
         comparator.epochs = 80
-        comparator.batchsize = 32
+        comparator.batchsize = 8
         comparator.n_layers = 1
         # apply transfer learning only for tftlrnn
         comparator.apply_tl = comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense"
@@ -235,6 +240,8 @@ def initialize_comparator_manually(comparator):
     # assertions
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
+    if not comparator.useuncs:
+        assert comparator.reinitializationmode != "pred_UNC", "uncertainties must be predicted if reinitialization mode pred_UNC should be used"
 
 
 def initialize_comparator_with_read_inputs(parser, comparator):
@@ -242,7 +249,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 51:
+    if n_current_inputs != 53:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
@@ -284,6 +291,8 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.sigma = args.sigma
         comparator.trechenberg = args.trechenberg
         comparator.tau = args.tau
+        comparator.reinitializationmode = args.reinitializationmode
+        comparator.sigmafactors = args.sigmafactors
 
     # predictor
     comparator.predictor = args.predictor

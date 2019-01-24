@@ -27,6 +27,7 @@ class DynamicEA():
                  n_generations, experiment_data, predictor_name, lbound, ubound,
                  ea_np_rnd_generator, pred_np_rnd_generator,
                  mu, la, ro, mean, sigma, trechenberg, tau,
+                 reinitialization_mode, sigma_factors,
                  timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
                  n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps,
                  add_noisy_train_data, train_interval, n_required_train_data, use_uncs,
@@ -121,6 +122,8 @@ class DynamicEA():
         self.sigma = sigma
         self.t_rechenberg = trechenberg
         self.tau = tau
+        self.reinitialization_mode = reinitialization_mode
+        self.sigma_factors = sigma_factors
 
         # ---------------------------------------------------------------------
         # values that are not passed as parameters to the constructor
@@ -229,16 +232,61 @@ class DynamicEA():
         '''
         self.sigma = self.init_sigma
 
+    def compute_noisy_opt_positions(self, z, pred_optimum_position, n_immigrants_per_noise):
+        '''
+        cases with:
+        same sigma for all individuals, possible separate ones for dimensions
+
+        @param z: factor for the sigma environment
+        '''
+        mean = 0.0
+        sigma = None
+        try:
+            n_preds, _ = self.pred_opt_pos_per_chgperiod.shape
+        except AttributeError:
+            #"AttributeError: 'list' object has no attribute 'shape'"
+            # -> only one prediction was made until now
+            n_preds = 1
+
+        if self.reinitialization_mode == "pred_RND":
+            # -> one sigma for all dimensions
+            sigma = float(1.0)
+            print("sigma.shape: scalar")
+        elif self.reinitialization_mode == "pred_UNC":
+            # convert predictive variance to standard deviation
+            # -> different sigma per dimension
+            sigma = np.sqrt(self.epist_unc_per_chgperiod[-1])
+            assert len(sigma)
+        elif self.reinitialization_mode == "pred_DEV":
+            # -> one sigma for all dimensions
+            # difference of the last prediction and the last best found position;
+            # average over all dimensions
+            avg_squared_diffs = np.average(np.square(np.array(
+                self.best_found_pos_per_chgperiod[-n_preds:]) - np.array(self.pred_opt_pos_per_chgperiod)))
+
+            sigma = float(np.sqrt(avg_squared_diffs))
+            assert type(sigma) == float
+        else:
+            warnings.warn("unknown reinitialization mode: " +
+                          self.reinitialization_mode)
+
+        noisy_optimum_positions = np.array(
+            [gaussian_mutation(pred_optimum_position, mean,
+                               z * sigma, self.pred_np_rnd_generator)
+             for _ in range(n_immigrants_per_noise)])
+        return noisy_optimum_positions
+
     def adapt_population(self, curr_gen, my_pred_mode):
-        sigma_factors = [0.01, 0.1, 1.0, 10.0]
-        # create new random individual
+        mean = 0.0
         n_immigrants = self.mu
         random_immigrants = self.ea_np_rnd_generator.uniform(self.lbound,
                                                              self.ubound, (n_immigrants, self.dim))
         if my_pred_mode == "no" or n_immigrants == 0:
-
-            use_position_noise = True  # True if no_VAR should be executed
-            if use_position_noise:
+            if self.reinitialization_mode == "no_RND" or self.predictor_name != "no":
+                # completely random if no prediction is applied or the predictor
+                # is only applied later when enough training data is available
+                immigrants = random_immigrants
+            elif self.reinitialization_mode == "no_VAR":
                 # add to current individuals a noise with standard
                 # deviation (x_t - x_t-1)
                 assert n_immigrants == self.mu
@@ -246,14 +294,16 @@ class DynamicEA():
                 avg_squared_diffs = np.average(np.square(
                     self.population - self.population_of_last_gen), axis=1)
                 # one entry for each individual
-                sigmas = np.sqrt(avg_squared_diffs)
-                mean = 0
+                sigma_per_ind = np.sqrt(avg_squared_diffs)
+
+                assert sigma_per_ind.shape == (len(self.population),)
                 immigrants = np.array(
                     [gaussian_mutation(x, mean, float(s), self.pred_np_rnd_generator)
-                     for x, s in zip(self.population, sigmas)])
+                     for x, s in zip(self.population, sigma_per_ind)])
+
             else:
-                # completely random
-                immigrants = random_immigrants
+                warnings.warn("unknown reinitialization mode: " +
+                              self.reinitialization_mode)
 
         elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive" or \
                 my_pred_mode == "tfrnn" or my_pred_mode == "tftlrnn" or \
@@ -268,66 +318,49 @@ class DynamicEA():
             # b) completely randomly
             # ratio of a) and b): 2/3, 1/3
             if n_remaining_immigrants > 1:
-                # a)
-                # immigrants randomly in the area around the optimum (in case
-                # of TCN the area is bound to the predicitve variance)
-                two_third = math.ceil((n_remaining_immigrants / 3) * 2)
-                if (self.epist_unc_per_chgperiod is not [] and self.use_uncs and
-                        self.ep_unc_factor > 0):
-                    mean = 0.0
-                    # convert predictive variance to standard deviation
-                    sigma = np.sqrt(self.epist_unc_per_chgperiod[-1])
-                    sigma *= self.ep_unc_factor
-                    if self.ep_unc_factor == 999:  # TODO
-                        n_preds = len(self.pred_opt_pos_per_chgperiod)
-                        squared_diffs = np.square(
-                            np.array(self.best_found_pos_per_chgperiod[-n_preds:]) - np.array(self.pred_opt_pos_per_chgperiod))
-                        avg_squared_diffs = np.average(squared_diffs, axis=0)
-                        sigma = np.sqrt(avg_squared_diffs)
-                    noisy_optimum_positions = np.array(
-                        [gaussian_mutation(pred_optimum_position, mean,
-                                           sigma, self.pred_np_rnd_generator)
-                         for _ in range(two_third)])
-                    immigrants = np.concatenate(
-                        (immigrants, noisy_optimum_positions))
+                if self.reinitialization_mode == "pred_VAR":
+                    # similar to "no_VAR"
+                    #  -> different sigma per individual (same for all dimensions)
+
+                    # averages over all dimensions (separately for individuals)
+                    avg_squared_diffs = np.average(np.square(
+                        self.population - self.population_of_last_gen), axis=1)
+                    # one entry for each individual
+                    sigma_per_ind = np.sqrt(avg_squared_diffs)
+                    assert sigma_per_ind.shape == (len(self.population),)
+                    immigrants = np.array(
+                        [gaussian_mutation(x, mean, float(s), self.pred_np_rnd_generator)
+                         for x, s in zip(self.population, sigma_per_ind)])
                 else:
-                    # insert new generated noisy neighbors of the predicted
-                    # optimum (noise has different levels (equal number of
-                    # immigrants per noise level)
-                    n_immigrants_per_noise = two_third // len(sigma_factors)
-                    mean = 0.0
-                    for z in sigma_factors:
-                        if n_immigrants_per_noise > 0:
-                            if self.use_uncs and self.epist_unc_per_chgperiod is not []:
-                                # this case can only be reached if
-                                # self.ep_unc_factor  < 0
+                    # cases with same sigma for all individuals: they all
+                    # refer only to the predicted optimum position
+                    # a)
+                    # immigrants randomly in the area around the optimum (in case
+                    # of TCN the area is bound to the predictive variance). There
+                    # are 4 different realizations of this type.
+                    two_third = math.ceil((n_remaining_immigrants / 3) * 2)
+                    n_immigrants_per_noise = two_third // len(
+                        self.sigma_factors)
 
-                                # convert predictive variance to standard
-                                # deviation and multiply with sigma-factor
-                                z *= np.sqrt(self.epist_unc_per_chgperiod[-1])
-                            noisy_optimum_positions = np.array(
-                                [gaussian_mutation(pred_optimum_position, mean,
-                                                   z, self.pred_np_rnd_generator)
-                                 for _ in range(n_immigrants_per_noise)])
-                            immigrants = np.concatenate(
-                                (immigrants, noisy_optimum_positions))
-
-                # b)
-                # initialize remaining immigrants completely randomly
-                n_remaining_immigrants = n_immigrants - len(immigrants)
-                immigrants = np.concatenate(
-                    (immigrants, random_immigrants[:n_remaining_immigrants]))
+                    for z in self.sigma_factors:
+                        noisy_optimum_positions = self.compute_noisy_opt_positions(
+                            z, pred_optimum_position, n_immigrants_per_noise)
+                        immigrants = np.concatenate(
+                            (immigrants, noisy_optimum_positions))
+                    # b)
+                    # initialize remaining immigrants completely randomly
+                    n_remaining_immigrants = n_immigrants - len(immigrants)
+                    immigrants = np.concatenate(
+                        (immigrants, random_immigrants[:n_remaining_immigrants]))
             else:
                 # take one of the random immigrants
-                immigrants = np.concatenate(
-                    (immigrants, random_immigrants[0]))
-
-            assert len(
-                immigrants) == n_immigrants, "false number of immigrants: " + str(len(immigrants))
+                immigrants = np.concatenate((immigrants, random_immigrants[0]))
         else:
             msg = "unknown prediction mode " + my_pred_mode
             warnings.warn(msg)
 
+        assert len(
+            immigrants) == n_immigrants, "false number of immigrants: " + str(len(immigrants))
         # build new population
         self.population = np.concatenate((self.population, immigrants))
         # compute fitness of new population
