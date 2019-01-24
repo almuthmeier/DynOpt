@@ -248,15 +248,15 @@ class DynamicEA():
             # -> only one prediction was made until now
             n_preds = 1
 
-        if self.reinitialization_mode == "pred_RND":
+        if self.reinitialization_mode == "pred-RND":
             # -> one sigma for all dimensions
             sigma = float(1.0)
-        elif self.reinitialization_mode == "pred_UNC":
+        elif self.reinitialization_mode == "pred-UNC":
             # convert predictive variance to standard deviation
             # -> different sigma per dimension
             sigma = np.sqrt(self.epist_unc_per_chgperiod[-1])  # elementwise
             assert len(sigma) == self.dim
-        elif self.reinitialization_mode == "pred_DEV":
+        elif self.reinitialization_mode == "pred-DEV":
             # -> one sigma for all dimensions
             # difference of the last prediction and the last best found position;
             # average over all dimensions
@@ -321,18 +321,18 @@ class DynamicEA():
         random_immigrants = self.ea_np_rnd_generator.uniform(self.lbound,
                                                              self.ubound, (n_immigrants, self.dim))
         if my_pred_mode == "no" or n_immigrants == 0:
-            if self.reinitialization_mode == "no_RND" or self.predictor_name != "no":
+            if self.reinitialization_mode == "no-RND" or self.predictor_name != "no":
                 # completely random if no prediction is applied or the predictor
                 # is only applied later when enough training data is available
                 immigrants = random_immigrants
-            elif self.reinitialization_mode == "no_VAR":
+            elif self.reinitialization_mode == "no-VAR":
                 # add to current individuals a noise with standard
                 # deviation (x_t - x_t-1)
                 sigma_per_ind, _ = self.get_delta()
                 immigrants = np.array(
                     [gaussian_mutation(x, mean, float(s), self.pred_np_rnd_generator)
                      for x, s in zip(self.population, sigma_per_ind)])
-            elif self.reinitialization_mode == "no_PRE":
+            elif self.reinitialization_mode == "no-PRE":
                 print("no_PRE", flush=True)
                 sigma_per_ind, parent_population = self.get_delta()
                 predicted_pop = self.population + \

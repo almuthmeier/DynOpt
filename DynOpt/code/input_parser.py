@@ -195,8 +195,8 @@ def initialize_comparator_manually(comparator):
         comparator.sigma = 1.0
         comparator.trechenberg = 5
         comparator.tau = 0.5
-        # "no_RND" "no_VAR" "no_PRE" "pred_RND" "pred_UNC" "pred_DEV"
-        comparator.reinitializationmode = "pred_DEV"
+        # "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV"
+        comparator.reinitializationmode = "pred-DEV"
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
 
     # for predictor
