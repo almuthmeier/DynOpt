@@ -26,7 +26,7 @@ zfactors=0.01,0.1,1.0,10.0
 
 pred1="tcn"
 #red2="tcn"
-algnameaddition1="_auto_predKAL"								# TCN
+algnameaddition1="_auto_predRND"								# TCN
 #algnameaddition2a="_auto_oalskal"				# AutoTCN variants
 #algnameaddition2b="_auto_rmse"
 useuncs1="True"
@@ -34,7 +34,7 @@ useuncs1="True"
 epuncfactor1=0.0 # unused
 #epuncfactor2a=1  # unused
 #epuncfactor2b=999 #rmse (unused
-reinimode="pred-KAL"
+reinimode="pred-RND"
 
 
 # for sphere
@@ -72,7 +72,7 @@ reinimode="pred-KAL"
 
 for d in "${dims[@]}"
 do
-	sbatch --mem=35G --job-name="d$d-at_KAL" --output="slurm_d$d-at_KAL.%j.out" --error="slurm_d$d-at_KAL.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor1" "$reinimode" "$zfactors" "$d" &
+	sbatch --mem=35G --job-name="d$d-at_RND" --output="slurm_d$d-at_RND.%j.out" --error="slurm_d$d-at_RND.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor1" "$reinimode" "$zfactors" "$d" &
 done
 
 wait
