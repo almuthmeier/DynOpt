@@ -196,7 +196,7 @@ def initialize_comparator_manually(comparator):
         comparator.trechenberg = 5
         comparator.tau = 0.5
         # "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
-        comparator.reinitializationmode = "pred-KAL"
+        comparator.reinitializationmode = "pred-UNC"
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
 
     # for predictor
@@ -206,7 +206,7 @@ def initialize_comparator_manually(comparator):
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 5
     comparator.nrequiredtraindata = 10
-    comparator.useuncs = False
+    comparator.useuncs = True
     comparator.epuncfactor = 1  # 68%
     comparator.trainmcruns = 5 if comparator.useuncs else 0
     comparator.testmcruns = 5 if comparator.useuncs else 0
@@ -241,8 +241,11 @@ def initialize_comparator_manually(comparator):
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
     if not comparator.useuncs:
-        assert comparator.reinitializationmode != "pred-UNC", "uncertainties must be predicted if reinitialization mode pred-UNC should be used"
-    if not comparator.predictor == 'kalman':
+        assert comparator.reinitializationmode != "pred-UNC"
+    if not comparator.predictor == 'kalman' and not (comparator.predictor == "tcn" and comparator.useuncs):
+        # if neither Kalman prediction model nor AutoTCN is used reinitialization
+        # type pred-KAL must not be employed (since no uncertainty estimations
+        # available)
         assert comparator.reinitializationmode != "pred-KAL"
 
 
@@ -335,8 +338,11 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
     if not comparator.useuncs:
-        assert comparator.reinitializationmode != "pred-UNC", "uncertainties must be predicted if reinitialization mode pred-UNC should be used"
-    if not comparator.predictor == 'kalman':
+        assert comparator.reinitializationmode != "pred-UNC"
+    if not comparator.predictor == 'kalman' and not (comparator.predictor == "tcn" and comparator.useuncs):
+        # if neither Kalman prediction model nor AutoTCN is used reinitialization
+        # type pred-KAL must not be employed (since no uncertainty estimations
+        # available)
         assert comparator.reinitializationmode != "pred-KAL"
 
 

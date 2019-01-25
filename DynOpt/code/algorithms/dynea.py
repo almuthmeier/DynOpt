@@ -258,7 +258,12 @@ class DynamicEA():
         elif self.reinitialization_mode == "pred-UNC":
             # convert predictive variance to standard deviation
             # -> different sigma per dimension
-            sigma = np.sqrt(self.epist_unc_per_chgperiod[-1])  # elementwise
+            try:
+                # for predictor "tcn" (AutoTCN)
+                sigma = np.sqrt(self.epist_unc_per_chgperiod[-1])
+            except:
+                # for predictor "kalman"
+                sigma = np.sqrt(self.kal_variance_per_chgperiod[-1])
             assert len(sigma) == self.dim
         elif self.reinitialization_mode == "pred-DEV":
             # -> one sigma for all dimensions
@@ -273,7 +278,12 @@ class DynamicEA():
             # for explanation of this type see the paper "Tracking moving optima
             # using Kalman-Based predictions"
             c = 0.1  # seemed to be good setting in the paper
-            variance = self.kal_variance_per_chgperiod[-1]
+            try:
+                # for predictor "kalman"
+                variance = self.kal_variance_per_chgperiod[-1]
+            except:
+                # for predictor "tcn" (AutoTCN)
+                variance = self.epist_unc_per_chgperiod[-1]
             max_variance = np.max(variance)
             max_sigma = np.sqrt(max_variance)
             g = c / (1 + max_sigma)
