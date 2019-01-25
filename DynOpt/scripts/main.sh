@@ -7,14 +7,14 @@ zfactors=0.01,0.1,1.0,10.0
 # no, ar
 
 pred1="kalman"
-pred2="kalman"
+#pred2="kalman"
 algnameaddition1="_predUNC"
-algnameaddition2="_predKAL"
+#algnameaddition2="_predKAL"
 useuncs1="True"
-useuncs2="True"
+#useuncs2="True"
 epuncfactor=0.0		# unused
 reinimode1="pred-UNC"
-reinimode2="pred-KAL"
+#reinimode2="pred-KAL"
 
 
 
@@ -72,7 +72,7 @@ reinimode2="pred-KAL"
 for d in "${dims[@]}"
 do
 	./subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
-	./subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
+	#./subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
 done
 
 wait
