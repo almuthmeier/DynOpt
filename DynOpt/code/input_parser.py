@@ -241,7 +241,8 @@ def initialize_comparator_manually(comparator):
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
     if not comparator.useuncs:
-        assert comparator.reinitializationmode != "pred-UNC"
+        assert (comparator.reinitializationmode !=
+                "pred-UNC" and comparator.reinitializationmode != "pred-KAL")
     if not comparator.predictor == 'kalman' and not (comparator.predictor == "tcn" and comparator.useuncs):
         # if neither Kalman prediction model nor AutoTCN is used reinitialization
         # type pred-KAL must not be employed (since no uncertainty estimations
@@ -338,7 +339,8 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
     if not comparator.useuncs:
-        assert comparator.reinitializationmode != "pred-UNC"
+        assert (comparator.reinitializationmode !=
+                "pred-UNC" and comparator.reinitializationmode != "pred-KAL")
     if not comparator.predictor == 'kalman' and not (comparator.predictor == "tcn" and comparator.useuncs):
         # if neither Kalman prediction model nor AutoTCN is used reinitialization
         # type pred-KAL must not be employed (since no uncertainty estimations
