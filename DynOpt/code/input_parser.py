@@ -163,7 +163,7 @@ def initialize_comparator_manually(comparator):
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "GECCO_2019/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_no/"
+    comparator.outputdirectory = "ersterTest/ea_kalman/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "GECCO_2019/" + "sphere/"
     comparator.lbound = 0
@@ -195,13 +195,13 @@ def initialize_comparator_manually(comparator):
         comparator.sigma = 1.0
         comparator.trechenberg = 5
         comparator.tau = 0.5
-        # "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV"
-        comparator.reinitializationmode = "no-RND"
+        # "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
+        comparator.reinitializationmode = "pred-KAL"
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
-    comparator.predictor = "no"
+    comparator.predictor = "kalman"
     comparator.timesteps = 4
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 5
@@ -241,7 +241,9 @@ def initialize_comparator_manually(comparator):
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
     if not comparator.useuncs:
-        assert comparator.reinitializationmode != "pred_UNC", "uncertainties must be predicted if reinitialization mode pred_UNC should be used"
+        assert comparator.reinitializationmode != "pred-UNC", "uncertainties must be predicted if reinitialization mode pred-UNC should be used"
+    if not comparator.predictor == 'kalman':
+        assert comparator.reinitializationmode != "pred-KAL"
 
 
 def initialize_comparator_with_read_inputs(parser, comparator):
@@ -332,6 +334,10 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     # assertions
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
+    if not comparator.useuncs:
+        assert comparator.reinitializationmode != "pred-UNC", "uncertainties must be predicted if reinitialization mode pred-UNC should be used"
+    if not comparator.predictor == 'kalman':
+        assert comparator.reinitializationmode != "pred-KAL"
 
 
 def int_list_type(string):

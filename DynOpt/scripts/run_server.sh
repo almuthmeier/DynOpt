@@ -61,7 +61,7 @@ mean=0.0					# mutation mean
 sigma=1.0					# mutation strength
 trechenberg=5				# number of generations during that the number of successful mutations is counted
 tau=0.5						# 0 < tau < 1, for Rechenberg
-reinitializationmode=$5		# mode for re-initialization of the population: "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV"
+reinitializationmode=$5		# mode for re-initialization of the population: "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
 sigmafactors=$6				# list of floats, factors for the sigma environment for random population re-initialization
 
 # predictor

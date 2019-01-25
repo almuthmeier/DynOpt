@@ -219,6 +219,7 @@ def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler
 def predict_with_kalman(new_train_data, scaler, predictor,  do_training):
     '''
     Predicts next optimum position with a Kalman filter.
+    @param new_train_data: format [n_data, dims]
     '''
 
     if do_training:
@@ -232,16 +233,16 @@ def predict_with_kalman(new_train_data, scaler, predictor,  do_training):
     new_measurement = None  # not yet known
     next_mean, next_covariance = predictor.filter_update(
         means[-1], covariances[-1], new_measurement)
-
     # variance per dimension
     next_variance = np.diagonal(next_covariance)
 
     # invert scaling (1d array would result in DeprecatedWarning -> pass 2d)
-    next_mean = scaler.inverse_transform(
-        np.array([next_mean]), False).flatten()
-    next_variance = scaler.inverse_transform(
-        np.array([next_variance]), True).flatten()
-    return next_mean, next_covariance
+    next_mean = next_mean.reshape(1, -1)
+    next_variance = next_variance.reshape(1, -1)
+    next_mean = scaler.inverse_transform(next_mean, False).flatten()
+    next_variance = scaler.inverse_transform(next_variance, True).flatten()
+    assert (next_variance >= 0).all()
+    return next_mean, next_variance
 
 
 def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
@@ -536,7 +537,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
             raise
     elif mode == "kalman":
         prediction, variance = predict_with_kalman(
-            new_train_data, scaler, predictor,  do_training)
+            new_train_data, scaler, predictor, do_training)
     elif mode == "no":
         prediction = None
     elif mode == "tfrnn" or mode == "tftlrnn" or mode == "tftlrnndense":

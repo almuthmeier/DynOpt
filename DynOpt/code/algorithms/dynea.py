@@ -268,6 +268,20 @@ class DynamicEA():
                 self.best_found_pos_per_chgperiod[-n_preds:]) - np.array(self.pred_opt_pos_per_chgperiod)))
 
             sigma = np.sqrt(avg_squared_diff)  # scalar
+        elif self.reinitialization_mode == "pred-KAL":
+            assert z == 1.0  # should only have one noise level
+            # for explanation of this type see the paper "Tracking moving optima
+            # using Kalman-Based predictions"
+            c = 0.1  # seemed to be good setting in the paper
+            variance = self.kal_variance_per_chgperiod[-1]
+            max_variance = np.max(variance)
+            max_sigma = np.sqrt(max_variance)
+            g = c / (1 + max_sigma)
+            # number of immigrants produced around the prediction (remaining
+            # immigrants are created randomly afterwards)
+            n_immigrants_per_noise = math.floor(g * n_immigrants_per_noise)
+            sigma = np.sqrt(variance)
+            assert len(sigma) == self.dim
         else:
             warnings.warn("unknown reinitialization mode: " +
                           self.reinitialization_mode)
@@ -361,6 +375,8 @@ class DynamicEA():
             # b) completely randomly
             # ratio of a) and b): 2/3, 1/3
             if n_remaining_immigrants > 1:
+                if self.reinitialization_mode == "pred-KAL":
+                    self.sigma_factors = [1.0]
                 # cases with same sigma for all individuals: they all
                 # refer only to the predicted optimum position
                 # a)
