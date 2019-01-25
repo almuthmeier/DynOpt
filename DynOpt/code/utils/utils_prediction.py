@@ -90,7 +90,7 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                     nhid, lr):
     '''
     Creates the desired prediction model.
-    @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense, tcn
+    @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense, tcn, kalman
     @param batch_size: batch size for the RNN
     @param n_time_steps: number of time steps to use for prediction/training
     @param n_features: dimensionality of the solution space
@@ -112,6 +112,9 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
         # no object required since the AR model is created every time a
         # prediction is needed
         predictor = None
+    elif mode == "kalman":
+        from pykalman import KalmanFilter
+        predictor = KalmanFilter(n_dim_obs=n_features, n_dim_state=n_features)
     elif mode == "tfrnn" or mode == "tftlrnn" or mode == "tftlrnndense":
         from utils.utils_transferlearning import build_tl_rnn_predictor
         predictor = build_tl_rnn_predictor(rnn_type, ntllayers,
@@ -211,6 +214,34 @@ def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler
     # invert scaling (1d array would result in DeprecatedWarning -> pass 2d)
     converted = scaler.inverse_transform(np.array([prediction]), False)
     return converted.flatten()
+
+
+def predict_with_kalman(new_train_data, scaler, predictor,  do_training):
+    '''
+    Predicts next optimum position with a Kalman filter.
+    '''
+
+    if do_training:
+        # "training" of parameters
+        predictor.em(new_train_data)
+
+    # computation of states for past observations
+    means, covariances = predictor.filter(new_train_data)
+
+    # predicting the next step
+    new_measurement = None  # not yet known
+    next_mean, next_covariance = predictor.filter_update(
+        means[-1], covariances[-1], new_measurement)
+
+    # variance per dimension
+    next_variance = np.diagonal(next_covariance)
+
+    # invert scaling (1d array would result in DeprecatedWarning -> pass 2d)
+    next_mean = scaler.inverse_transform(
+        np.array([next_mean]), False).flatten()
+    next_variance = scaler.inverse_transform(
+        np.array([next_variance]), True).flatten()
+    return next_mean, next_covariance
 
 
 def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
@@ -493,6 +524,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     train_err_per_epoch = None
     ep_unc = None
     avg_al_unc = None
+    variance = None
     if mode == "rnn":
         prediction = predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size,
                                       n_time_steps, n_features, scaler, predictor)
@@ -502,6 +534,9 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
                 new_train_data, n_features, n_time_steps, scaler)
         except ValueError:
             raise
+    elif mode == "kalman":
+        prediction, variance = predict_with_kalman(
+            new_train_data, scaler, predictor,  do_training)
     elif mode == "no":
         prediction = None
     elif mode == "tfrnn" or mode == "tftlrnn" or mode == "tftlrnndense":
@@ -516,9 +551,10 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
 
     # convert predicted difference into position (tcn has already re-scaled the values
     # in the sub-functions)
+    # TODO (dev) add possibly predictor type
     if predict_diffs and mode != "tcn":
         prediction = np.add(best_found_pos_per_chgperiod[-1], prediction)
-    return prediction, train_error, train_err_per_epoch, ep_unc, avg_al_unc
+    return prediction, train_error, train_err_per_epoch, ep_unc, avg_al_unc, variance
 
 
 def get_n_neurons(n_neurons_type, dim):

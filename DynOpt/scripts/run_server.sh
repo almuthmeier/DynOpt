@@ -112,7 +112,7 @@ noises=${10}			# noise, required only for mpb-benchmarks; comma-separated floats
 
 #------------------------------------------------------------------------------
 # Command 3
-predictor=$1				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn
+predictor=$1				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, kalman
 
 # static
 

@@ -168,6 +168,7 @@ class DynamicEA():
         self.pred_opt_fit_per_chgperiod = []
         self.epist_unc_per_chgperiod = []  # predictive variance
         self.aleat_unc_per_chgperiod = []  # average aleatoric uncertainty
+        self.kal_variance_per_chgperiod = []  # estimated variance by kal. filter
         # training error per chgperiod (if prediction was done)
         self.train_error_per_chgperiod = []
         # training error per epoch for each chgperiod (if prediction was done)
@@ -348,7 +349,8 @@ class DynamicEA():
 
         elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive" or \
                 my_pred_mode == "tfrnn" or my_pred_mode == "tftlrnn" or \
-                my_pred_mode == "tftlrnndense" or my_pred_mode == "tcn":
+                my_pred_mode == "tftlrnndense" or my_pred_mode == "tcn" or \
+                my_pred_mode == "kalman":
             # last predicted optimum
             pred_optimum_position = self.pred_opt_pos_per_chgperiod[-1]
             # insert predicted optimum into immigrants
@@ -452,18 +454,21 @@ class DynamicEA():
             if do_training:
                 self.n_new_train_data = 0
             # predict next optimum position or difference (and re-scale value)
-            prediction, train_error, train_err_per_epoch, ep_unc, avg_al_unc = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
-                                                                                                             self.n_epochs, self.batch_size,
-                                                                                                             self.n_time_steps, n_features,
-                                                                                                             scaler, predictor, self.return_seq, self.shuffle_train_data,
-                                                                                                             do_training, self.best_found_pos_per_chgperiod,
-                                                                                                             self.predict_diffs, self.test_mc_runs)
+            (prediction, train_error, train_err_per_epoch,
+             ep_unc, avg_al_unc, kal_variance) = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
+                                                                               self.n_epochs, self.batch_size,
+                                                                               self.n_time_steps, n_features,
+                                                                               scaler, predictor, self.return_seq, self.shuffle_train_data,
+                                                                               do_training, self.best_found_pos_per_chgperiod,
+                                                                               self.predict_diffs, self.test_mc_runs)
             self.pred_opt_pos_per_chgperiod.append(copy.copy(prediction))
             self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
                 self.benchmarkfunction, prediction, gen_idx, self.experiment_data))
             if ep_unc is not None and self.use_uncs:
                 self.epist_unc_per_chgperiod.append(copy.copy(ep_unc))
                 self.aleat_unc_per_chgperiod.append(copy.copy(avg_al_unc))
+            if self.predictor_name == "kalman" and kal_variance is not None:
+                self.kal_variance_per_chgperiod.append(copy.copy(kal_variance))
             self.train_error_per_chgperiod.append(train_error)
             self.train_error_for_epochs_per_chgperiod.append(
                 train_err_per_epoch)

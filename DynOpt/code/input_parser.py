@@ -75,7 +75,7 @@ def define_parser_arguments():
     parser.add_argument("-sigmafactors", type=float_list_type)
 
     # for predictor
-    # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn
+    # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, kalman
     parser.add_argument("-predictor", type=str)
     parser.add_argument("-timesteps", type=int)
     parser.add_argument("-addnoisytraindata", type=str)
@@ -163,7 +163,7 @@ def initialize_comparator_manually(comparator):
     comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
         "/DynOpt/datasets/" + "GECCO_2019/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_tcn_auto/"
+    comparator.outputdirectory = "ersterTest/ea_no/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "GECCO_2019/" + "sphere/"
     comparator.lbound = 0
@@ -196,17 +196,17 @@ def initialize_comparator_manually(comparator):
         comparator.trechenberg = 5
         comparator.tau = 0.5
         # "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV"
-        comparator.reinitializationmode = "pred-DEV"
+        comparator.reinitializationmode = "no-RND"
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
 
     # for predictor
-    # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense"
-    comparator.predictor = "tcn"
+    # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
+    comparator.predictor = "no"
     comparator.timesteps = 4
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 5
     comparator.nrequiredtraindata = 10
-    comparator.useuncs = True
+    comparator.useuncs = False
     comparator.epuncfactor = 1  # 68%
     comparator.trainmcruns = 5 if comparator.useuncs else 0
     comparator.testmcruns = 5 if comparator.useuncs else 0

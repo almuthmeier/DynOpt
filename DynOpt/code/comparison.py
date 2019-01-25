@@ -126,7 +126,7 @@ class PredictorComparator(object):
         n_generations = self.get_n_generations()
         if (self.predictor == "no" or self.predictor == "autoregressive" or
                 self.predictor == "tfrnn" or self.predictor == "rnn" or
-                self.predictor == "tcn"):
+                self.predictor == "tcn" or self.predictor == "kalman"):
             n_neurons = None
             full_tl_model_name = None
         else:
@@ -197,7 +197,8 @@ class PredictorComparator(object):
                  stddev_among_runs_per_chgp=alg.stddev_among_runs_per_chgp,
                  mean_among_runs_per_chgp=alg.mean_among_runs_per_chgp,
                  epist_unc_per_chgperiod=alg.epist_unc_per_chgperiod,
-                 aleat_unc_per_chgperiod=alg.aleat_unc_per_chgperiod
+                 aleat_unc_per_chgperiod=alg.aleat_unc_per_chgperiod,
+                 kal_variance_per_chgperiod=alg.kal_variance_per_chgperiod
                  )
 
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):
