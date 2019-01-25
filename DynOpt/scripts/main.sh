@@ -6,18 +6,17 @@ zfactors=0.01,0.1,1.0,10.0
 # ----------------------------------------------------------------------------
 # no, ar
 
-pred1="no"
-#pred2="autoregressive"
-algnameaddition1="_noPRE"
-#algnameaddition2="_predDEV"
+pred1="kalman"
+pred2="kalman"
+algnameaddition1="_predUNC"
+algnameaddition2="_predKAL"
 useuncs1="False"
-#useuncs2="False"
+useuncs2="False"
 epuncfactor=0.0		# unused
-reinimode1="no-PRE"
-#reinimode2="pred-DEV"
+reinimode1="pred-UNC"
+reinimode2="pred-KAL"
 
-#./subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
-#./subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
+
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -72,7 +71,8 @@ reinimode1="no-PRE"
 
 for d in "${dims[@]}"
 do
-	sbatch --mem=16G --job-name="d$d-no_npPRE" --output="slurm_d$d-no_npPRE.%j.out" --error="slurm_d$d-no_npPRE.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
+	./subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
+	./subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
 done
 
 wait
