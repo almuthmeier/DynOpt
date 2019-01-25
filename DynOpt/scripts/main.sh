@@ -6,15 +6,15 @@ zfactors=0.01,0.1,1.0,10.0
 # ----------------------------------------------------------------------------
 # no, ar
 
-#pred1="kalman"
-#pred2="kalman"
-#algnameaddition1="_predUNC"
-#algnameaddition2="_predKAL"
-#useuncs1="True"
-#useuncs2="True"
-#epuncfactor=0.0		# unused
-#reinimode1="pred-UNC"
-#reinimode2="pred-KAL"
+pred1="kalman"
+pred2="kalman"
+algnameaddition1="_predRND"
+algnameaddition2="_predDEV"
+useuncs1="True"
+useuncs2="True"
+epuncfactor=0.0		# unused
+reinimode1="pred-RND"
+reinimode2="pred-DEV"
 
 #./subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
 #./subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
@@ -24,17 +24,17 @@ zfactors=0.01,0.1,1.0,10.0
 # ----------------------------------------------------------------------------
 # tcn, autotcn
 
-pred1="tcn"
+#pred1="tcn"
 #red2="tcn"
-algnameaddition1="_auto_predRND"								# TCN
+#algnameaddition1="_auto_predRND"								# TCN
 #algnameaddition2a="_auto_oalskal"				# AutoTCN variants
 #algnameaddition2b="_auto_rmse"
-useuncs1="True"
+#useuncs1="True"
 #useuncs2="True"
-epuncfactor1=0.0 # unused
+#epuncfactor1=0.0 # unused
 #epuncfactor2a=1  # unused
 #epuncfactor2b=999 #rmse (unused
-reinimode="pred-RND"
+#reinimode="pred-RND"
 
 
 # for sphere
@@ -72,7 +72,8 @@ reinimode="pred-RND"
 
 for d in "${dims[@]}"
 do
-	sbatch --mem=35G --job-name="d$d-at_RND" --output="slurm_d$d-at_RND.%j.out" --error="slurm_d$d-at_RND.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor1" "$reinimode" "$zfactors" "$d" &
+	./subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
+	./subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
 done
 
 wait
