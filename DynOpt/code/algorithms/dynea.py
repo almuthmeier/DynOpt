@@ -296,6 +296,8 @@ class DynamicEA():
             warnings.warn("unknown reinitialization mode: " +
                           self.reinitialization_mode)
 
+        if n_immigrants_per_noise == 0:
+            return np.array([])
         noisy_optimum_positions = np.array(
             [gaussian_mutation(pred_optimum_position, mean,
                                z * sigma, self.pred_np_rnd_generator)
@@ -399,8 +401,9 @@ class DynamicEA():
                 for z in self.sigma_factors:
                     noisy_optimum_positions = self.compute_noisy_opt_positions(
                         z, pred_optimum_position, n_immigrants_per_noise)
-                    immigrants = np.concatenate(
-                        (immigrants, noisy_optimum_positions))
+                    if len(noisy_optimum_positions) != 0:
+                        immigrants = np.concatenate(
+                            (immigrants, noisy_optimum_positions))
                 # b)
                 # initialize remaining immigrants completely randomly
                 n_remaining_immigrants = n_immigrants - len(immigrants)
