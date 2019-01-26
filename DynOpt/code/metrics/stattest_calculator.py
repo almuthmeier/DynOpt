@@ -181,7 +181,7 @@ class StatisticalTestsCalculator():
                                           p_values["pos-ea-rmse"],
                                           p_values["pos-foundpred-rmse"],
                                           p_values["pos-truepred-rmse"],
-                                          props1["expfilename"]],
+                                          props1["expfilename"]]
                 print_to_file(result_file_name, metric_values_to_print)
 
 
