@@ -429,7 +429,7 @@ class DynamicEA():
         '''
         TODO insert this function into dynpso
         '''
-
+        ar_predictor = None
         n_past_chgps = len(self.best_found_pos_per_chgperiod)
         # number of train data that can be produced from the last chg. periods
         overall_n_train_data = calculate_n_train_samples(
@@ -484,12 +484,12 @@ class DynamicEA():
                 self.n_new_train_data = 0
             # predict next optimum position or difference (and re-scale value)
             (prediction, train_error, train_err_per_epoch,
-             ep_unc, avg_al_unc, kal_variance) = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
-                                                                               self.n_epochs, self.batch_size,
-                                                                               self.n_time_steps, n_features,
-                                                                               scaler, predictor, self.return_seq, self.shuffle_train_data,
-                                                                               do_training, self.best_found_pos_per_chgperiod,
-                                                                               self.predict_diffs, self.test_mc_runs)
+             ep_unc, avg_al_unc, kal_variance, ar_predictor) = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
+                                                                                             self.n_epochs, self.batch_size,
+                                                                                             self.n_time_steps, n_features,
+                                                                                             scaler, predictor, self.return_seq, self.shuffle_train_data,
+                                                                                             do_training, self.best_found_pos_per_chgperiod,
+                                                                                             self.predict_diffs, self.test_mc_runs, self.n_new_train_data)
             self.pred_opt_pos_per_chgperiod.append(copy.copy(prediction))
             self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
                 self.benchmarkfunction, prediction, gen_idx, self.experiment_data))
@@ -501,7 +501,7 @@ class DynamicEA():
             self.train_error_per_chgperiod.append(train_error)
             self.train_error_for_epochs_per_chgperiod.append(
                 train_err_per_epoch)
-        return my_pred_mode
+        return my_pred_mode, ar_predictor
 
 
 # =============================================================================
@@ -517,7 +517,8 @@ class DynamicEA():
                                     self.with_dense_first, self.tl_learn_rate, self.use_uncs,
                                     self.train_mc_runs, self.train_dropout, self.test_dropout,
                                     self.kernel_size, self.n_kernels, self.lr)
-        sess = None
+        ar_predictor = None
+        sess = None  # necesarry since is assigned anew after each training
         if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
                 self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn":
             import tensorflow as tf
@@ -601,8 +602,10 @@ class DynamicEA():
                     copy.copy(self.best_found_fit_per_gen[i - 1]))
 
                 # prepare data and predict optimum
-                my_pred_mode = self.prepare_data_train_and_predict(sess, i,
-                                                                   self.dim, predictor)
+                my_pred_mode, ar_predictor = self.prepare_data_train_and_predict(sess, i,
+                                                                                 self.dim, predictor)
+                if not ar_predictor is None:
+                    predictor = ar_predictor
 
                 # adapt population to environment change
                 self.adapt_population(i, my_pred_mode)

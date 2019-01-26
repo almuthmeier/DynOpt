@@ -142,10 +142,11 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
     return predictor
 
 
-def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler):
+def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler, predictor, do_training, n_new_train_data):
     '''
     Predicts next optimum position with autoregressive model.
     @param new_train_data: 
+    @param n_new_train_data: 0 if do_training==True
 
     Throws ValueError (if training data consists data which are nearly zero) 
 
@@ -156,14 +157,19 @@ def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler
 
     https://qiita.com/vinyip918/items/583ac76b9b05cdcc2dde (example for AR)
     '''
-    # number of time steps to predict (1 because only next optimum)
-    n_prediction_steps = 1
+
     # maximum number of time steps to use for prediction
     # -1 for VAR, otherwise exception (perhaps because otherwise each column has only one value
     # https://datascience.stackexchange.com/questions/38203/var-model-valueerror-x-already-contains-a-constant
     max_lag = n_time_steps - 1
     n_train_data = len(new_train_data)
     if n_features == 1:
+        # number of time steps to predict (1 because only next optimum)
+        n_prediction_steps = 1
+
+        # TODO implement
+        warnings.warn(
+            "deprecated: is not adapted to usage of interval training (no usage of predictor object and do_training")
         from statsmodels.tsa.ar_model import AR
         # train autoregression
         new_train_data = new_train_data.flatten()
@@ -184,36 +190,41 @@ def predict_with_autoregressive(new_train_data, n_features, n_time_steps, scaler
         from statsmodels.tsa.vector_ar.var_model import VAR
 
         # train autoregression
-        model = VAR(new_train_data)
+        if do_training:
+            predictor = VAR(new_train_data)
+
         # throws exception:  "ValueError: x already contains a constant" if the
         # training data contain values similar to zero
         try:
             # TODO choose one of both lines!!!
             #model_fit = model.fit(maxlags=max_lag)
-            model_fit = model.fit()
+            model_fit = predictor.fit()
         except ValueError:
             # "ValueError: x already contains a constant"
             # if max_lag = n_time_steps
-            model_fit = model.fit()
+            model_fit = predictor.fit()
             print("ARR prediction: caught Exception", flush=True)
 
         lag_order = model_fit.k_ar
         #print('Lag: %s' % lag_order)
         #print('Coefficients: %s' % model_fit.params)
 
+        n_prediction_steps = n_new_train_data + 1
+
         # make prediction, idea for "forecast" instead of "predict" from here:
         # http://www.statsmodels.org/0.6.1/vector_ar.html (7.10.17)
         # http://www.statsmodels.org/dev/vector_ar.html
         predictions = model_fit.forecast(
             new_train_data[-lag_order:], n_prediction_steps)
+        prediction = predictions[-1]
 
     if n_prediction_steps == 1:
         # make 1d numpy array from 2d array if only one prediction is done
-        prediction = predictions.flatten()
+        prediction = prediction.flatten()
 
     # invert scaling (1d array would result in DeprecatedWarning -> pass 2d)
     converted = scaler.inverse_transform(np.array([prediction]), False)
-    return converted.flatten()
+    return converted.flatten(), predictor
 
 
 def predict_with_kalman(new_train_data, scaler, predictor,  do_training):
@@ -506,7 +517,7 @@ def rescale_tcn_auto_results(scaler, predictions, aleat_uncts, pred_diffs, best_
 def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_epochs, batch_size,
                                   n_time_steps, n_features, scaler, predictor,
                                   returnseq, shuffle, do_training, best_found_pos_per_chgperiod,
-                                  predict_diffs, test_mc_runs):
+                                  predict_diffs, test_mc_runs, n_new_train_data):
     '''
     @param mode: the desired predictor
     @param new_train_data: 2d numpy array: contains time series of 
@@ -519,6 +530,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     is already scaled)
     @param predictor: RNN predictor object to use for the prediction, so that
     it is not required to train it completely new
+    @param n_new_train_data: 0 if do_training==True
     @return 1d numpy array: position of next optimum (already re-scaled)
     '''
     train_error = None
@@ -526,13 +538,14 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     ep_unc = None
     avg_al_unc = None
     variance = None
+    ar_predictor = None
     if mode == "rnn":
         prediction = predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size,
                                       n_time_steps, n_features, scaler, predictor)
     elif mode == "autoregressive":
         try:
-            prediction = predict_with_autoregressive(
-                new_train_data, n_features, n_time_steps, scaler)
+            prediction, ar_predictor = predict_with_autoregressive(
+                new_train_data, n_features, n_time_steps, scaler, predictor, do_training, n_new_train_data)
         except ValueError:
             raise
     elif mode == "kalman":
@@ -555,7 +568,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     # TODO (dev) add possibly predictor type
     if predict_diffs and mode != "tcn":
         prediction = np.add(best_found_pos_per_chgperiod[-1], prediction)
-    return prediction, train_error, train_err_per_epoch, ep_unc, avg_al_unc, variance
+    return prediction, train_error, train_err_per_epoch, ep_unc, avg_al_unc, variance, ar_predictor
 
 
 def get_n_neurons(n_neurons_type, dim):
