@@ -41,10 +41,12 @@ class MetricTransformer():
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_zusammengefuehrt_srr/"
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_20reps_ohneFehler_zusammengefuehrt/"
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
+            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-22_rmseSigma/"
+            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-25_alle_reini_zusammen/"
             #self.metric_filename = "metric_db_noiseevalation_2018-12-14_rmses.csv"
             #self.output_file_name = "avg_metric_db_2018-12-11_rmses.csv"
-            self.metric_filename = "metric_db_sigmas_2019-01-22.csv"
-            self.output_file_name = "avg_metric_db_sigmas_2019-01-22.csv"
+            self.metric_filename = "metric_db_2019-01-25_reinitialization.csv"
+            self.output_file_name = "avg_metric_2019-01-25_reinitialization.csv"
         else:
             self.output_dir_path = path_to_output
             self.metric_filename = metric_filename
@@ -58,13 +60,15 @@ class MetricTransformer():
         path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_zusammengefuehrt_srr/"
         path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_20reps_ohneFehler_zusammengefuehrt/"
         path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
-        full_input_name = path_transformed_db + "avg_metric_db.csv"
+        full_input_name = path_transformed_db + \
+            "avg_metric_db_sigmas_2019-01-22_mit-std.csv"
         all_data = pd.read_csv(full_input_name)
 
         # functions that are combined into one file
         # , "tftlrnndense"]
         #preds = ["no", "autoregressive", "tfrnn", "tftlrnn", "tftlrnndense"]
         #preds = ["no", "autoregressive", "tcn"]
+        #"ea_kalman"
         algs = ["ea_tcn_auto", "ea_tcn", "ea_autoregressive", "ea_no"]
 
         functions = ["sphere"]  # , "mpbcorr", "rastrigin"]
@@ -242,16 +246,37 @@ class MetricTransformer():
         df['function'] = pd.Categorical(
             df['function'], ["sphere", "rosenbrock", "rastrigin"])
         df['dim'] = pd.Categorical(df['dim'], [2, 5, 10, 20])
-        df['alg'] = pd.Categorical(df['alg'], ["dynea_tcn_auto_dynsig",
-                                               "dynea_tcn_auto_00-8",
-                                               "dynea_tcn_auto_08-0",
-                                               "dynea_tcn_auto_36-2",
-                                               "dynea_tcn_auto",
-                                               "dynea_tcn_auto_90-0",
-                                               "dynea_tcn_auto_95-4",
-                                               "dynea_tcn",
-                                               "dynea_autoregressive",
-                                               "dynea_no"])
+        if False:
+            df['alg'] = pd.Categorical(df['alg'], ["dynea_tcn_auto_dynsig",
+                                                   "dynea_tcn_auto_00-8",
+                                                   "dynea_tcn_auto_08-0",
+                                                   "dynea_tcn_auto_36-2",
+                                                   "dynea_tcn_auto",
+                                                   "dynea_tcn_auto_90-0",
+                                                   "dynea_tcn_auto_95-4",
+                                                   "dynea_tcn",
+                                                   "dynea_autoregressive",
+                                                   "dynea_no"])
+        if False:
+            df['alg'] = pd.Categorical(df['alg'], ['dynea_tcn_auto_1sig',
+                                                   'dynea_tcn_auto_rmse'])
+
+        df['alg'] = pd.Categorical(df['alg'], ['dynea_no_noRND',
+                                               'dynea_no_noVAR',
+                                               'dynea_no_noPRE',
+                                               'dynea_autoregressive_predRND',
+                                               'dynea_autoregressive_predDEV',
+                                               'dynea_tcn_predRND',
+                                               'dynea_tcn_predDEV',
+                                               'dynea_kalman_predRND',
+                                               'dynea_kalman_predDEV',
+                                               'dynea_kalman_predUNC',
+                                               'dynea_kalman_predKAL',
+                                               'dynea_tcn_auto_predRND',
+                                               'dynea_tcn_auto_predDEV',
+                                               'dynea_tcn_auto_predUNC',
+                                               'dynea_tcn_auto_predKAL'])
+
         df['run'] = pd.Categorical(df['run'], ["avg", "std"])
         df = df.sort_values(["function", "dim", "alg", "run"])
 
@@ -268,12 +293,12 @@ def start_computing_avgs_stddevs(path_to_output=None,
     # Step 1)
     use_std = False
     calculator.compute_avg_and_stddev(use_std)
-    print("saved metric database", flush=True)
+    #print("saved metric database", flush=True)
 
     # Step 1b)
     # sort rows
     calculator.sort_rows()
-    
+
     # Step 2)
     # calculator.make_table_with_selected_data()
 
