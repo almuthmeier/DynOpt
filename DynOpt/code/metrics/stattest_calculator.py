@@ -43,8 +43,7 @@ class StatisticalTestsCalculator():
         @param exp: (string) name of the file containing the fitness function data set 
         @return dataframe: the selected rows
         '''
-        return df.loc[(df["algparams"].isin([alg[0]])) &
-                      (df["alg"].isin([alg[1]])) &
+        return df.loc[(df["alg"].isin([alg])) &
                       (df["expfilename"].isin([exp]))]
 
     def get_experiment_properties(self, selected_rows):
@@ -117,7 +116,7 @@ class StatisticalTestsCalculator():
             print_line(result_file_name,
                        first_metrics_file_line_onestring)
 
-    def compute_and_save_all_stattests(self, alternative):
+    def compute_and_save_all_stattests(self, alternative, alg_combinations):
         '''
         Computes for all desired algorithm combinations statistical tests  for
         all problems and metrics.
@@ -137,7 +136,7 @@ class StatisticalTestsCalculator():
 
         # conducted experiments
         experiments = df['expfilename'].unique()
-        for i, j in itertools.combinations(algorithms, 2):
+        for i, j in alg_combinations:
             # create file for test results
             result_file_name = self.stattest_dir_path + "whitney_pairwise_" + alternative + "_" + \
                 ''.join(i) + "-" + ''.join(j) + ".csv"
@@ -185,8 +184,33 @@ class StatisticalTestsCalculator():
                 print_to_file(result_file_name, metric_values_to_print)
 
 
+def define_test_combinations():
+    combs = []
+    for i in range(len(row_algs)):
+        ra = row_algs[i]
+        for ca in col_algs[i:]:
+            combs.append((ra, ca))
+    return combs
+
+
 if __name__ == "__main__":
     calculator = StatisticalTestsCalculator()
     alternatives = ["less", "two-sided", "greater"]
+
+    algs = ["dynea_tcn_auto_dynsig",
+            "dynea_tcn_auto_00-8",
+            "dynea_tcn_auto_08-0",
+            "dynea_tcn_auto_36-2",
+            "dynea_tcn_auto",
+            "dynea_tcn_auto_90-0",
+            "dynea_tcn_auto_95-4",
+            "dynea_tcn",
+            "dynea_autoregressive",
+            "dynea_no"
+            ]
+    col_algs = [a for a in algs[1:]]
+    row_algs = [a for a in algs[:-1]]
+
+    alg_combs = define_test_combinations()
     for altn in alternatives:
-        calculator.compute_and_save_all_stattests(altn)
+        calculator.compute_and_save_all_stattests(altn, alg_combs)
