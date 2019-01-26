@@ -6,15 +6,15 @@ zfactors=0.01,0.1,1.0,10.0
 # ----------------------------------------------------------------------------
 # no, ar
 
-pred1="kalman"
-pred2="kalman"
-algnameaddition1="_predRND"
-algnameaddition2="_predDEV"
-useuncs1="True"
-useuncs2="True"
-epuncfactor=0.0		# unused
-reinimode1="pred-RND"
-reinimode2="pred-DEV"
+#pred1="kalman"
+#pred2="kalman"
+#algnameaddition1="_predRND"
+#algnameaddition2="_predDEV"
+#useuncs1="True"
+#useuncs2="True"
+#epuncfactor=0.0		# unused
+#reinimode1="pred-RND"
+#reinimode2="pred-DEV"
 
 #./subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
 #./subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
@@ -24,17 +24,15 @@ reinimode2="pred-DEV"
 # ----------------------------------------------------------------------------
 # tcn, autotcn
 
-#pred1="tcn"
-#red2="tcn"
-#algnameaddition1="_auto_predRND"								# TCN
-#algnameaddition2a="_auto_oalskal"				# AutoTCN variants
-#algnameaddition2b="_auto_rmse"
-#useuncs1="True"
-#useuncs2="True"
-#epuncfactor1=0.0 # unused
-#epuncfactor2a=1  # unused
-#epuncfactor2b=999 #rmse (unused
-#reinimode="pred-RND"
+pred1="tcn"
+pred2="tcn"
+algnameaddition1="_auto_predUNC"
+algnameaddition2="_auto_predKAL"								
+useuncs1="True"
+useuncs2="True"
+epuncfactor1=0.0 # unused
+reinimode1="pred-UNC"
+reinimode2="pred-KAL"
 
 
 # for sphere
@@ -72,8 +70,8 @@ reinimode2="pred-DEV"
 
 for d in "${dims[@]}"
 do
-	./subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
-	./subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
+	sbatch --mem=24G --job-name="d$d-a_predUNC" --output="slurm_d$d-a_predUNC.%j.out" --error="slurm_d$d-a_predUNC.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor1" "$reinimode1" "$zfactors" "$d" &
+	sbatch --mem=24G --job-name="d$d-a_predKAL" --output="slurm_d$d-a_predKAL.%j.out" --error="slurm_d$d-a_predKAL.%j.err" subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor2" "$reinimode2" "$zfactors" "$d" &
 done
 
 wait
