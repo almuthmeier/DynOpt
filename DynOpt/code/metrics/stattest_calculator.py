@@ -117,7 +117,7 @@ class StatisticalTestsCalculator():
             print_line(result_file_name,
                        first_metrics_file_line_onestring)
 
-    def compute_and_save_all_stattests(self):
+    def compute_and_save_all_stattests(self, alternative):
         '''
         Computes for all desired algorithm combinations statistical tests  for
         all problems and metrics.
@@ -139,7 +139,7 @@ class StatisticalTestsCalculator():
         experiments = df['expfilename'].unique()
         for i, j in itertools.combinations(algorithms, 2):
             # create file for test results
-            result_file_name = self.stattest_dir_path + "whitney_pairwise_" + \
+            result_file_name = self.stattest_dir_path + "whitney_pairwise_" + alternative + "_" + \
                 ''.join(i) + "-" + ''.join(j) + ".csv"
             self.create_test_result_file(df, result_file_name)
 
@@ -164,7 +164,7 @@ class StatisticalTestsCalculator():
                     runs_alg2 = self.values_for_runs_of_alg(rows_alg2, m)
                     # execute test
                     _, p_value = stats.mannwhitneyu(
-                        runs_alg1, runs_alg2, alternative='two-sided')
+                        runs_alg1, runs_alg2, alternative=alternative)
                     p_values[m] = p_value
 
                 # construct and print output line
@@ -187,4 +187,6 @@ class StatisticalTestsCalculator():
 
 if __name__ == "__main__":
     calculator = StatisticalTestsCalculator()
-    calculator.compute_and_save_all_stattests()
+    alternatives = ["less", "two-sided", "greater"]
+    for altn in alternatives:
+        calculator.compute_and_save_all_stattests(altn)
