@@ -26,13 +26,13 @@ epuncfactor=0.0 # unused
 # tcn, autotcn
 
 pred1="no"
-pred2="no"
-algnameaddition1="_noRND" # for autoTCN: _auto_ ... !!!
-algnameaddition2="_noVAR" 								
+#pred2="no"
+algnameaddition1="_noPRE" # for autoTCN: _auto_ ... !!!
+#algnameaddition2="_noVAR" 								
 useuncs1="False"
-useuncs2="False"
-reinimode1="no-RND"
-reinimode2="no-VAR"
+#useuncs2="False"
+reinimode1="no-PRE"
+#reinimode2="no-VAR"
 
 
 # for sphere
@@ -70,8 +70,8 @@ reinimode2="no-VAR"
 
 for d in "${dims[@]}"
 do
-	sbatch --mem=24G --job-name="d$d-n_RND" --output="slurm_d$d-n_predRND.%j.out" --error="slurm_d$d-n_predRND.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
-	sbatch --mem=24G --job-name="d$d-n_VAR" --output="slurm_d$d-n_predVAR.%j.out" --error="slurm_d$d-n_predVAR.%j.err" subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
+	sbatch --mem=24G --job-name="d$d-n_PRE" --output="slurm_d$d-n_predPRE.%j.out" --error="slurm_d$d-n_predPRE.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
+	#sbatch --mem=24G --job-name="d$d-n_VAR" --output="slurm_d$d-n_predVAR.%j.out" --error="slurm_d$d-n_predVAR.%j.err" subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
 done
 
 wait
