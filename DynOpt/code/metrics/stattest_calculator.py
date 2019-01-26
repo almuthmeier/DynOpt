@@ -27,8 +27,13 @@ class StatisticalTestsCalculator():
         path_to_output = '/'.join(path_to_code.split('/')[:-1]) + "/output/"
         self.metric_path = path_to_output + "GECCO_2019/"
 
-        self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
-        self.metric_file_path = self.metric_path + "metric_db_sigmas_2019-01-22.csv"
+        #self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
+        #self.metric_file_path = self.metric_path + "metric_db_sigmas_2019-01-22.csv"
+        #self.stattest_dir_path = self.metric_path + "stattests/"
+
+        self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-25_alle_reini_zusammen/"
+        self.metric_file_path = self.metric_path + \
+            "metric_db_2019-01-25_reinitialization.csv"
         self.stattest_dir_path = self.metric_path + "stattests/"
 
     def select_rows_for_alg(self, df, alg, exp):
@@ -158,12 +163,15 @@ class StatisticalTestsCalculator():
 
                 p_values = {}
                 for m in metric_names:
-                    # metric value for each run
-                    runs_alg1 = self.values_for_runs_of_alg(rows_alg1, m)
-                    runs_alg2 = self.values_for_runs_of_alg(rows_alg2, m)
-                    # execute test
-                    _, p_value = stats.mannwhitneyu(
-                        runs_alg1, runs_alg2, alternative=alternative)
+                    if not metric_computable_for_no(m) and ("_no_"in i or "_no_" in j):
+                        p_value = "''"
+                    else:
+                        # metric value for each run
+                        runs_alg1 = self.values_for_runs_of_alg(rows_alg1, m)
+                        runs_alg2 = self.values_for_runs_of_alg(rows_alg2, m)
+                        # execute test
+                        _, p_value = stats.mannwhitneyu(
+                            runs_alg1, runs_alg2, alternative=alternative)
                     p_values[m] = p_value
 
                 # construct and print output line
@@ -182,6 +190,15 @@ class StatisticalTestsCalculator():
                                           p_values["pos-truepred-rmse"],
                                           props1["expfilename"]]
                 print_to_file(result_file_name, metric_values_to_print)
+
+
+def metric_computable_for_no(metric):
+    '''
+    Returns True if the metric was measured for EA without prediction model.
+    '''
+    not_computable_metrics = ['fit-ea-rmse', 'fit-foundpred-rmse', 'fit-truepred-rmse',
+                              'pos-ea-rmse', 'pos-foundpred-rmse', 'pos-truepred-rmse']
+    return metric not in not_computable_metrics
 
 
 def define_test_combinations():
@@ -207,6 +224,23 @@ if __name__ == "__main__":
             "dynea_tcn",
             "dynea_autoregressive",
             "dynea_no"
+            ]
+
+    algs = ["dynea_no_noRND",
+            "dynea_no_noVAR",
+            "dynea_no_noPRE",
+            "dynea_autoregressive_predRND",
+            "dynea_autoregressive_predDEV",
+            "dynea_tcn_predRND",
+            "dynea_tcn_predDEV",
+            "dynea_kalman_predRND",
+            "dynea_kalman_predDEV",
+            "dynea_kalman_predUNC",
+            "dynea_kalman_predKAL",
+            "dynea_tcn_auto_predRND",
+            "dynea_tcn_auto_predDEV",
+            "dynea_tcn_auto_predUNC",
+            "dynea_tcn_auto_predKAL"
             ]
     col_algs = [a for a in algs[1:]]
     row_algs = [a for a in algs[:-1]]
