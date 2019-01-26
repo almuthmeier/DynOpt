@@ -2,6 +2,7 @@
 
 dims=(2 5 10 20)
 zfactors=0.01,0.1,1.0,10.0
+epuncfactor=0.0 # unused
 
 # ----------------------------------------------------------------------------
 # no, ar
@@ -30,7 +31,6 @@ algnameaddition1="_auto_predUNC"
 algnameaddition2="_auto_predKAL"								
 useuncs1="True"
 useuncs2="True"
-epuncfactor1=0.0 # unused
 reinimode1="pred-UNC"
 reinimode2="pred-KAL"
 
@@ -70,8 +70,8 @@ reinimode2="pred-KAL"
 
 for d in "${dims[@]}"
 do
-	sbatch --mem=24G --job-name="d$d-a_predUNC" --output="slurm_d$d-a_predUNC.%j.out" --error="slurm_d$d-a_predUNC.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor1" "$reinimode1" "$zfactors" "$d" &
-	sbatch --mem=24G --job-name="d$d-a_predKAL" --output="slurm_d$d-a_predKAL.%j.out" --error="slurm_d$d-a_predKAL.%j.err" subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor2" "$reinimode2" "$zfactors" "$d" &
+	sbatch --mem=24G --job-name="d$d-a_predUNC" --output="slurm_d$d-a_predUNC.%j.out" --error="slurm_d$d-a_predUNC.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
+	sbatch --mem=24G --job-name="d$d-a_predKAL" --output="slurm_d$d-a_predKAL.%j.out" --error="slurm_d$d-a_predKAL.%j.err" subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
 done
 
 wait
