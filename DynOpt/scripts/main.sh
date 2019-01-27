@@ -8,12 +8,12 @@ epuncfactor=0.0 # unused
 # ----------------------------------------------------------------------------
 
 
-pred1="autoregressive"
-pred2="autoregressive"
+pred1="kalman"
+pred2="kalman"
 algnameaddition1="_predRND" # for autoTCN: _auto_ ... !!!
 algnameaddition2="_predDEV" 								
-useuncs1="False"
-useuncs2="False"
+useuncs1="True"
+useuncs2="True"
 reinimode1="pred-RND"
 reinimode2="pred-DEV"
 
