@@ -8,14 +8,14 @@ epuncfactor=0.0 # unused
 # ----------------------------------------------------------------------------
 
 
-pred1="kalman"
-pred2="kalman"
-algnameaddition1="_predUNC" # for autoTCN: _auto_ ... !!!
-algnameaddition2="_predKAL" 								
-useuncs1="True"
-useuncs2="True"
-reinimode1="pred-UNC"
-reinimode2="pred-KAL"
+pred1="autoregressive"
+pred2="autoregressive"
+algnameaddition1="_predRND" # for autoTCN: _auto_ ... !!!
+algnameaddition2="_predDEV" 								
+useuncs1="False"
+useuncs2="False"
+reinimode1="pred-RND"
+reinimode2="pred-DEV"
 
 
 # ----------------------------------------------------------------------------
@@ -70,8 +70,8 @@ reinimode2="pred-KAL"
 
 for d in "${dims[@]}"
 do	
-	sbatch --mem=24G --job-name="d$d-k_UNC" --output="slurm_d$d-k_UNC.%j.out" --error="slurm_d$d-k_UNC.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
-	sbatch --mem=24G --job-name="d$d-k_KAL" --output="slurm_d$d-k_KAL.%j.out" --error="slurm_d$d-k_KAL.%j.err" subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
+	./subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" "$d" &
+	./subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" "$d" &
 done
 
 wait
