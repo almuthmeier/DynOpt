@@ -1,6 +1,7 @@
 #!/bin/bash
 
 dims=(2 5 10 20)
+dims=(20)
 zfactors=0.01,0.1,1.0,10.0
 epuncfactor=0.0 # unused
 
