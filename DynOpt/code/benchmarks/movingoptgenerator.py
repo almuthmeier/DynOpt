@@ -18,7 +18,6 @@ from scipy import interpolate
 from scipy.interpolate import interp1d
 from sklearn.preprocessing.data import MinMaxScaler
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -94,6 +93,7 @@ def real_word_series(col_name=None):
 
 
 def plot_into_subplots(list_of_Xs, list_of_Ys, colors):
+    import matplotlib.pyplot as plt
     n_plots = len(list_of_Xs)
     n_cols = n_plots
     n_rows = 1
@@ -111,6 +111,7 @@ def plot_into_subplots(list_of_Xs, list_of_Ys, colors):
 
 
 def trial():
+    import matplotlib.pyplot as plt
     n_time_points = 50
     time_points = np.arange(n_time_points)
     ts1 = -2 * time_points + 2 * n_time_points  # linear decreasing function
@@ -147,7 +148,7 @@ def get_series_for_type(type, dims, n_points):
 
 
 def plot_same_axis(x1, x2, y1, y2):
-
+    import matplotlib.pyplot as plt
     fig, ax1 = plt.subplots()
 
     color = 'tab:red'
@@ -223,6 +224,7 @@ def correct_values(values, min_value, max_value):
 
 def multidim_spline_ts(min_value, max_value, n_points, n_base_points,
                        n_points_between_base_points, n_dims, with_plots=False):
+    import matplotlib.pyplot as plt
     # format [dims, time steps]
     points_per_dim = [random_spline_ts(min_value, max_value,
                                        n_points, n_base_points, n_points_between_base_points) for _ in range(n_dims)]
@@ -250,7 +252,7 @@ def multidim_spline_ts(min_value, max_value, n_points, n_base_points,
 
 def random_spline_ts(min_value, max_value, desired_n_points, n_base_points,
                      n_points_between_base_points, plots_allowed=False):
-
+    import matplotlib.pyplot as plt
     # normal-distributed values
     range_width = max_value - min_value
     mean = min_value + range_width / 2
@@ -302,6 +304,7 @@ def with_spline():
     '''
     Only for trying another function.
     '''
+    import matplotlib.pyplot as plt
     x = np.arange(0, 2 * np.pi + np.pi / 4, 2 * np.pi / 8)
     y = np.sin(x)
     tck = interpolate.splrep(x, y, s=0)
@@ -323,6 +326,7 @@ def polynomial():
     '''
     Only for trying polynomials.
     '''
+    import matplotlib.pyplot as plt
     n_time_points = 50
     x = np.arange(n_time_points)
     start = -6.1
@@ -344,6 +348,7 @@ def polynomial():
 def random_polynomial(min_value, max_value, n_points, n_base_points, min_order,
                       max_order, plots_allowed=False):
 
+    import matplotlib.pyplot as plt
     base_points = np.random.randint(1, n_points - 1, n_base_points - 2)
     base_points = np.append(base_points, [0, n_points - 1])
 
@@ -387,6 +392,7 @@ def linear(min_value, max_value, n_points, plots_allowed=False):
     '''
     f(x) = mx + n
     '''
+    import matplotlib.pyplot as plt
     # sample two base points
     base_points = np.array([0, n_points - 1])
     base_values = np.random.randint(min_value, max_value, 2)
@@ -414,6 +420,7 @@ def sine(min_value, max_value, n_points, plots_allowed=False):
     TODO enable increasing amplitude
     https://en.wikipedia.org/wiki/Sine_wave (30.10.18)
     '''
+    import matplotlib.pyplot as plt
     # amplitude: normal-distributed value within possible range
     # can use only half, otherwise negative values
     range_width = (max_value - min_value) / 2
@@ -459,6 +466,7 @@ def multidim_section_functions(n_dims, n_points, available_base_fcts, mixture_fc
     '''
     @return: 2d numpy array: format [time steps, dims]
     '''
+    import matplotlib.pyplot as plt
     prob_for_mixing = 0.6  # probability for mixing within dimension
     values_per_dim = []
     for _ in range(n_dims):
@@ -696,6 +704,7 @@ def section_functions(n_points, available_base_functions, mixture_fcts,
     values = values_without_jumps[:n_points]
     # visualize
     if plots_allowed:
+        import matplotlib.pyplot as plt
         plt.plot(np.arange(n_points), values)
         plt.show()
     return values
