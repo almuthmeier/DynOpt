@@ -2,7 +2,7 @@
 
 #SBATCH --gres=gpu:0
 #SBATCH --job-name="benchmarks"
-#SBATCH --ntasks=5
+#SBATCH --ntasks=1
 #SBATCH --mem=16G
 #SBATCH --time=2-00:00
 #SBATCH --output="slurm_benchmarks.%j.out"
@@ -18,7 +18,7 @@ benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_f
 # mpbcorr
 benchmarkfunction="mpbcorr"
 
-python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+#python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
 
 
 # -----------------------------------------------------------------------------

@@ -43,8 +43,9 @@ def create_problems(output_parent_dir_path=None):
     # TODO(exp) parameters to adjust
     n_chg_periods = 10000
     dims = [2, 5, 10, 20]  # [1, 2, 5]  # , 10, 50]
+    dims = [3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19]
     functions = [sphere, rastrigin, rosenbrock]  # , rastrigin]
-    # functions = [sphere]  # , rastrigin]
+    functions = [sphere]  # , rastrigin]
     pos_chng_types = ['pch-linear', 'pch-sine',
                       'pch-circle', 'pch-mixture', 'pch-sinefreq']
     pos_chng_types = ['pch-sinefreq']  # , 'pch-mixture']
