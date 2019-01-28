@@ -8,14 +8,14 @@ epuncfactor=0.0 # unused
 # ----------------------------------------------------------------------------
 
 
-pred1="tcn"
-pred2="tcn"
+pred1="autoregressive"
+#pred2="tcn"
 algnameaddition1="_predDEV" # for autoTCN: _auto_ ... !!!
-algnameaddition2="_auto_predUNC" 								
+#algnameaddition2="_auto_predUNC" 								
 useuncs1="False"
-useuncs2="True"
+#useuncs2="True"
 reinimode1="pred-DEV"
-reinimode2="pred-UNC"
+#reinimode2="pred-UNC"
 
 
 # ----------------------------------------------------------------------------
@@ -67,8 +67,7 @@ reinimode2="pred-UNC"
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-sbatch --mem=24G --job-name="d$d-t_alledim" --output="slurm_d$d-t_alledim.%j.out" --error="slurm_d$d-t_alledim.%j.err" subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" &
-sbatch --mem=24G --job-name="d$d-a_alledim" --output="slurm_d$d-a_alledim.%j.out" --error="slurm_d$d-a_alledim.%j.err" subscript2.job "$pred2" "$algnameaddition2" "$useuncs2" "$epuncfactor" "$reinimode2" "$zfactors" &
+./subscript2.job "$pred1" "$algnameaddition1" "$useuncs1" "$epuncfactor" "$reinimode1" "$zfactors" &
 
 #for d in "${dims[@]}"
 #do	
