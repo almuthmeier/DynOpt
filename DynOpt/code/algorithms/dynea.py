@@ -20,6 +20,7 @@ from utils.utils_prediction import build_predictor,\
 from utils.utils_prediction import calculate_n_train_samples,\
     calculate_n_required_chgps_from_n_train_samples
 from utils.utils_transferlearning import get_variables_and_names
+from utils.utils_values import make_values_feasible_for_square
 
 
 class DynamicEA():
@@ -269,8 +270,19 @@ class DynamicEA():
             # -> one sigma for all dimensions
             # difference of the last prediction and the last best found position;
             # average over all dimensions
-            avg_squared_diff = np.average(np.square(np.array(
-                self.best_found_pos_per_chgperiod[-n_preds:]) - np.array(self.pred_opt_pos_per_chgperiod)))
+
+            diff = np.array(
+                self.best_found_pos_per_chgperiod[-n_preds:]) - np.array(self.pred_opt_pos_per_chgperiod)
+            try:
+                avg_squared_diff = np.average(np.square(diff))
+                # https://stackoverflow.com/questions/17208567/how-to-find-out-where-a-python-warning-is-from
+                warnings.filterwarnings(
+                    'error', message='overflow encountered in square')
+            except RuntimeWarning:
+                print("dynea.compute_noisy_opt_positions: caught warning", flush=True)
+                diff = make_values_feasible_for_square(diff)
+                # next try for computing square
+                avg_squared_diff = np.average(np.square(diff))
 
             sigma = np.sqrt(avg_squared_diff)  # scalar
         elif self.reinitialization_mode == "pred-KAL":

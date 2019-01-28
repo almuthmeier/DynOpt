@@ -20,11 +20,13 @@ import os
 import sys
 import warnings
 
-sys.path.append(os.path.abspath(os.pardir))
-
 import numpy as np
 from utils.utils_ea import gaussian_mutation
 from utils.utils_files import get_current_day_time
+from utils.utils_values import make_values_feasible_for_square
+
+
+sys.path.append(os.path.abspath(os.pardir))
 
 
 def __create_vector(dimensionality, len_vector, np_random_generator, noise=None, use_correlation=False, old_movement=None):
@@ -288,19 +290,8 @@ def __compute_mpb_fitness(x, height, width, position):
             'error', message='overflow encountered in square')
     except RuntimeWarning:
         print("moving-peaks-benchmarks: caught warning", flush=True)
-        # compute lowest and largest value that can be feed into np.square
-        # without throwing an exception
-        max_float = np.finfo(np.float).max
-        sqrt_max_float = np.sqrt(max_float)
-        min_float = np.finfo(np.float).min
-        sqrt_min_float = np.sqrt(-min_float)  # make value positive
 
-        # entries that are too large are made smaller
-        indices = np.argwhere(diff > sqrt_max_float)
-        diff[indices] = sqrt_max_float
-        # entries that are too small are made larger
-        indices = np.argwhere(diff < -sqrt_min_float)
-        diff[indices] = sqrt_min_float
+        diff = make_values_feasible_for_square(diff)
         # next try for computing square
         tmp = np.sum(np.square(diff))
     divisor = (1 + width * tmp)
