@@ -15,12 +15,8 @@ import unittest
 sys.path.append(os.path.abspath(os.pardir))
 
 from benchmarks.dynposbenchmark import compute_fitness
-import matplotlib.pyplot as plt
 import numpy as np
 from utils.fitnessfunctions import rosenbrock, sphere, rastrigin
-
-
-
 
 
 class Test(unittest.TestCase):
@@ -38,7 +34,7 @@ class Test(unittest.TestCase):
 
         Plots for each change the first two dimensions of the global optimum.
         '''
-
+        import matplotlib.pyplot as plt
         file_name = "rosenbrock_d-2_chgperiods-10000_pch-sine_fch-none_2018-05-09_11:13.npz"
         file_path = self.path_test_problems + "EvoStar_2018/rosenbrock/" + file_name
         prob_file = np.load(file_path)

@@ -11,7 +11,6 @@ import unittest
 from matplotlib import cm
 
 from benchmarks.mpb import compute_fitness, __create_and_save_mpb_problem__
-import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # necessary for "projection='3d'"
 import numpy as np
 from utils.utils_plot import plot_points
@@ -196,6 +195,7 @@ class Test(unittest.TestCase):
         widths = f1['widths']
         positions = f1['positions']
         #==========================
+        import matplotlib.pyplot as plt
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 

@@ -6,7 +6,6 @@ Created on Jan 18, 2018
 
 @author: ameier
 '''
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -15,6 +14,7 @@ def plot_fitness(best_fitness_evals):
     Plots for each generation the best found fitness value
     @param best_fitness_evals: contains the best fitness of each iteration 
     '''
+    import matplotlib.pyplot as plt
     plt.figure()
     plt.subplot(111)
     x_values = np.arange(0, best_fitness_evals.size, 1)
@@ -32,6 +32,7 @@ def plot_best_ind_per_gen(best_individuals):
     Plots for each generation the best individual found (for 2-dimensional
     individuals).
     '''
+    import matplotlib.pyplot as plt
     fig = plt.figure()
     ax = fig.add_subplot(111)
     color = range(len(best_individuals))
@@ -69,6 +70,7 @@ def plot_points(points, title):
     @param points: contains solutions in the solution space; one for each change
      (could be best individual per change, real optimum position per change...) 
     '''
+    import matplotlib.pyplot as plt
     fig = plt.figure()
     ax = fig.add_subplot(111)
     color = range(len(points))
@@ -94,6 +96,7 @@ def plot_diff_pred_and_optimum(diff_pred_and_opt, title_addition, diff_found_and
     @param title_addition: string, makes the title more accurate
     @param diff_found_and_opt: Euclidean difference between found and real optimum
     '''
+    import matplotlib.pyplot as plt
     changes = np.arange(len(diff_pred_and_opt))
     plt.figure()
     plt.subplot(111)

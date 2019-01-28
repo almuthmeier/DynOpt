@@ -24,7 +24,6 @@ import warnings
 from benchmarks.circlemovement import create_circle_movement_points
 from benchmarks.movingoptgenerator import start_mixture
 from benchmarks.sine_generator import generate_sine_fcts_for_multiple_dimensions
-import matplotlib.pyplot as plt
 import numpy as np
 from utils.fitnessfunctions import sphere, rosenbrock, rastrigin,\
     get_original_global_opt_pos_and_fit, griewank
@@ -304,6 +303,7 @@ def create_and_plot_random_sine_movement():
 
 
 def plot_scatter(points):
+    import matplotlib.pyplot as plt
     fig = plt.figure()
     ax = fig.add_subplot(111)
     color = range(len(points))

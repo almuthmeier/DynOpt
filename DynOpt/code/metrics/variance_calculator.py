@@ -11,7 +11,6 @@ import copy
 
 from matplotlib import cm
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -122,6 +121,7 @@ def compute_variance_between_runs(in_full_name, out_full_name):
 
     plot_shade = True
     # variance between runs (around mean) and real optimum
+    import matplotlib.pyplot as plt
     f1 = plt.figure(1)
     for d in dims:
         stddev = stddev_among_runs_per_chgp[:, d]

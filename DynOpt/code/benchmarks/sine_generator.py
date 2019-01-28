@@ -12,7 +12,6 @@ Created on Jan 10, 2019
 '''
 import math
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -103,6 +102,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc,
     fcts = np.array(fcts)
 
     if do_print:
+        import matplotlib.pyplot as plt
         print("\nfor base time:")
         base_time = np.arange(0, 2 * math.pi, 0.1)
         vals = compute_vals_for_fct(fcts, base_time)

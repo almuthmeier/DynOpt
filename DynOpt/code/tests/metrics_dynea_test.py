@@ -10,7 +10,6 @@ import unittest
 from matplotlib import cm
 from matplotlib import colors
 
-import matplotlib.pyplot as plt
 from metrics.metrics_dynea import arr, best_error_before_change,\
     avg_best_of_generation, rel_conv_speed, normalized_bog, __convergence_speed__,\
     rmse
@@ -597,6 +596,7 @@ class Test(unittest.TestCase):
         specified n_gens and max_fit. 
         Color of the grahps corresponds to their convergence speed measure.
         '''
+        import matplotlib.pyplot as plt
         n_gens = 2
         max_fit = 10
         generations_of_chgperiods = {0: [i for i in range(n_gens)]}
@@ -634,6 +634,7 @@ class Test(unittest.TestCase):
         Plots three possible fitness developments (for one change period). 
         Color of the grahps corresponds to their convergence speed measure.
         '''
+        import matplotlib.pyplot as plt
         # one change
         generations_of_chgperiods = {0: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}
         global_opt_fit_per_chgperiod = np.array([0])
