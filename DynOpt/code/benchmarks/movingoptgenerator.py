@@ -12,7 +12,6 @@ from datetime import datetime
 import math
 import warnings
 
-from matplotlib import pyplot
 from pandas import Series
 from pandas import read_csv
 from scipy import interpolate
@@ -27,6 +26,7 @@ def champanger():
     '''
     https://machinelearningmastery.com/time-series-forecast-study-python-monthly-sales-french-champagne/ (23.10.18)
     '''
+    from matplotlib import pyplot
     series = Series.from_csv('monthly-champagne.csv')
 
     # 'Perrin Freres monthly champagne sales millions ?64-?72'
