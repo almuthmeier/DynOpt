@@ -124,7 +124,7 @@ outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/outpu
 
 # (There must always be a space between the argument and the backslash!)
 
-python3.6 ../code/input_parser.py -algorithm="$algorithm" \
+python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -repetitions="$repetitions" \
 -chgperiodrepetitions="$chgperiodrepetitions" \
 -chgperiods="$chgperiods" \
