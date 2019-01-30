@@ -332,7 +332,9 @@ class MetricCalculator():
                     # IndexError: list index out of range
                     # this error is thrown, if for one algorithm not the
                     # maximum number of runs was executed
-                    new_dict[alg] = None
+                    #new_dict[alg] = None
+                    pass
+                    # this algorithm needs not to be considered for RCS
             rcs_per_alg = rel_conv_speed(
                 gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict,
                 self.only_for_preds, first_chgp_idx_with_pred)
