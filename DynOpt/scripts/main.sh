@@ -11,11 +11,11 @@ epuncfactor=0.0 # unused
 pred1="kalman"
 pred2="kalman"
 algnameaddition1="_predDEV" # for autoTCN: _auto_ ... !!!
-algnameaddition2="_predKAL" 								
+algnameaddition2="_predUNC" 								
 useuncs1="True"
 useuncs2="True"
 reinimode1="pred-DEV"
-reinimode2="pred-KAL"
+reinimode2="pred-UNC"
 
 
 # ----------------------------------------------------------------------------
