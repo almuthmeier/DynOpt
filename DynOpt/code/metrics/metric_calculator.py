@@ -316,17 +316,23 @@ class MetricCalculator():
 
         # rcs
         keys = list(best_found_fit_per_gen_and_run_and_alg.keys())
+        # TODO should be the largest value any algorithm has
         runs = len(best_found_fit_per_gen_and_run_and_alg[keys[0]])
 
-        # compute RCS
+        # compute RCS (per run)
         for run in range(runs):
             # convert dict to new one that contains for each
             # algorithm only one 1d numpy array (the best found
             # fitness per generation)
             new_dict = {}
             for alg in keys:
-                new_dict[alg] = best_found_fit_per_gen_and_run_and_alg[alg][run]
-
+                try:
+                    new_dict[alg] = best_found_fit_per_gen_and_run_and_alg[alg][run]
+                except IndexError:
+                    # IndexError: list index out of range
+                    # this error is thrown, if for one algorithm not the
+                    # maximum number of runs was executed
+                    new_dict[alg] = None
             rcs_per_alg = rel_conv_speed(
                 gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict,
                 self.only_for_preds, first_chgp_idx_with_pred)
@@ -334,8 +340,10 @@ class MetricCalculator():
 
             # store RCS data
             for alg in keys:
-                df.loc[(df['arrayfilename'] == array_file_names_per_run_and_alg[alg][run]),
-                       ['rcs']] = rcs_per_alg[alg]
+                if rcs_per_alg[alg] is not None:
+                    # write line only if run was executed for this alg.
+                    df.loc[(df['arrayfilename'] == array_file_names_per_run_and_alg[alg][run]),
+                           ['rcs']] = rcs_per_alg[alg]
         return df
 
 

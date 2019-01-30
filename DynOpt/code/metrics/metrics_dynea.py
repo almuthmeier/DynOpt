@@ -253,6 +253,7 @@ def rel_conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best
     @return: dictionary containing one score for each algorithm:
         Score 0 -> best algorithm
         Score 1 -> worst algorithm
+        None: if the respective run was not exexuted for the algorithm
     '''
     n_chgperiods = len(generations_of_chgperiods)
     # assert n_chgperiods == len(global_opt_fit_per_chgperiod), "inconsistency: n_chgperiods: " + str(
@@ -325,6 +326,7 @@ def __convergence_speed__(generations_of_chgperiods,
     @param worst_fit_per_chgperiod: dictionary containing for each change period 
     the worst fitness value achieved by any algorithm.
     @return: scalar: convergence speed for this algorithm
+             None: if for the respective algorithm this run was not executed
     '''
     sum_norm_areas = 0
     n_summed_chgps = 0
@@ -341,9 +343,12 @@ def __convergence_speed__(generations_of_chgperiods,
         max_area_for_change = 0
         gen_in_chg = 0
         for gen in gens:
-            assert optimal_fit <= best_found_fit_per_gen[gen], "opt-fit " + str(
-                optimal_fit) + " fit " + str(best_found_fit_per_gen[gen])
-            diff = abs(optimal_fit - best_found_fit_per_gen[gen])
+            found_fit = best_found_fit_per_gen[gen]
+            if found_fit is None:
+                return None
+            assert optimal_fit <= found_fit, "opt-fit " + str(
+                optimal_fit) + " fit " + str(found_fit)
+            diff = abs(optimal_fit - found_fit)
             area_for_change += (gen_in_chg + 1) * diff  # +1, otherwise first 0
             max_area_for_change += (gen_in_chg + 1) * best_worst_fit_diff
             gen_in_chg += 1
