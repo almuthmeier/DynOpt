@@ -237,10 +237,11 @@ def get_sorted_array_file_names_for_experiment_file_name(exp_file_name, arrays_p
         veclen = splitted_benchmark_file_name[3].split('-')[1]
         peaks = splitted_benchmark_file_name[4].split('-')[1]
         noise = splitted_benchmark_file_name[5].split('-')[1]
+        print("noise: ", noise, flush=True)  # TODO
         selected_files = [f for f in listdir(arrays_path) if (isfile(join(
             arrays_path, f)) and f.endswith('.npz') and function in f
             and ("_d-" + str(dim) + "_") in f and ("_veclen-" + str(veclen) + "_")in f
-            and ("_peaks-" + peaks + "_") in f and ("_noise-" + "{:.2f}".format(noise) + "_") in f)]
+            and ("_peaks-" + peaks + "_") in f and ("_noise-" + noise + "_") in f)]
     else:
         warnings.warn("unknown benchmark function")
     return np.sort(selected_files)
