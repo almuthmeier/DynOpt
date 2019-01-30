@@ -342,10 +342,16 @@ class MetricCalculator():
 
             # store RCS data
             for alg in keys:
-                if rcs_per_alg[alg] is not None:
+                try:
                     # write line only if run was executed for this alg.
                     df.loc[(df['arrayfilename'] == array_file_names_per_run_and_alg[alg][run]),
                            ['rcs']] = rcs_per_alg[alg]
+                except KeyError:
+                    # KeyError: 'dynea_autoregressive_predDEV'
+                    # this error is thrown in case the respective run was not
+                    # executed for this algorithm (see above except-case)
+                    pass
+
         return df
 
 
