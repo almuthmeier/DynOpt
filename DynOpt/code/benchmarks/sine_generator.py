@@ -57,7 +57,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc,
     max_n_functions = 4
     n_functions = np.random.randint(min_n_functions, max_n_functions)
     print("n_functions: ", n_functions)
-    max_a = 4  # TODO (dev) depends on max_val
+    max_a = 4  # TODO (dev) depends on max_val (is written in the paper!)
     max_b = desired_curv / 2
     # only positive, since positive and negative movement are the same
     min_c = 0

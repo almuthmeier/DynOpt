@@ -41,7 +41,7 @@ def __create_vector(dimensionality, len_vector, np_random_generator, noise=None,
     positions are moved linearly with random noise. "noise" specifies its strength.
     '''
     if use_correlation and old_movement is not None:
-        # newer verion of MPB, like listed in
+        # newer version of MPB, like listed in
         #    - CEC tutorial: http://ieee-tf-ecidue.cug.edu.cn/Yang-CEC2017-Tutorial-ECDOP.pdf
         #    - publication of e.g. Irene Moser: "Dynamic Function Optimization: The Moving Peaks Benchmark"
 
