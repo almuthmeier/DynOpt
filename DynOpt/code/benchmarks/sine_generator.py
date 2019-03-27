@@ -77,7 +77,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc,
         while a == 0:  # must not be zero otherwise is whole function zero
             a = get_a_or_b(max_a, a_prob_smaller_one)
         while b == 0:  # must not be zero otherwise function has constant value
-            # compute current curvature in order to...
+            # compute current curviness in order to...
             summed_frequency = 0 if fcts == [] else np.sum(fcts, axis=0)[b_idx]
             # ...compute the maximum possible frequency
             curr_max_b = max_b - summed_frequency
@@ -95,7 +95,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc,
         if do_print:
             min_acc, max_acc, med_acc, _ = compute_acceleration_analytically(
                 vals)
-            print("curv: ", compute_curvature_analytically(vals))
+            print("curv: ", compute_curviness_analytically(vals))
             print("min, max, med: ", (min_acc, max_acc, med_acc))
             print("a, b, c: ", a, ", ", b, ", ", c)
 
@@ -107,7 +107,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc,
         base_time = np.arange(0, 2 * math.pi, 0.1)
         vals = compute_vals_for_fct(fcts, base_time)
         min_acc, max_acc, med_acc, _ = compute_acceleration_analytically(vals)
-        print("\ncurv: ", compute_curvature_analytically(vals))
+        print("\ncurv: ", compute_curviness_analytically(vals))
         print("min, max, med: ", (min_acc, max_acc, med_acc))
         plt.plot(vals)
         plt.title("for base time")
@@ -116,7 +116,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc,
         print("\nfor all time steps")
         vals = compute_vals_for_fct(fcts, time)
         min_acc, max_acc, med_acc, _ = compute_acceleration_analytically(vals)
-        print("\ncurv: ", compute_curvature_analytically(vals))
+        print("\ncurv: ", compute_curviness_analytically(vals))
         print("min, max, med: ", (min_acc, max_acc, med_acc))
         plt.plot(vals)
         plt.title("for all time steps")
@@ -132,7 +132,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_acc,
             final_vals)
         base_time = base_time = np.arange(0, 2 * math.pi, 0.1)
         final_base_vals = final_vals[:len(base_time)]
-        print("\ncurv (base): ", compute_curvature_analytically(final_base_vals))
+        print("\ncurv (base): ", compute_curviness_analytically(final_base_vals))
         print("min, max, med: ", (min_acc, max_acc, med_acc))
         plt.plot(final_vals)
         plt.title("all time steps (after correction)")
@@ -158,7 +158,10 @@ def get_a_or_b(max_val, perc_smaller_one):
         return np.random.uniform(min_val, max_val)
 
 
-def compute_curvature_analytically(values):
+curv
+
+
+def compute_curviness_analytically(values):
     '''
     @param values: for each time step the function values
     '''
