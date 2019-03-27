@@ -160,8 +160,8 @@ def initialize_comparator_manually(comparator):
     comparator.lenchgperiod = 10
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
-    comparator.benchmarkfunctionfolderpath = path_to_dynoptim + \
-        "/DynOpt/datasets/" + "GECCO_2019/"
+    #comparator.benchmarkfunctionfolderpath = path_to_dynoptim + "/DynOpt/datasets/" + "GECCO_2019/"
+    comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/data_2019-01-19_final/"
     # attention: naming should be consistent to predictor/other params
     comparator.outputdirectory = "ersterTest/ea_kalman/"
     comparator.outputdirectorypath = path_to_dynoptim + \
@@ -201,12 +201,12 @@ def initialize_comparator_manually(comparator):
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
-    comparator.predictor = "kalman"
+    comparator.predictor = "tcn"
     comparator.timesteps = 4
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 5
     comparator.nrequiredtraindata = 10
-    comparator.useuncs = True
+    comparator.useuncs = False
     comparator.epuncfactor = 1  # 68%
     comparator.trainmcruns = 5 if comparator.useuncs else 0
     comparator.testmcruns = 5 if comparator.useuncs else 0
