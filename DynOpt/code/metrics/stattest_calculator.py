@@ -31,9 +31,12 @@ class StatisticalTestsCalculator():
         #self.metric_file_path = self.metric_path + "metric_db_sigmas_2019-01-22.csv"
         #self.stattest_dir_path = self.metric_path + "stattests/"
 
-        self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-25_alle_reini_zusammen/"
+        self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-26_mpb_alle_zusammen/"
+        self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-28_alle_dim/"
         self.metric_file_path = self.metric_path + \
-            "metric_db_2019-01-25_reinitialization.csv"
+            "metric_db_2019-01-28_mpb.csv"
+        self.metric_file_path = self.metric_path + \
+            "output_2019-01-28_alle_dim_mit_kal.csv"
         self.stattest_dir_path = self.metric_path + "stattests/"
 
     def select_rows_for_alg(self, df, alg, exp):
