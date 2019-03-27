@@ -19,8 +19,9 @@ from utils.utils_plot import plot_points
 class Test(unittest.TestCase):
 
     def setUp(self):
-        self.path_test_problems = os.path.abspath(
-            os.pardir) + "/tests/test_datasets/"
+        # path to DynOpt
+        path_to_dynopt = '/'.join(os.path.abspath(os.pardir).split('/')[:-1])
+        self.path_test_problems = path_to_dynopt + "/datasets/test_datasets/"
 
         '''
         Create two instances of MPB-Function with same parameters.
@@ -30,6 +31,8 @@ class Test(unittest.TestCase):
         self.n_peaks = 3
         self.len_chg_period = 4
         self.len_movement_vector = 0.6
+        self.min_range = -5
+        self.max_range = 10
         self.f1_name = self.path_test_problems + "f1.npz"
         self.f2_name = self.path_test_problems + "f2.npz"
         self.f3_name = self.path_test_problems + "f3.npz"
@@ -37,17 +40,20 @@ class Test(unittest.TestCase):
         # create first time
         self.np_random_generator = np.random.RandomState(3)
         self.np_peaks_random_generator = np.random.RandomState(55)
-        __create_and_save_mpb_problem__(self.n_chg_periods, self.n_dims, self.n_peaks, self.len_movement_vector,
+        __create_and_save_mpb_problem__(self.min_range, self.max_range,
+                                        self.n_chg_periods, self.n_dims, self.n_peaks, self.len_movement_vector,
                                         self.np_random_generator, self.np_peaks_random_generator, self.f1_name, noise=None)
         # create second time
         self.np_random_generator = np.random.RandomState(3)
         self.np_peaks_random_generator = np.random.RandomState(55)
-        __create_and_save_mpb_problem__(self.n_chg_periods, self.n_dims, self.n_peaks, self.len_movement_vector,
+        __create_and_save_mpb_problem__(self.min_range, self.max_range,
+                                        self.n_chg_periods, self.n_dims, self.n_peaks, self.len_movement_vector,
                                         self.np_random_generator, self.np_peaks_random_generator, self.f2_name, noise=None)
         # create third time (with noise)
         self.np_random_generator = np.random.RandomState(3)
         self.np_peaks_random_generator = np.random.RandomState(55)
-        __create_and_save_mpb_problem__(self.n_chg_periods, self.n_dims, self.n_peaks, self.len_movement_vector,
+        __create_and_save_mpb_problem__(self.min_range, self.max_range,
+                                        self.n_chg_periods, self.n_dims, self.n_peaks, self.len_movement_vector,
                                         self.np_random_generator, self.np_peaks_random_generator, self.f3_name, noise=0.1)
 
         self.f1 = np.load(self.f1_name)
@@ -233,6 +239,7 @@ class Test(unittest.TestCase):
         # Anzeigen und Speichern
         plt.show()
         self.assertTrue(True)
+
 
         #fig.savefig('mpb.pdf', bbox_inches=0, transparent=True)
 if __name__ == "__main__":

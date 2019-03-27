@@ -21,12 +21,9 @@ from utils.fitnessfunctions import rosenbrock, sphere, rastrigin
 
 class Test(unittest.TestCase):
     def setUp(self):
-        self.path_test_problems = os.path.abspath(
-            os.pardir) + "/tests/test_datasets/"
-
         # path to DynOpt
         path_to_dynopt = '/'.join(os.path.abspath(os.pardir).split('/')[:-1])
-        self.path_test_problems = path_to_dynopt + "/datasets/"
+        self.path_test_problems = path_to_dynopt + "/datasets/test_datasets/"
 
     def test_create_problems(self):
         '''
@@ -35,8 +32,8 @@ class Test(unittest.TestCase):
         Plots for each change the first two dimensions of the global optimum.
         '''
         import matplotlib.pyplot as plt
-        file_name = "rosenbrock_d-2_chgperiods-10000_pch-sine_fch-none_2018-05-09_11:13.npz"
-        file_path = self.path_test_problems + "EvoStar_2018/rosenbrock/" + file_name
+        file_name = "rosenbrock_d-20_chgperiods-100_pch-linear_fch-none_2018-06-15_21:27.npz"
+        file_path = self.path_test_problems + "rosenbrock/" + file_name
         prob_file = np.load(file_path)
         global_opt_pos_per_chgperiod = prob_file['global_opt_pos_per_chgperiod']
         prob_file.close()
@@ -69,10 +66,8 @@ class Test(unittest.TestCase):
         file_name2 = "rosenbrock_d-2_chgperiods-10000_pch-mixture_fch-none_2018-11-17_10:15.npz"
         dim = 20
 
-        f1 = np.load(self.path_test_problems +
-                     "MyTest/sphere/" + file_name1)
-        f2 = np.load(self.path_test_problems +
-                     "MyTest/rosenbrock/" + file_name2)
+        f1 = np.load(self.path_test_problems + "sphere/" + file_name1)
+        f2 = np.load(self.path_test_problems + "rosenbrock/" + file_name2)
         global_opt_fit1 = f1['global_opt_fit_per_chgperiod']
         global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
         orig_opt_pos1 = f1['orig_global_opt_pos']
@@ -103,10 +98,8 @@ class Test(unittest.TestCase):
         # load data
         file_name1 = "sphere_d-20_chgperiods-100_pch-linear_fch-none_2018-06-15_21:27.npz"
         file_name2 = "rosenbrock_d-20_chgperiods-100_pch-linear_fch-none_2018-06-15_21:27.npz"
-        f1 = np.load(self.path_test_problems +
-                     "MyTest/sphere/" + file_name1)
-        f2 = np.load(self.path_test_problems +
-                     "MyTest/rosenbrock/" + file_name2)
+        f1 = np.load(self.path_test_problems + "sphere/" + file_name1)
+        f2 = np.load(self.path_test_problems + "rosenbrock/" + file_name2)
         global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
         orig_opt_pos1 = f1['orig_global_opt_pos']
         global_opt_pos2 = f2['global_opt_pos_per_chgperiod']
@@ -129,8 +122,7 @@ class Test(unittest.TestCase):
         ff = rastrigin
         f_name = "rastrigin"
         file_name = "rastrigin_d-10_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
-        file_path = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/code/tests/test_datasets/"
-        f1 = np.load(file_path + file_name)
+        f1 = np.load(self.path_test_problems + f_name + "/" + file_name)
         global_opt_pos1 = f1['global_opt_pos_per_chgperiod']
         orig_opt_pos1 = f1['orig_global_opt_pos']
         global_opt_fit_per_chgperiod = f1['global_opt_fit_per_chgperiod']
