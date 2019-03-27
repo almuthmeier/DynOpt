@@ -42,11 +42,13 @@ class MetricTransformer():
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_20reps_ohneFehler_zusammengefuehrt/"
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
             self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-22_rmseSigma/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-25_alle_reini_zusammen/"
+            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-25_alle_reini_zusammen_ar-korrigiert/"
+            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-26_mpb_alle_zusammen/"
+            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-28_alle_dim/"
             #self.metric_filename = "metric_db_noiseevalation_2018-12-14_rmses.csv"
             #self.output_file_name = "avg_metric_db_2018-12-11_rmses.csv"
-            self.metric_filename = "metric_db_2019-01-25_reinitialization.csv"
-            self.output_file_name = "avg_metric_2019-01-25_reinitialization.csv"
+            self.metric_filename = "metric_db_2019-01-28_alle_dim.csv"
+            self.output_file_name = "avg_metric_2019-01-28_alle_dim.csv"
         else:
             self.output_dir_path = path_to_output
             self.metric_filename = metric_filename
@@ -245,7 +247,9 @@ class MetricTransformer():
         # sort
         df['function'] = pd.Categorical(
             df['function'], ["sphere", "rosenbrock", "rastrigin"])
-        df['dim'] = pd.Categorical(df['dim'], [2, 5, 10, 20])
+        df['dim'] = pd.Categorical(
+            df['dim'], [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+        #df['noise'] = pd.Categorical(df['noise'], [0.00, 0.05, 0.01])
         if False:
             df['alg'] = pd.Categorical(df['alg'], ["dynea_tcn_auto_dynsig",
                                                    "dynea_tcn_auto_00-8",
@@ -275,13 +279,20 @@ class MetricTransformer():
                                                'dynea_tcn_auto_predRND',
                                                'dynea_tcn_auto_predDEV',
                                                'dynea_tcn_auto_predUNC',
-                                               'dynea_tcn_auto_predKAL'])
+                                               'dynea_tcn_auto_predKAL'
+                                               ])
 
         df['run'] = pd.Categorical(df['run'], ["avg", "std"])
         df = df.sort_values(["function", "dim", "alg", "run"])
+        #df = df.sort_values(["noise", "dim", "alg", "run"])
 
         # save
         df.to_csv(self.output_dir_path + "sorted_rows.csv", index=False)
+
+    def select_algs(self):
+        inout_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-25_alle_reini_zusammen/"
+        input_file = inout_path + "sorted_rows_ohne-stddev.csv"
+        output_file = inout_path + "sorted_rows_ohne-stddev_no.csv"
 
 
 def start_computing_avgs_stddevs(path_to_output=None,
