@@ -23,3 +23,6 @@
 **/stattests
 metric_db.csv
 
+metric_db*.csv
+avg_metric_db.csv
+selection_fcts*.csv
