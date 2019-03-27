@@ -16,7 +16,7 @@
 
 # Benchmarks (do not ignore "MyTests"-folders since required for tests)
 *.npz
-!**/MyTest/**
+!**/test_datasets/**
 
 # Output
 **/logs
