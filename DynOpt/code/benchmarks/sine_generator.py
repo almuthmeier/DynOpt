@@ -158,9 +158,6 @@ def get_a_or_b(max_val, perc_smaller_one):
         return np.random.uniform(min_val, max_val)
 
 
-curv
-
-
 def compute_curviness_analytically(values):
     '''
     @param values: for each time step the function values
