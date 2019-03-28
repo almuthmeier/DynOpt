@@ -8,88 +8,15 @@ Created on Oct 22, 2018
 '''
 
 import copy
-from datetime import datetime
+
 import math
 import warnings
 
-from pandas import Series
-from pandas import read_csv
 from scipy import interpolate
 from scipy.interpolate import interp1d
 from sklearn.preprocessing.data import MinMaxScaler
 
 import numpy as np
-
-
-def champanger():
-    '''
-    https://machinelearningmastery.com/time-series-forecast-study-python-monthly-sales-french-champagne/ (23.10.18)
-    '''
-    from matplotlib import pyplot
-    series = Series.from_csv('monthly-champagne.csv')
-
-    # 'Perrin Freres monthly champagne sales millions ?64-?72'
-
-    print(series.describe())
-    series.plot()
-    pyplot.show()
-
-
-def parse(x):
-    '''
-    https://machinelearningmastery.com/multivariate-time-series-forecasting-lstms-keras/ (23.10.18)
-    '''
-    return datetime.strptime(x, '%Y %m %d %H')
-
-
-def prepare_real_world_series():
-    '''
-    https://machinelearningmastery.com/multivariate-time-series-forecasting-lstms-keras/ (23.10.18)
-    '''
-    dataset = read_csv('pollution_original.csv',  parse_dates=[
-                       ['year', 'month', 'day', 'hour']], index_col=0, date_parser=parse)
-    dataset.drop('No', axis=1, inplace=True)
-    # manually specify column names
-    dataset.columns = ['pollution', 'dew', 'temp',
-                       'press', 'wnd_dir', 'wnd_spd', 'snow', 'rain']
-    dataset.index.name = 'date'
-    # mark all NA values with 0
-    dataset['pollution'].fillna(0, inplace=True)
-    # drop the first 24 hours
-    dataset = dataset[24:]
-    # summarize first 5 rows
-    print(dataset.head(5))
-    # save to file
-    dataset.to_csv('pollution.csv')
-
-
-def real_word_series(col_name=None):
-    '''
-    https://machinelearningmastery.com/multivariate-time-series-forecasting-lstms-keras/ (23.10.18)
-    '''
-
-    from pandas import read_csv
-    from matplotlib import pyplot
-    # load dataset
-    dataset = read_csv('pollution.csv', header=0, index_col=0)
-    values = dataset.values
-    n_data = len(values)
-    print("len(dataset): ", n_data, " = ", n_data / 24,
-          " days ", " = ", n_data / 24 / 365, " years")
-    # specify columns to plotvalues)
-    groups = [0, 1, 2, 3, 5, 6, 7]
-    i = 1
-    # plot each column
-    pyplot.figure()
-    for group in groups:
-        pyplot.subplot(len(groups), 1, i)
-        pyplot.plot(values[:, group])
-        pyplot.title(dataset.columns[group], y=0.5, loc='right')
-        i += 1
-    pyplot.show()
-
-    if col_name is not None:
-        return dataset[col_name].values
 
 
 def plot_into_subplots(list_of_Xs, list_of_Ys, colors):
@@ -807,13 +734,6 @@ if __name__ == '__main__':
     # trial()
     # polynomial()
     # with_spline()
-
-    # real-world
-    # prepare_real_world_series()
-    # output = real_word_series("wnd_spd")
-
-    # champanger()
-    # print(len(output))
 
     # start_splines()
     # start_polynomial()
