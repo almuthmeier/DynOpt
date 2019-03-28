@@ -2,11 +2,11 @@
 
 # This script executes the specified experiments.
 #
-# Run this script from command line with: ./run.sh 
+# Run this script from command line with: ./run_local.sh 
 #
 # In order to run this script from eclipse:
 # https://askubuntu.com/questions/514247/running-a-bash-file-in-eclipse (11.5.18)
-#	- make script runnable: chmod +x run.sh
+#	- make script runnable: chmod +x run_local.sh
 #	- in eclipse: menu Run -> External Tools -> External Tool Configurations
 #		- double-click on "Program"
 #		- Location: search for script

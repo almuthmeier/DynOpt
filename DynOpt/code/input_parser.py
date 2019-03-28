@@ -4,9 +4,9 @@ Main class to execute all the experiments.
 To execute the experiments 
     - either execute this file after having specified all parameters in the
       function initialize_comparator_manually()
-    - or specify the parameters in the scripts/run.sh file and run that script.
+    - or specify the parameters in the scripts/run_local.sh file and run that script.
 
-The meaning of the input parameters is explained in the file scipts/run.sh
+The meaning of the input parameters is explained in the file scipts/run_local.sh
 
 Created on May 9, 2018
 

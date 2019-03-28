@@ -38,7 +38,7 @@ Since in git it is not possible to commit empty directories you have to create s
 The directory datasets/EvoStar_2018/ contains some test data sets. To run a more comprehensive experimental study more benchmarks can be created by running the python scripts in the code/benchmarks/ folder. The desired properties of the fitness functions have to be specified there.
     
 2. Execution of experiments    
-To run the experiments, execute either the run.sh (in scripts/) or input_parser.py (in code/) after defining, e.g., which of the generated data sets should be used. For each run of an experiment the output of the algorithm is stored in the output/ directory in the corresponding array/ subdirectory.
+To run the experiments, execute either the run_local.sh (in scripts/) or input_parser.py (in code/) after defining, e.g., which of the generated data sets should be used. For each run of an experiment the output of the algorithm is stored in the output/ directory in the corresponding array/ subdirectory.
 
 3. Computation of metrics  
 The quality metrics are computed by running the code/metrics/metric_calculator.py. Therefore, the files generated during the execution of the experiments are required. The metrics for all runs, all algorithms and all experiments are stored in one file (metric_db.csv) in the output directory.
