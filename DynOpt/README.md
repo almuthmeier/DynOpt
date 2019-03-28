@@ -3,7 +3,7 @@
 Dynamic Optimization
 ==================================================================================================
 
-This software package provides python code to reproduce the experiments we conducted for our GECCO 2018 and Evo* 2018 papers [1, 2]. Due to some reconstructions (e.g., changes of the seeds), the exact values from the papers might not be reproducible.
+This software package provides python code to reproduce the experiments we conducted for our ICANN 2019 paper. In order to get the code for our GECCO 2018 and Evo* 2018 papers [1, 2], reset to the respective tag in the GIT history. Due to some reconstructions (e.g., changes of the seeds), the exact values from the papers might not be reproducible.
 
 [1] A. Meier, O. Kramer: Recurrent Neural Network-Predictions for PSO in Dynamic Optimization, EvoApplications 2018.  
 [2] A. Meier, O. Kramer: Prediction with Recurrent Neural Networks in Evolutionary Dynamic Optimization, GECCO 2018.
@@ -20,7 +20,7 @@ The code has been tested with:
     - Ubuntu 16.04  
     
 ## Directory Structure
-Since in git it is not possible to commit empty directories you have to create some directories in order to get the following structure:  
+Since in GIT it is not possible to commit empty directories you have to create some directories in order to get the following structure:  
 
 - DynOpt/  
     - code/  
@@ -48,6 +48,17 @@ In order to conduct the statistical tests, run code/metrics/stattest_calculator.
 
 Further explanations about the usage of the modules can be found in the [implementation hints](Implementation_hints.md) and in the code itself.
 
-## Update November 2018
+## Dynamic Sine Benchmark
 
+In the ICANN 2019 paper we propose a new benchmark generator for dynamic optimization problems. It is implemented in
+benchmarks/sine_generator.py. In order to create a data set, 
+	- specify parameters in start_generation() and generate_sine_fcts_for_one_dimension()
+	- run the main function
+	- save the data at the desired location
+
+## Updates
+### November 2018
 - returnseq=True only possible with tftlrnn and tfrnn and tftlrnndense
+
+### March 2019
+- added code for ICANN 2019 paper

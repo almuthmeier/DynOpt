@@ -64,6 +64,19 @@ For each run of an experiment one .npz-file is stored that contains information 
 'pred_opt_pos_per_chgperiod' (position of predicted optima (one for each change period))  
 'detected_chgperiods_for_gens' (for each detected change the corresponding generation numbers)  
 'real_chgperiods_for_gens' (1d numpy array containing for each generation the change period number it belongs to)  
+'train_error_per_chgperiod' (1d: training error for each change period)
+'train_error_for_epochs_per_chgperiod' (2d array: one row for each change period (for tfrnn))
+'final_pop_per_run_per_chgperiod' (population for last generation of change period (for each run);
+		used for determining the EAs variance for change periods; 4d list [runs, chgperiods, parents, dims])
+'final_pop_fitness_per_run_per_changeperiod' (fitness of final population per run of each chgperiod;
+        3d list [runs, chgperiods, parents])
+'stddev_among_runs_per_chgp' (standard deviation of the position of the best found solution
+        (computed over the change period runs), format: [chgperiods, dims])
+'mean_among_runs_per_chgp' (mean of the position of the best found solution
+        (computed over the change period runs), format: [chgperiods, dims])
+'epist_unc_per_chgperiod' (predictive uncertainty (for TCNs, format [chgperiods, dims])
+'aleat_unc_per_chgperiod' (aleatoric uncertainty (for TCNs, format [chgperiods, dims])
+'kal_variance_per_chgperiod' (predictive uncertainty (for Kalman filter, format [chgperiods, dims])
 
 The output .npz-files may be located at any location in the file system.
 
