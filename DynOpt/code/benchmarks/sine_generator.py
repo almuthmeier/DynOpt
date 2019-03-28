@@ -283,9 +283,9 @@ def start_generation():
     min_val = 5
     max_val = 100
 
-    generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed,
-                                               min_val, max_val, desired_curv,
-                                               desired_min_vel, desired_med_vel)
+    _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed,
+                                                   min_val, max_val, desired_curv,
+                                                   desired_min_vel, desired_med_vel)
 
 
 if __name__ == '__main__':
