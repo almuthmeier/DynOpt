@@ -33,12 +33,10 @@ lenchgperiod=30				# number of generations per change period; has to be
 ischgperiodrandom="False"	# True if the change occurs at a random time point.
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
-#benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/" # parent directory path of the benchmark functions
-								   																				 # and child directory of the datasets folder
-								   																				 # of this project
-								   																				 
-benchmarkfunctionfolderpath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/data_2019-01-19_final/"							   																				 
-lbound=0					# minimum bound of the benchmark's range							   																				 # and child directory of the datasets folder
+#benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/" 	# parent directory path of the benchmark functions
+		   																				 	# and child directory of the datasets folder of this project
+benchmarkfunctionfolderpath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/data_2019-01-19_final/" 
+lbound=0					# minimum bound of the benchmark's range							   				 
 ubound=100					# maximum bound of the benchmark's range										   																				 
 
 # run only some experiments of all for the benchmark problem (the next four parameters are lists)
