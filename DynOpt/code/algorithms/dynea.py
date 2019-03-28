@@ -33,7 +33,7 @@ class DynamicEA():
                  n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps,
                  add_noisy_train_data, train_interval, n_required_train_data, use_uncs,
                  train_mc_runs, test_mc_runs, train_dropout, test_dropout,
-                 kernel_size, n_kernels, lr, ep_unc_factor):
+                 kernel_size, n_kernels, lr):
         '''
         Initialize a DynamicEA object.
         @param benchmarkfunction: (string)
@@ -41,7 +41,9 @@ class DynamicEA():
         features for each individual
         @param n_generations: (int) number of generations
         @param experiment_data: (dictionary)
-        @param predictor_name:
+        @param predictor_name: (string)
+        @param lbound, ubound: (floats) lower/upper bound of solution space; 
+        must fit the data in experiment_data!
         @param ea_np_rnd_generator: numpy random generator for the EA
         @param pred_np_rnd_generator: numpy random generator for the predictor
         @param mu: (int) population size
@@ -51,13 +53,37 @@ class DynamicEA():
         @param sigma: (float) mutation strength for EA 
         @param trechenberg: number of mutations after which sigma is adapted
         @param tau: 0 < tau < 1, factor to adapt sigma (for Rechenberg 1/5 rule)
-        @param time_steps: (int) number of time steps the predictions use for the
+        @param timesteps: (int) number of time steps the predictions use for the
         prediction
         @param n_neurons: (int) number of neurons within the first layer of the 
         RNN prediction model
         @param epochs: (int) number of epochs to train the RNN predicton model
         @param batch_size: (int) batch size for the RNN predictor
-        @patam ep_unc_factor: if < 0: different sigma levels are used
+        @param n_layers (int): overall number of RNN layers (incl. pre-trained
+        ones), only for "tfrnn", "tftlrnn", or "tftlrnndense"
+        @param apply_tl: (bool) True if transfer learning should be applied
+        @param n_tllayers (int) number layers in pre-trained RNN 
+        only for "tfrnn", "tftlrnn", or "tftlrnndense"
+        @param tl_model_path: (string) path to pre-trained RNN
+        @param tl_learn_rate (float): learning rate for pre-trained layers
+        @param max_n_chperiod_reps: (int): how often each change period should
+        be repeated (used for evaluation of variance of EA)
+        @param add_noisy_train_data (bool): True if the variance over the 
+        repeated change periods should be used as noise to disturbe the time
+        series the prediction models learn from
+        @param train_interval: (int) number of change periods that must have 
+        passed before predictor is trained anew
+        @param n_required_train_data: (int) number of training data that is
+        used for training
+        @param use_uncs: (True) if predictive uncertainty should be estimated; 
+        only possible for predictors "kalman" and "tcn" 
+        @param train_mc_runs: (int) number of Monte Carlo runs during training
+        (when predictive uncertainty is estimated)
+        @param test_mc_runs: (int) number of Monte Carlo runs during prediciton
+        @param train_dropout, test_dropout (float): dropout for training/test
+        @param kernel_size (int): filter size for "tcn"
+        @param n_kernels: (int) number filters for "tcn"
+        @param lr: (float) learning rate for "tcn"
         '''
         # ---------------------------------------------------------------------
         # for the problem
@@ -79,10 +105,13 @@ class DynamicEA():
         self.batch_size = batchsize
         self.n_layers = n_layers
         self.train_interval = train_interval
+
+        # predictive uncertainty
         self.train_mc_runs = train_mc_runs
         self.test_mc_runs = test_mc_runs
         self.train_dropout = train_dropout
         self.test_dropout = test_dropout
+        self.use_uncs = use_uncs  # True if uncertainties should be trained, predicted and used
 
         # TCN
         self.kernel_size = kernel_size
@@ -105,15 +134,7 @@ class DynamicEA():
         self.return_seq = False  # return values for all time steps not only the last one
         # True -> train data are shuffled before training and between epochs
         self.shuffle_train_data = True
-        # add noisy data (noise equals standard deviation among change period
-        # runs
-        self.add_noisy_train_data = add_noisy_train_data
-        self.n_noisy_series = 20  # TODO
-        self.use_uncs = use_uncs  # True if uncertainties should be trained, predicted and used
-        # TODO now unused, but could be used (and was used) to evaluate
-        # TODO is really unused because self.sigma_factors can be set instead
-        # specific factors
-        self.ep_unc_factor = ep_unc_factor
+
         # ---------------------------------------------------------------------
         # for EA (fixed values)
         # ---------------------------------------------------------------------
@@ -178,8 +199,12 @@ class DynamicEA():
         self.population_of_last_gen = None
 
         # ---------------------------------------------------------------------
-        # for EA (evaluation of variance) (repetitions of change periods
+        # for EA (evaluation of variance) (repetitions of change periods)
         # ---------------------------------------------------------------------
+        # add noisy data (noise equals standard deviation among change period
+        # runs TODO could be replaced by "max_n_chgperiod_reps > 1"
+        self.add_noisy_train_data = add_noisy_train_data
+        self.n_noisy_series = 20  # TODO (was employed for robust pre-training)
         # number repetitions of the single change periods (at least 1 -> 1 run)
         # TODO insert into PSO
         self.max_n_chgperiod_reps = max_n_chperiod_reps

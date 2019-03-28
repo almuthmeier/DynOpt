@@ -71,8 +71,7 @@ traininterval=75			# number of change periods that must have passed before predi
 nrequiredtraindata=128		# number of training data that is used for training
 useuncs=$3					# if True -> TCN with automatic learning of aleatoric and epistemic uncertainty is used;
 							# ep. unc. is used as standard deviation for re-initializing the population after a change
-epuncfactor=$4				# factor for standard deviation (for re-initializing the population)
-							# If epuncfactor < 0 the predictive uncertainty is multiplied by factors of different levels (like for the other predictors) when the population is re-initialized)			
+							# only possible for prediction modes "kalman" and "tcn" 
 trainmcruns=50				# only used if useuncs; number of Monte Carlo runs during training
 testmcruns=10				# only used if useuncs; number of Monte Carlo runs during testing/prediction
 traindropout=0.1			# dropout rate for training
@@ -161,7 +160,6 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -traininterval="$traininterval" \
 -nrequiredtraindata="$nrequiredtraindata" \
 -useuncs="$useuncs" \
--epuncfactor="$epuncfactor" \
 -trainmcruns="$trainmcruns" \
 -testmcruns="$testmcruns" \
 -traindropout="$traindropout" \

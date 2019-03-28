@@ -74,7 +74,6 @@ class PredictorComparator(object):
         self.traininterval = None  # int
         self.nrequiredtraindata = None  # int
         self.useuncs = None  # bool
-        self.epuncfactor = None  # float
         self.trainmcruns = None  # int
         self.testmcruns = None  # int
         self.traindropout = None  # float
@@ -149,7 +148,7 @@ class PredictorComparator(object):
                             self.traininterval, self.nrequiredtraindata, self.useuncs,
                             self.trainmcruns, self.testmcruns,
                             self.traindropout, self.testdropout,
-                            self.kernelsize, self.nkernels, self.lr, self.epuncfactor)
+                            self.kernelsize, self.nkernels, self.lr)
         elif self.algorithm == "dynpso":
             alg = DynamicPSO(self.benchmarkfunction, dimensionality,
                              n_generations, self.experiment_data, self.predictor,

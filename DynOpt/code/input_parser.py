@@ -82,7 +82,6 @@ def define_parser_arguments():
     parser.add_argument("-traininterval", type=int)
     parser.add_argument("-nrequiredtraindata", type=int)
     parser.add_argument("-useuncs", type=str)
-    parser.add_argument("-epuncfactor", type=float)
     parser.add_argument("-trainmcruns", type=int)
     parser.add_argument("-testmcruns", type=int)
     parser.add_argument("-traindropout", type=float)
@@ -207,7 +206,6 @@ def initialize_comparator_manually(comparator):
     comparator.traininterval = 5
     comparator.nrequiredtraindata = 10
     comparator.useuncs = False
-    comparator.epuncfactor = 1  # 68%
     comparator.trainmcruns = 5 if comparator.useuncs else 0
     comparator.testmcruns = 5 if comparator.useuncs else 0
     comparator.traindropout = 0.1
@@ -298,7 +296,6 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.trechenberg = args.trechenberg
         comparator.tau = args.tau
         comparator.reinitializationmode = args.reinitializationmode
-        comparator.sigmafactors = args.sigmafactors
 
     # predictor
     comparator.predictor = args.predictor
@@ -307,7 +304,6 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.traininterval = args.traininterval
     comparator.nrequiredtraindata = args.nrequiredtraindata
     comparator.useuncs = args.useuncs == 'True'
-    comparator.epuncfactor = args.epuncfactor if comparator.useuncs else 0
     comparator.trainmcruns = args.trainmcruns if comparator.useuncs else 0
     comparator.testmcruns = args.testmcruns if comparator.useuncs else 0
     comparator.traindropout = args.traindropout
