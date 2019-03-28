@@ -33,20 +33,7 @@ class MetricTransformer():
                                         [:-1]) + "/datasets/"
             path_to_output = '/'.join(path_to_code.split('/')
                                       [:-1]) + "/output/"
-            #self.output_dir_path = path_to_output + "ESANN_2019/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-20_ohneDrop_mitNOundARR/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Robustness/output_2018-12-11/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-18_trainparams/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_zusammengefuehrt_srr/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_20reps_ohneFehler_zusammengefuehrt/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-22_rmseSigma/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-25_alle_reini_zusammen_ar-korrigiert/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-26_mpb_alle_zusammen/"
-            self.output_dir_path = path_to_output = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-28_alle_dim/"
-            #self.metric_filename = "metric_db_noiseevalation_2018-12-14_rmses.csv"
-            #self.output_file_name = "avg_metric_db_2018-12-11_rmses.csv"
+            self.output_dir_path = path_to_output = "<path>"
             self.metric_filename = "metric_db_2019-01-28_alle_dim.csv"
             self.output_file_name = "avg_metric_2019-01-28_alle_dim.csv"
         else:
@@ -55,13 +42,7 @@ class MetricTransformer():
             self.output_file_name = output_file_name
 
     def make_table_with_selected_data(self):
-        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/EAwithPred/output_2018-11-23/"
-        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Robustness/output_2018-12-11/"
-        path_transformed_db = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/"
-        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-18_trainparams/"
-        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_zusammengefuehrt_srr/"
-        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-19_20reps_ohneFehler_zusammengefuehrt/"
-        path_transformed_db = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
+        path_transformed_db = "<path>"
         full_input_name = path_transformed_db + \
             "avg_metric_db_sigmas_2019-01-22_mit-std.csv"
         all_data = pd.read_csv(full_input_name)
@@ -290,7 +271,7 @@ class MetricTransformer():
         df.to_csv(self.output_dir_path + "sorted_rows.csv", index=False)
 
     def select_algs(self):
-        inout_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-25_alle_reini_zusammen/"
+        inout_path = "<path>"
         input_file = inout_path + "sorted_rows_ohne-stddev.csv"
         output_file = inout_path + "sorted_rows_ohne-stddev_no.csv"
 

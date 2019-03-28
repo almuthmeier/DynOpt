@@ -33,9 +33,8 @@ lenchgperiod=30				# number of generations per change period; has to be
 ischgperiodrandom="False"	# True if the change occurs at a random time point.
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
-#benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/" 	# parent directory path of the benchmark functions
-		   																				 	# and child directory of the datasets folder of this project
-benchmarkfunctionfolderpath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/data_2019-01-19_final/" 
+benchmarkfunctionfolderpath="<path>" 			# parent directory path of the benchmark functions
+		   										# and child directory of the datasets folder of this project
 lbound=0					# minimum bound of the benchmark's range							   				 
 ubound=100					# maximum bound of the benchmark's range										   																				 
 
@@ -83,7 +82,7 @@ neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RN
 epochs=100					# number of training epochs for the RNN prediction model
 batchsize=32				# batch size for RNN model
 nlayers=2					# overall number of layers (incl. tl layers)
-tlmodelpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/models_2018-11-19/"	# path to the pre-trained transfer learning model
+tlmodelpath="<path>"		# path to the pre-trained transfer learning model
 ntllayers=1					# number of layers in the transfer learning model
 ngpus=1    					# number of GPUs to use (for RNN model) 
 
@@ -115,8 +114,8 @@ predictor=$1				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, ka
 
 algnameaddition=$2
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
-#outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-30_mpb_autotcn_teilweise-neu/$benchmarkfunction/"		# path to output folder
-outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/output_2019-01-30_kal_mehr-dims/$benchmarkfunction/"
+outputdirectorypath="<path>"		# path to output folder
+
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
