@@ -132,7 +132,7 @@ class DynamicEA():
         self.predict_diffs = True  # predict position differences, TODO insert into PSO
         self.return_seq = False  # return values for all time steps not only the last one
         # True -> train data are shuffled before training and between epochs
-        self.shuffle_train_data = True
+        self.shuffle_train_data = True  # TODO move into script?
 
         # ---------------------------------------------------------------------
         # for EA (fixed values)
@@ -189,7 +189,10 @@ class DynamicEA():
         self.pred_opt_fit_per_chgperiod = []
         self.epist_unc_per_chgperiod = []  # predictive variance
         self.aleat_unc_per_chgperiod = []  # average aleatoric uncertainty
-        self.kal_variance_per_chgperiod = []  # estimated variance by kal. filter
+        # estimated variance by kal. filter
+        # TODO use epist_unc_per_chgperiod also for Kalman filter (both have
+        # currently same format)
+        self.kal_variance_per_chgperiod = []
         # training error per chgperiod (if prediction was done)
         self.train_error_per_chgperiod = []
         # training error per epoch for each chgperiod (if prediction was done)
