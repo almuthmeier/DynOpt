@@ -160,7 +160,7 @@ def initialize_comparator_manually(comparator):
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     #comparator.benchmarkfunctionfolderpath = path_to_dynoptim + "/DynOpt/datasets/" + "GECCO_2019/"
-    comparator.benchmarkfunctionfolderpath = "<path>"
+    comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/data_2019-01-19_final/"
     # attention: naming should be consistent to predictor/other params
     comparator.outputdirectory = "ersterTest/ea_kalman/"
     comparator.outputdirectorypath = path_to_dynoptim + \
@@ -225,7 +225,8 @@ def initialize_comparator_manually(comparator):
         comparator.n_layers = 1
         # apply transfer learning only for tftlrnn
         comparator.apply_tl = comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense"
-        comparator.tl_model_path = "<path>"
+        comparator.tl_model_path = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/"  # + \
+        #"tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"
         comparator.n_tllayers = 1
         comparator.withdensefirst = comparator.predictor == "tftlrnndense"
         comparator.tl_learn_rate = 0.0001 if comparator.n_layers > 1 else 0.001

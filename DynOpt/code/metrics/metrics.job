@@ -9,8 +9,8 @@
 #SBATCH --error="slurm_metrics.%j.err"
 
 
-benchmarkfunctionfolderpath="<path>"
-outputpath="<path>"
+benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/"
+outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-01-28_alle_dim/"
 benchmarkfunctions=sphere #,rosenbrock,rastrigin #mpbcorr
 poschgtypes=sinefreq  #none
 fitchgtypes=none

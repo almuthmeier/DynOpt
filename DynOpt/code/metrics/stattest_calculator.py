@@ -24,9 +24,18 @@ class StatisticalTestsCalculator():
         # path to "..../DynOpt/code"
         path_to_code = os.path.abspath(os.pardir)
         path_to_output = '/'.join(path_to_code.split('/')[:-1]) + "/output/"
-        self.metric_path = "<path>"
+        self.metric_path = path_to_output + "GECCO_2019/"
+
+        #self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
+        #self.metric_file_path = self.metric_path + "metric_db_sigmas_2019-01-22.csv"
+        #self.stattest_dir_path = self.metric_path + "stattests/"
+
+        self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-26_mpb_alle_zusammen/"
+        self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-28_alle_dim/"
         self.metric_file_path = self.metric_path + \
             "metric_db_2019-01-28_mpb.csv"
+        self.metric_file_path = self.metric_path + \
+            "output_2019-01-28_alle_dim_mit_kal.csv"
         self.stattest_dir_path = self.metric_path + "stattests/"
 
     def select_rows_for_alg(self, df, alg, exp):
