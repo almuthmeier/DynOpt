@@ -7,8 +7,6 @@
 #SBATCH --time=2-00:00
 #SBATCH --output="slurm_metrics.%j.out"
 #SBATCH --error="slurm_metrics.%j.err"
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=almuth.meier@uni-oldenburg.de
 
 
 benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/"
