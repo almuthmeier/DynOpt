@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# like slurm.job but no .job-script
+# employed in combination with main.sh and subscript.job
 
 # input parameters:
 #  $1 -> predictor type
