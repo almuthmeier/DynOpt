@@ -7,9 +7,6 @@
 #SBATCH --time=0-00:15
 #SBATCH --output="slurm_sleepy.%j.out"
 #SBATCH --error="slurm_sleepy.%j.err"
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=almuth.meier@uni-oldenburg.de
-
 
 python3.5 ../code/sleepy.py 
 
