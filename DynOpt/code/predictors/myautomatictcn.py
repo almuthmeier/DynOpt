@@ -1,5 +1,6 @@
 '''
 -- Difference to mytcn.py: automatic scaling of noise --
+Is used for ICANN 2019 paper.
 
 Builds a complete Temporal Convolution Network (with output layer, train and 
 test functions). 

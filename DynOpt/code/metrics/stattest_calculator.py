@@ -7,7 +7,6 @@ Implemented on June 14, 2018
 
 @author: ameier
 '''
-import itertools
 import math
 import os
 

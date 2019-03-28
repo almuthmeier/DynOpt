@@ -1,5 +1,5 @@
 '''
-Basic component of Temporal Convolution Network. Taken from: 
+Basse component of Temporal Convolution Network. Taken from: 
 
 https://github.com/YuanTingHsieh/TF_TCN/blob/master/tcn/tcn.py
 
