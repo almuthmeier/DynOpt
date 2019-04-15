@@ -6,13 +6,12 @@
 #  $1 -> predictor type
 #  $2 -> algnameaddition
 #  $3 -> whether uncertainties are used
-#  $4 -> factor for standard deviation
-#  $5 -> re-initialization mode
-#  $6 -> sigma factor
-#  $7 -> dimension
-#  $8 -> function
-#  $9 -> position change type
-#  $10 -> noise
+#  $4 -> re-initialization mode
+#  $5 -> sigma factors
+#  $6 -> dimension
+#  $7 -> function
+#  $8 -> position change type
+#  $9 -> noise
 
 #------------------------------------------------------------------------------
 # Parameters
@@ -41,7 +40,7 @@ ubound=100					# maximum bound of the benchmark's range
 
 # run only some experiments of all for the benchmark problem (the next four parameters are lists)
 fitchgtypes=none			# fitness change type; comma-separated integers
-dims=$7						# dimensionality of fitness function; comma-separated integers
+dims=$6						# dimensionality of fitness function; comma-separated integers
 
 # PSO
 c1=1.496180					# influence of particle's best solution 
@@ -59,8 +58,8 @@ mean=0.0					# mutation mean
 sigma=1.0					# mutation strength
 trechenberg=5				# number of generations during that the number of successful mutations is counted
 tau=0.5						# 0 < tau < 1, for Rechenberg
-reinitializationmode=$5		# mode for re-initialization of the population: "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
-sigmafactors=$6				# list of floats, factors for the sigma environment for random population re-initialization
+reinitializationmode=$4		# mode for re-initialization of the population: "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
+sigmafactors=$5				# list of floats, factors for the sigma environment for random population re-initialization
 
 # predictor
 timesteps=50				# number of previous optima used for the predictions
@@ -99,9 +98,9 @@ pathadditions="$pathaddition"
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # Set 1
-benchmarkfunction=$8	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
-poschgtypes=$9			# linear,sine,circle,mixture,sinefreq position change type; comma-separated integers
-noises=${10}			# noise, required only for mpb-benchmarks; comma-separated floats
+benchmarkfunction=$7	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+poschgtypes=$8			# linear,sine,circle,mixture,sinefreq position change type; comma-separated integers
+noises=${9}			# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # ==================================================================================================================================================

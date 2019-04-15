@@ -9,11 +9,9 @@
 #  $1 -> predictor type
 #  $2 -> algnameaddition
 #  $3 -> whether uncertainties are used
-#  $4 -> factor for standard deviation
-#  $5 -> re-initialization mode
-#  $6 -> sigma factor
-#  $7 -> dimension
-
+#  $4 -> re-initialization mode
+#  $5 -> sigma factors
+#  $6 -> dimension
 
 # ----------------------------------------------------------------------------
 # sphere, rastrigin, rosenbrock
@@ -51,7 +49,7 @@ n=0.00
 
 for f in "${functions[@]}"
 do
-	./run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$f" "$poschgt" "$n" & 
+	./run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$f" "$poschgt" "$n" & 
 done
 
 wait
