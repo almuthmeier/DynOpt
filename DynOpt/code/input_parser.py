@@ -296,6 +296,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.trechenberg = args.trechenberg
         comparator.tau = args.tau
         comparator.reinitializationmode = args.reinitializationmode
+        comparator.sigmafactors = args.sigmafactors
 
     # predictor
     comparator.predictor = args.predictor
