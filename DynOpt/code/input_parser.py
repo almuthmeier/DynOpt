@@ -164,7 +164,7 @@ def initialize_comparator_manually(comparator):
     # attention: naming should be consistent to predictor/other params
     comparator.outputdirectory = "ersterTest/ea_kalman/"
     comparator.outputdirectorypath = path_to_dynoptim + \
-        "/DynOpt/output/" + "GECCO_2019/" + "sphere/"
+        "/DynOpt/output/" + "ICANN_2019/" + "sphere/"
     comparator.lbound = 0
     comparator.ubound = 100
 
@@ -195,12 +195,12 @@ def initialize_comparator_manually(comparator):
         comparator.trechenberg = 5
         comparator.tau = 0.5
         # "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
-        comparator.reinitializationmode = "pred-UNC"
+        comparator.reinitializationmode = "no-PRE"  # "no-PRE"
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
-    comparator.predictor = "tcn"
+    comparator.predictor = "no"
     comparator.timesteps = 4
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 5
@@ -253,7 +253,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 53:
+    if n_current_inputs != 52:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
