@@ -285,10 +285,12 @@ class DynamicEA():
             # -> different variance for each dimension
             try:
                 # for predictor "tcn" (AutoTCN)
-                covariance = self.epist_unc_per_chgperiod[-1] # variance (vector)
+                # variance (vector)
+                covariance = self.epist_unc_per_chgperiod[-1]
             except:
                 # for predictor "kalman"
-                covariance = self.kal_variance_per_chgperiod[-1] # variance (vector)
+                # variance (vector)
+                covariance = self.kal_variance_per_chgperiod[-1]
             assert len(covariance) == self.dim
         elif self.reinitialization_mode == "pred-DEV":
             # -> one variance for all dimensions
