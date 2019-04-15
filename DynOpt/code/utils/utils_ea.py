@@ -53,27 +53,40 @@ def dominant_recombination(population, ro, ea_np_rnd_generator):
     return offspring
 
 
-def gaussian_mutation(x, mean, sigma, ea_np_rnd_generator):
+def gaussian_mutation(x, mean, sigma, ea_np_rnd_generator, z=None, covariance=None):
     '''
     Gaussian mutation.
 
     Mutates individual x by adding Gaussian Noise.
 
+    @param mean: (scalar)
     @param ea_np_rnd_generator: numpy random number generator, created with
         np.random.RandomState(<seed>)
+    @param sigma: (scalar) standard deviation of distribution
+    @param z: (scalar) scale of the distribution
+    @param covariance: (scalar) (co)variance; use either sigma or covariance
     '''
-    try:
-        len(sigma)  # throws exception if sigma is a scalar
-        # multivariate sigma: for each dimension different standard deviation
+    # TODO das z extra uebergeben, damit es auch bei multivariate funktioniert
+
+    if sigma is None:
+        # multivariate variance: for each dimension different variance
         # convert single float to vector by repeating it multiple times
         mean = np.array([mean] * len(x))
-        # convert vector to diagonal matrix
-        sigma = np.diag(sigma)
-        noise = ea_np_rnd_generator.multivariate_normal(mean, sigma)
-    except:
+        try:
+            # throws exception if covariance is a row vector
+            # -> contains only variance (since covariance would require matrix)
+            covariance.shape[1]
+        except IndexError:  # variance case
+            "tuple index out of range"
+            # convert variance vector to diagonal covariance matrix
+            covariance = np.diag(covariance)
+        noise = ea_np_rnd_generator.multivariate_normal(mean, covariance)
+    else:  # sigma (standard deviation) is scalar
         noise = ea_np_rnd_generator.normal(mean, sigma, len(x))
 
-    return x + noise
+    if z is None:
+        z = 1
+    return x + z * noise
 
 
 def mu_plus_lambda_selection(mu, parents, offsprings, parents_fitness, offsprings_fitness):

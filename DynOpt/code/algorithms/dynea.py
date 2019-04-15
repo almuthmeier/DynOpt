@@ -263,12 +263,13 @@ class DynamicEA():
         Generates immigrants around the predected optimum, following the
         current re-initialization strategy.
 
-        @param z: factor for the sigma environment
+        @param z: factor for the interval
         @param pred_optimum_position: predicted optimum
         @param n_immigrants_per_noise: (int) number of immigrants per noise level
         '''
         mean = 0.0
-        sigma = None
+        covariance = None  # covariance (matrix) or variance (vector)
+        sigma = None  # standard deviation (scalar)
         try:
             n_preds, _ = self.pred_opt_pos_per_chgperiod.shape
         except AttributeError:
@@ -280,17 +281,17 @@ class DynamicEA():
             # -> one sigma for all dimensions
             sigma = 1.0
         elif self.reinitialization_mode == "pred-UNC":
-            # convert predictive variance to standard deviation
-            # -> different sigma for each dimension
+            # predictive variance for re-initialization
+            # -> different variance for each dimension
             try:
                 # for predictor "tcn" (AutoTCN)
-                sigma = np.sqrt(self.epist_unc_per_chgperiod[-1])
+                covariance = self.epist_unc_per_chgperiod[-1] # variance (vector)
             except:
                 # for predictor "kalman"
-                sigma = np.sqrt(self.kal_variance_per_chgperiod[-1])
-            assert len(sigma) == self.dim
+                covariance = self.kal_variance_per_chgperiod[-1] # variance (vector)
+            assert len(covariance) == self.dim
         elif self.reinitialization_mode == "pred-DEV":
-            # -> one sigma for all dimensions
+            # -> one variance for all dimensions
             # difference of the last prediction and the last best found position;
             # average over all dimensions
 
@@ -315,18 +316,17 @@ class DynamicEA():
             c = 0.1  # seemed to be good setting in the paper
             try:
                 # for predictor "kalman"
-                variance = self.kal_variance_per_chgperiod[-1]
+                covariance = self.kal_variance_per_chgperiod[-1]
             except:
                 # for predictor "tcn" (AutoTCN)
-                variance = self.epist_unc_per_chgperiod[-1]
-            max_variance = np.max(variance)
+                covariance = self.epist_unc_per_chgperiod[-1]
+            max_variance = np.max(covariance)
             max_sigma = np.sqrt(max_variance)
             g = c / (1 + max_sigma)
             # number of immigrants produced around the prediction (remaining
             # immigrants are created randomly afterwards)
             n_immigrants_per_noise = math.floor(g * n_immigrants_per_noise)
-            sigma = np.sqrt(variance)
-            assert len(sigma) == self.dim
+            assert len(covariance) == self.dim
         else:
             warnings.warn("unknown reinitialization mode: " +
                           self.reinitialization_mode)
@@ -335,7 +335,7 @@ class DynamicEA():
             return np.array([])
         noisy_optimum_positions = np.array(
             [gaussian_mutation(pred_optimum_position, mean,
-                               z * sigma, self.pred_np_rnd_generator)
+                               sigma, self.pred_np_rnd_generator, z, covariance)
              for _ in range(n_immigrants_per_noise)])
         return noisy_optimum_positions
 
