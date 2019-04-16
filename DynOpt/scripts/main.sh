@@ -67,10 +67,11 @@ reinimode2="pred-UNC"
 # ----------------------------------------------------------------------------
 
 
-for d in "${dims[@]}"
-do	
-	sbatch --mem=35G --job-name="d$d-autokal" --output="slurm_d$d-kal.%j.out" --error="slurm_d$d-kal.%j.err" subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
-	sbatch --mem=35G --job-name="d$d-autounc" --output="slurm_d$d-unc.%j.out" --error="slurm_d$d-unc.%j.err" subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
-done
+#for d in "${dims[@]}"
+#do	
+#	sbatch --mem=35G --job-name="d$d-autokal" --output="slurm_d$d-kal.%j.out" --error="slurm_d$d-kal.%j.err" subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
+#	sbatch --mem=35G --job-name="d$d-autounc" --output="slurm_d$d-unc.%j.out" --error="slurm_d$d-unc.%j.err" subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
+#done
 
+sbatch --mem=35G --job-name="d-autounc" --output="slurm_d-unc.%j.out" --error="slurm_d-unc.%j.err" subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
 wait
