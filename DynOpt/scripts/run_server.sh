@@ -115,7 +115,7 @@ predictor=$1				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, ka
 algnameaddition=$2
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
 #outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-04-16_alle-dim/$benchmarkfunction/"		# path to output folder
-outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/output_2019-04-15/$benchmarkfunction/"
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/output_2019-04-16_mpb/$benchmarkfunction/"
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
