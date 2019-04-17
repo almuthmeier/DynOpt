@@ -7,10 +7,10 @@ zfactors=0.01,0.1,1.0,10.0
 # ----------------------------------------------------------------------------
 
 
-pred1="tcn"
-pred2="tcn"
-algnameaddition1="_auto_predKAL" # for autoTCN: _auto_ ... !!!
-algnameaddition2="_auto_predUNC" 								
+pred1="kalman"
+pred2="kalman"
+algnameaddition1="_predKAL" # for autoTCN: _auto_ ... !!!
+algnameaddition2="_predUNC" 								
 useuncs1="True"
 useuncs2="True"
 reinimode1="pred-KAL"
@@ -67,12 +67,16 @@ reinimode2="pred-UNC"
 # ----------------------------------------------------------------------------
 
 
-for d in "${dims[@]}"
-do
-	#./subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
-	#./subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &	
-	sbatch --mem=35G --job-name="d$d-mpbkal" --output="slurm_d$d-mpbkal.%j.out" --error="slurm_d$d-mpbkal.%j.err" subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
-	sbatch --mem=35G --job-name="d$d-mpbounc" --output="slurm_d$d-mpbunc.%j.out" --error="slurm_d$d-mpbunc.%j.err" subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
-done
+#for d in "${dims[@]}"
+#do
+#	#./subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
+#	#./subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &	
+#	sbatch --mem=35G --job-name="d$d-mpbkal" --output="slurm_d$d-mpbkal.%j.out" --error="slurm_d$d-mpbkal.%j.err" subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
+#	sbatch --mem=35G --job-name="d$d-mpbounc" --output="slurm_d$d-mpbunc.%j.out" --error="slurm_d$d-mpbunc.%j.err" subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
+#done
 
+
+#./subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
+./subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
+	
 wait

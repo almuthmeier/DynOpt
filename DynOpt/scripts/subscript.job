@@ -17,17 +17,18 @@
 # sphere, rastrigin, rosenbrock
 
 #functions=(sphere rastrigin rosenbrock)
-#f=sphere
-#poschgt="sinefreq"
-#n=0.00
+f=sphere
+poschgt="sinefreq"
+n=0.00
 #for f in "${functions[@]}"
 
 # ----------------------------------------------------------------------------
 # MPB
 
-f="mpbcorr"
-poschgt="none"
-noises=(0.00 0.01 0.05)
+#f="mpbcorr"
+#poschgt="none"
+#noises=(0.00 0.01 0.05)
+#for n in "${noises[@]}"
 
 
 
@@ -40,17 +41,17 @@ noises=(0.00 0.01 0.05)
 #dims=(8 9 11 12)
 #dims=(13 14 15 16)
 #dims=(17 18 19)
-#dims=(3 4 6 7 8 9 11 12 13 14 15 16 17 18 19)
-#for d in "${dims[@]}"
-#do
-#	./run_server.sh "$1" "$2" "$3" "$4" "$5" "$d" "$f" "$poschgt" "$n" &    # $d instead of $6
-#done
-
-
-
-for n in "${noises[@]}"
+dims=(3 4 6 7 8 9 11 12 13 14 15 16 17 18 19)
+for d in "${dims[@]}"
 do
-	./run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$f" "$poschgt" "$n" & 
+	./run_server.sh "$1" "$2" "$3" "$4" "$5" "$d" "$f" "$poschgt" "$n" &    # $d instead of $6
 done
+
+
+
+#for n in "${noises[@]}"
+#do
+#	./run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$f" "$poschgt" "$n" & 
+#done
 
 wait
