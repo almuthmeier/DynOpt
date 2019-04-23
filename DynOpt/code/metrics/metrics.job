@@ -10,15 +10,15 @@
 
 
 benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/"
-outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-04-23_alle_DSB/"
-benchmarkfunctions=sphere,rosenbrock,rastrigin #mpbcorr
-poschgtypes=sinefreq #none
+outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-04-23_alle_MPB/"
+benchmarkfunctions=mpbcorr #sphere,rosenbrock,rastrigin
+poschgtypes=none #sinefreq
 fitchgtypes=none
 #dims=2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 dims=2,5,10,20
-noises=0.00 #,0.01,0.05
+noises=0.00,0.01,0.05
 pathaddition="architecture/"
-metricfilename="output_2019-04-23_alle_DSB.csv"
+metricfilename="output_2019-04-23_alle_MPB.csv"
 onlyforpreds="True"			# True if metrics should be computed only over change periods where a prediction was made
 
 # -----------------------------------------------------------------------------
