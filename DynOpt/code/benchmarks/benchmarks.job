@@ -9,7 +9,7 @@
 #SBATCH --error="slurm_benchmarks.%j.err"
 
 
-benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final"
+benchmarkfunctionfolderpath=<path>
 
 
 # -----------------------------------------------------------------------------

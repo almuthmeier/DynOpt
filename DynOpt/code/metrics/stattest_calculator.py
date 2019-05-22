@@ -21,16 +21,9 @@ class StatisticalTestsCalculator():
 
     def __init__(self):
         # TODO(dev) set parameters as required
-        # path to "..../DynOpt/code"
-        #path_to_code = os.path.abspath(os.pardir)
-        #path_to_output = '/'.join(path_to_code.split('/')[:-1]) + "/output/"
-        #self.metric_path = path_to_output + "GECCO_2019/"
 
-        #self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-01-21_sigmas_zusammengefuehrt/"
-        #self.metric_file_path = self.metric_path + "metric_db_sigmas_2019-01-22.csv"
-        #self.stattest_dir_path = self.metric_path + "stattests/"
 
-        self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-04-23_alle_DSB/"
+        self.metric_path = <path>
         self.metric_file_path = self.metric_path + \
             "output_2019-04-23_alle_DSB.csv"
         self.stattest_dir_path = self.metric_path + "stattests/"
