@@ -3,7 +3,7 @@
 Dynamic Optimization
 ==================================================================================================
 
-This software package provides python code to reproduce the experiments we conducted for our ICANN 2019 paper. In order to get the code for our GECCO 2018 and Evo* 2018 papers [1, 2], reset to the respective tag ("GECCO19-release") in the GIT history. Due to some reconstructions (e.g., changes of the seeds), the exact values from the papers might not be reproducible.
+This software package provides python code to reproduce the experiments we conducted for our ICANN 2019 paper. In order to get the code for our GECCO 2018 and Evo* 2018 papers [1, 2], reset to the respective tag ("GECCO18-release") in the GIT history. Due to some reconstructions (e.g., changes of the seeds), the exact values from the papers might not be reproducible.
 
 [1] A. Meier, O. Kramer: Recurrent Neural Network-Predictions for PSO in Dynamic Optimization, EvoApplications 2018.  
 [2] A. Meier, O. Kramer: Prediction with Recurrent Neural Networks in Evolutionary Dynamic Optimization, GECCO 2018.
