@@ -62,3 +62,6 @@ In the ICANN 2019 paper we propose a new benchmark generator for dynamic optimiz
 
 ### March 2019
 - added code for ICANN 2019 paper
+
+### May 2019
+- corrected ICANN 2019 code (parameters for normal deviation)
