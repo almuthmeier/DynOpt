@@ -50,11 +50,11 @@ Further explanations about the usage of the modules can be found in the [impleme
 
 ## Dynamic Sine Benchmark
 
-In the ICANN 2019 paper we propose a new benchmark generator for dynamic optimization problems. It is implemented in
-benchmarks/sine_generator.py. In order to create a data set, 
-	- specify parameters in start_generation() and generate_sine_fcts_for_one_dimension()
-	- run the main function
-	- save the data at the desired location
+In the ICANN 2019 paper we propose a new benchmark generator for dynamic optimization problems. It is implemented in benchmarks/sine_generator.py. In order to create a data set:
+
+* specify parameters in start_generation() and generate_sine_fcts_for_one_dimension()
+* run the main function
+* save the data at the desired location
 
 ## Updates
 ### November 2018
