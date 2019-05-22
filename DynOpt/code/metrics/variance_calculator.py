@@ -78,9 +78,30 @@ def compute_variance_between_runs(in_full_name, out_full_name):
     # real optima
     # -------------------------------------------------------------------------
     # plot real values of optimum per change period
-    benchmark_folder = <path>
-    benchmark_file = <path>
-    
+    benchmark_folder = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/GECCO_2019/"
+    benchmark_file = "sphere/sphere_d-2_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
+    #benchmark_file = "sphere/sphere_d-10_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
+    #benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
+    #benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-sine_fch-none_2018-11-30_12:21.npz"
+
+    # mixture
+    benchmark_file = "sphere/sphere_d-2_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
+    benchmark_file = "sphere/sphere_d-10_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
+    #benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
+    #benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-mixture_fch-none_2018-11-30_12:40.npz"
+
+    # new (with right original position
+    # sine
+    benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-sine_fch-none_2018-12-05_09:31.npz"
+
+    # mixture
+    #benchmark_file = "sphere/sphere_d-2_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+    #benchmark_file = "sphere/sphere_d-10_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+    #benchmark_file = "rastrigin/rastrigin_d-2_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+    benchmark_file = "rastrigin/rastrigin_d-10_chgperiods-10000_pch-mixture_fch-none_2018-12-05_09:31.npz"
+
+    # test whether saved variance and variance computed in this script are same
+    #benchmark_file = "sphere/sphere_d-2_chgperiods-10000_pch-linear_fch-none_2018-12-05_09:31.npz"
 
     benchmark_full_name = benchmark_folder + benchmark_file
     b_file = np.load(benchmark_full_name)
@@ -152,11 +173,33 @@ def compute_variance_between_runs(in_full_name, out_full_name):
 
 
 def main():
-    in_path = <path>
-    in_file_name = <path>
-    
+    in_path = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/sphere/ersterTest/ea_no/arrays/"
+    in_file_name = "no_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-11-30_12:21_00.npz"
+    #in_file_name = "no_sphere_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-11-30_12:21_00.npz"
+    #in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-11-30_12:21_00.npz"
+    #in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-11-30_12:21_00.npz"
+
+    # mixture
+    in_file_name = "no_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-04_16:02_00.npz"
+    in_file_name = "no_sphere_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-04_16:02_00.npz"
+    #in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-11-30_12:40_00.npz"
+    #in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-11-30_12:40_00.npz"
+
+    # new (with right original position
+    # sine
+    in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-sine_fch-none_2018-12-05_09:32_00.npz"
+    # mixture
+    #in_file_name = "no_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    #in_file_name = "no_sphere_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    in_file_name = "no_rastrigin_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    in_file_name = "no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_09:32_00.npz"
+    #in_file_name = "neu_wertebereich_ea_no_rastrigin_d-10_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-mixture_fch-none_2018-12-05_10:21_00.npz"
+
+    # test whether saved variance and variance computed in this script are same
+    #in_file_name = "tfrnn_sphere_d-2_chgperiods-50_lenchgperiod-20_ischgperiodrandom-False_pch-linear_fch-none_2018-12-11_20:10_00.npz"
+
     in_full_name = in_path + in_file_name
-    out_path = <path>
+    out_path = "/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/sphere/ersterTest/ea_no/metrics/"
     out_file_name = "variances.csv"
     out_full_name = out_path + out_file_name
     compute_variance_between_runs(in_full_name, out_full_name)

@@ -31,7 +31,7 @@ ischgperiodrandom="False"	# True if the change occurs at a random time point.
 benchmarkfunction=sphere	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
-benchmarkfunctionfolderpath=<path> # parent directory path of the benchmark functions
+benchmarkfunctionfolderpath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/datasets/GECCO_2019/" # parent directory path of the benchmark functions
 								   																				 # and child directory of the datasets folder
 								   																				 # of this project
 lbound=0					# minimum bound of the benchmark's range							   																				 
@@ -86,7 +86,7 @@ neuronstype=fixed20			# fixed20, dyn1.3; defines the number of neurons in the RN
 epochs=5					# number of training epochs for the RNN prediction model
 batchsize=32				# batch size for RNN model
 nlayers=2					# overall number of layers (incl. tl layers)
-tlmodelpath=<path>
+tlmodelpath="/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/"	# path to the pre-trained transfer learning model
 ntllayers=1					# number of layers in the transfer learning model
 ngpus=1    					# number of GPUs to use (for RNN model) 
 
@@ -99,7 +99,7 @@ pathadditions="$pathaddition"
 
 algnameaddition="_""test" 
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath=<path>		# path to output
+outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/GECCO_2019/$benchmarkfunction/"		# path to output
 																																	# folder
 
 #------------------------------------------------------------------------------
