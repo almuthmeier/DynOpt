@@ -43,7 +43,8 @@ def create_problems(output_parent_dir_path=None):
     # TODO(exp) parameters to adjust
     n_chg_periods = 10000
     dims = [2, 5, 10, 20]  # [1, 2, 5]  # , 10, 50]
-    dims = [3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    dims = [5]
+    #dims = [3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19]
     functions = [sphere, rastrigin, rosenbrock]  # , rastrigin]
     functions = [sphere]  # , rastrigin]
     pos_chng_types = ['pch-linear', 'pch-sine',
@@ -190,9 +191,14 @@ def create_problems(output_parent_dir_path=None):
                     opts = opts[:n_chg_periods]
                 elif pos_chng_type == 'pch-sinefreq':
                     seed = np_rand_gen.randint(4)
-                    desired_curv = 10
+                    desired_curv = 10  # 20  # 10
                     desired_min_acc = 0.5  # no longer used
-                    desired_med_acc = 0.5
+                    desired_med_acc = 2.5  # 2.5  # 0.5
+                    # d=5:
+                    # :17 -> 20, 2.5
+                    # :18 -> 10, 0.5
+                    # :21 -> 20, 0.5
+                    # :22 -> 10, 2.5
                     opts = generate_sine_fcts_for_multiple_dimensions(dim, n_chg_periods, seed,
                                                                       lbound, ubound, desired_curv,
                                                                       desired_min_acc, desired_med_acc)
@@ -321,4 +327,5 @@ def plot_scatter(points):
 if __name__ == '__main__':
     # create_and_plot_different_movements()
     # create_and_plot_random_sine_movement()
-    create_problems()
+    output_parent_dir_path = "/home/ameier/Documents/Promotion/Ausgaben/Buchkapitel_Springer19/data_0/"
+    create_problems(output_parent_dir_path)

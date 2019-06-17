@@ -74,6 +74,10 @@ def define_parser_arguments():
     parser.add_argument("-reinitializationmode", type=str)
     parser.add_argument("-sigmafactors", type=float_list_type)
 
+    # for CMA-ES
+    parser.add_argument("-cmavariant", type=str)
+    parser.add_argument("-imprfct", type=float)
+
     # for predictor
     # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, kalman
     parser.add_argument("-predictor", type=str)
@@ -152,7 +156,7 @@ def initialize_comparator_manually(comparator):
     path_to_dynoptim = '/'.join(os.path.abspath(os.pardir).split('/')[:])
 
     # benchmark problem
-    comparator.algorithm = "dynea"
+    comparator.algorithm = "dyncma"  # "dynea"
     comparator.repetitions = 1
     comparator.chgperiodrepetitions = 1
     comparator.chgperiods = 50
@@ -162,9 +166,9 @@ def initialize_comparator_manually(comparator):
     #comparator.benchmarkfunctionfolderpath = path_to_dynoptim + "/DynOpt/datasets/" + "GECCO_2019/"
     comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/data_2019-01-19_final/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_kalman/"
+    comparator.outputdirectory = "ersterTest/ea_no/"
     comparator.outputdirectorypath = path_to_dynoptim + \
-        "/DynOpt/output/" + "ICANN_2019/" + "sphere/"
+        "/DynOpt/output/" + "EvoStar_2020/" + "sphere/"
     comparator.lbound = 0
     comparator.ubound = 100
 
@@ -197,6 +201,10 @@ def initialize_comparator_manually(comparator):
         # "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
         comparator.reinitializationmode = "no-PRE"  # "no-PRE"
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
+    # CMA
+    elif comparator.algorithm == "dyncma":
+        comparator.cmavariant = "pathcma_prepop"
+        comparator.imprfct = 0
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
@@ -253,7 +261,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 52:
+    if n_current_inputs != 54:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
@@ -297,6 +305,11 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.tau = args.tau
         comparator.reinitializationmode = args.reinitializationmode
         comparator.sigmafactors = args.sigmafactors
+
+    # CMA
+    elif comparator.algorithm == "dyncma":
+        comparator.cmavariant = args.cmavariant
+        comparator.imprfct = args.imprfct
 
     # predictor
     comparator.predictor = args.predictor

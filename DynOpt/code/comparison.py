@@ -15,6 +15,7 @@ import warnings
 
 from algorithms.dynea import DynamicEA
 from algorithms.dynpso import DynamicPSO
+from code.algorithms.dyncmaes import DynamicCMAES
 import numpy as np
 from utils.utils_files import get_current_day_time, select_experiment_files, \
     convert_exp_to_arrays_file_name, get_full_tl_model_name
@@ -66,6 +67,10 @@ class PredictorComparator(object):
         self.tau = None  # float
         self.reinitializationmode = None  # string
         self.sigmafactors = None
+
+        # CMA-ES
+        self.cmavariant = None  # str
+        self.imprfct = None  # float # see usage in CMA-ES
 
         # predictor
         self.predictor = None  # string
@@ -159,6 +164,22 @@ class PredictorComparator(object):
                              self.n_layers, self.apply_tl, self.n_tllayers,
                              full_tl_model_name, self.tl_learn_rate,
                              self.chgperiodrepetitions)
+        elif self.algorithm == "dyncma":
+            alg = DynamicCMAES(self.benchmarkfunction, dimensionality,
+                               n_generations, self.experiment_data, self.predictor,
+                               self.lbound, self.ubound,
+                               alg_np_rnd_generator, pred_np_rnd_generator,
+                               self.mu, self.la, self.mean, self.sigma,
+                               self.reinitializationmode, self.sigmafactors,
+                               self.timesteps,
+                               n_neurons, self.epochs, self.batchsize,
+                               self.n_layers, self.apply_tl, self.n_tllayers,
+                               full_tl_model_name, self.tl_learn_rate,
+                               self.chgperiodrepetitions, self.add_noisy_train_data,
+                               self.train_interval, self.nrequiredtraindata, self.useuncs,
+                               self.trainmcruns, self.testmcruns, self.traindropout, self.testdropout,
+                               self.kernelsize, self.nkernels, self.lr,
+                               self.cmavariant, self.imprfct)
         else:
             warnings.warn("unknown optimization algorithm")
             exit(1)

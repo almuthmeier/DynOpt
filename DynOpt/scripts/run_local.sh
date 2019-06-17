@@ -63,6 +63,10 @@ tau=0.5						# 0 < tau < 1, for Rechenberg
 reinitializationmode="no-RND"# mode for re-initialization of the population: "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
 sigmafactors=0.01,0.1		# list of floats, factors for the sigma environment for random population re-initialization
 
+# CMA-ES
+cmavariant="pathcma_prepop" # variant how CMA-ES includes prediction or path estimation for dynamic
+imprfct=0					# fitness improvement necessary to determine stagnation
+
 # predictor
 predictor=tcn				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, kalman
 							# prediciton model to predict the new optimum						
@@ -139,6 +143,8 @@ outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/Dy
 -tau="$tau" \
 -reinitializationmode="$reinitializationmode" \
 -sigmafactors="$sigmafactors" \
+-cmavariant="$cmavariant" \
+-imprfct="$imprfct" \
 -predictor="$predictor" \
 -timesteps="$timesteps" \
 -addnoisytraindata="$addnoisytraindata" \
