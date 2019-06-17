@@ -25,8 +25,8 @@ class DynamicCMAES(object):
     def __init__(self,
                  benchmarkfunction, dim,
                  n_generations, experiment_data, predictor_name, lbound, ubound,
-                 ea_np_rnd_generator, pred_np_rnd_generator,
-                 mu, la, mean, sigma,
+                 cma_np_rnd_generator, pred_np_rnd_generator,
+                 mean, sigma,
                  reinitialization_mode, sigma_factors,
                  timesteps, n_neurons, epochs, batchsize, n_layers, apply_tl,
                  n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps,
@@ -90,37 +90,25 @@ class DynamicCMAES(object):
         self.shuffle_train_data = True  # TODO move into script?
 
         # ---------------------------------------------------------------------
-        # for EA (fixed values)
+        # for EA/CMA-ES (fixed values)
         # ---------------------------------------------------------------------
-        self.ea_np_rnd_generator = ea_np_rnd_generator
+        self.cma_np_rnd_generator = cma_np_rnd_generator
         self.pred_np_rnd_generator = pred_np_rnd_generator
-        self.mu = mu
-        self.lambd = la
         self.m = mean
         self.sig = sigma
         self.reinitialization_mode = reinitialization_mode
         self.sigma_factors = sigma_factors
 
-        ################
-        # -------------------------------------------------------------------------
-        # search space
-        # -------------------------------------------------------------------------
-        #min_val = -5
-        #max_val = 5
-        # n = 2  # dimensions
-
-        #generations = 5000
-        # chg_freq = 50  # Winkel konvergiert bei 50 ganz gut gegen 0?
         # -------------------------------------------------------------------------
         # fixed parameters
         # -------------------------------------------------------------------------
-        lambd = 4 + floor(3 * log(self.n))  # offsprings
-        mu = floor(lambd / 2)  # parents
+        self.lambd = 4 + floor(3 * log(self.n))  # offsprings
+        self.mu = floor(self.lambd / 2)  # parents
         # weights (vector of size ń)
-        w_divisor = np.sum([(log(mu + 0.5) - log(j))
-                            for j in range(1, mu + 1)])
-        self.w = np.array([((log(mu + 0.5) - log(i)) / w_divisor)
-                           for i in range(1, mu + 1)])
+        w_divisor = np.sum([(log(self.mu + 0.5) - log(j))
+                            for j in range(1, self.mu + 1)])
+        self.w = np.array([((log(self.mu + 0.5) - log(i)) / w_divisor)
+                           for i in range(1, self.mu + 1)])
         # other
         self.mu_w = 1 / np.sum(np.square(self.w))
         self.c_sig = (self.mu_w + 2) / (self.n + self.mu_w + 3)
@@ -128,26 +116,14 @@ class DynamicCMAES(object):
             max(0, sqrt((self.mu_w - 1) / (self.n + 1)) - 1)
         # d_sig = 0.6  # 0.3
         self.c_c = 4 / (self.n + 4)
-        self.c_1 = (2 * min(1, lambd / 6)) / ((self.n + 1.3)**2 + self.mu_w)
+        self.c_1 = (2 * min(1, self.lambd / 6)) / \
+            ((self.n + 1.3)**2 + self.mu_w)
         self.c_mu = (2 * (self.mu_w - 2 + 1 / self.mu_w)) / \
             ((self.n + 2)**2 + self.mu_w)
         self.E = sqrt(self.n) * (1 - 1 / (4 * self.n) + 1 / (21 * self.n**2))
 
         self.c_o = self.c_c
         self.c_o1 = self.c_1
-
-        # prints
-        print("mu: ", mu)
-        print("lambda: ", lambd)
-        print("weight_divisor: ", w_divisor)
-        print("weights: ", self.w)
-        print("mu_w: ", self.mu_w)
-        print("c_sig: ", self.c_sig)
-        print("d_sig: ", self.d_sig)
-        print("c_c: ", self.c_c)
-        print("c_1: ", self.c_1)
-        print("c_mu: ", self.c_mu)
-        print("E: ", self.E)
 
         # -------------------------------------------------------------------------
         # initialization
@@ -160,36 +136,23 @@ class DynamicCMAES(object):
 
         self.p_o = np.zeros(self.n)
         self.C_o = np.identity(self.n)
-        ################
-        #self.mu_w = mu_w
-        #self.w = w
-        #self.c_sig = c_sig
-        #self.d_sig = d_sig
-        #self.c_c = c_c
-        #self.c_1 = c_1
-        #self.c_mu = c_mu
-        #self.p_sig = p_sig
-        #self.p_c = p_c
-        #self.C = C
-        #self.E = E
-        #self.c_o = c_o
-        #self.c_o1 = c_o1
-        #self.p_o = p_o
-        #self.C_o = C_o
+
+        # ---------------------------------------------------------------------
+        # options
+        # ---------------------------------------------------------------------
         self.cma_variant = cma_variant
         self.impr_fct = impr_fct
 
         # ---------------------------------------------------------------------
         # values that are not passed as parameters to the constructor
         # ---------------------------------------------------------------------
-        self.init_sigma = self.sigma
 
         # ---------------------------------------------------------------------
         # for EA (variable values)
         # ---------------------------------------------------------------------
         # initialize population (mu candidates) and compute fitness.
         self.population = self.cma_np_rnd_generator.uniform(self.lbound,
-                                                            self.ubound, (self.mu, self.dim))
+                                                            self.ubound, (self.mu, self.n))
         # 2d numpy array (for each individual one row)
         self.population_fitness = np.array([utils_dynopt.fitness(self.benchmarkfunction,
                                                                  individual, 0,
@@ -206,9 +169,9 @@ class DynamicCMAES(object):
         # for each detected change the corresponding generation numbers
         self.detected_chgperiods_for_gens = []
         # best found individual for each generation (2d numpy array)
-        self.best_found_pos_per_gen = np.zeros((self.n_generations, self.dim))
+        self.best_found_pos_per_gen = np.zeros((self.generations, self.n))
         # fitness of best found individual for each generation (1d numpy array)
-        self.best_found_fit_per_gen = np.zeros(self.n_generations)
+        self.best_found_fit_per_gen = np.zeros(self.generations)
         # position of found optima (one for each change period)
         self.best_found_pos_per_chgperiod = []
         # fitness of found optima (one for each change period)
@@ -264,8 +227,6 @@ class DynamicCMAES(object):
 
 # =============================================================================
 
-        print("Constructor")
-
         # -----
         self.fit_per_gen = []
         self.angle_per_gen = []
@@ -275,7 +236,7 @@ class DynamicCMAES(object):
         self.p_c_per_gen = []
         self.frst = []
         self.scnd = []
-        self.self.thrd = []
+        self.thrd = []
         self.sig_exp = []
         self.sig_norm = []
         self.sig_inner = []
@@ -788,7 +749,7 @@ class DynamicCMAES(object):
                     self.n, self.w, mu_best_inds_for_C_o)
 
             # ---------------------------------------------------------------------
-            glob_opt = self.experiment_data['global_opt_pos_per_chgperiod'][self.detected_n_changes]
+            glob_opt = self.experiment_data['global_opt_pos_per_gen'][t]
             print("glob opt: ", glob_opt)
             #print("C: ", C)
             #print("max_C: ", np.max(C))
@@ -804,17 +765,17 @@ class DynamicCMAES(object):
             print("sig: ", self.sig)
 
             # offsprings
-            offspring_population, offspring_fitnesses = self.get_offsprings(
+            self.population, self.population_fitness = self.get_offsprings(
                 self.n, self.m, self.sig, self.lambd, sqrt_of_eig_vals_smpl, eig_vctrs_smpl, t)
             mu_best_individuals = self.get_mue_best_individuals(
-                self.n, self.mu, offspring_population, offspring_fitnesses)
+                self.n, self.mu, self.population, self.population_fitness)
 
             # parameter update
             m_new = self.get_weighted_avg(self.n, self.w, mu_best_individuals)
             p_sig_new = self.get_new_p_sig(
                 self.n, self.c_sig, self.p_sig, self.mu_w, self.m, m_new, self.sig, inv_squareroot_for_p_sig)
             h_sig = self.get_h_sig(p_sig_new, self.c_sig, t, self.n, self.E)
-            p_c_new = self.get_new_p_c(self.n, self.c_c, self.p_c, self.h_sig, self.mu_w,
+            p_c_new = self.get_new_p_c(self.n, self.c_c, self.p_c, h_sig, self.mu_w,
                                        m_new, self.m, self.sig, self.frst, self.scnd, self.thrd)
             C_mu = self.get_C_mu(self.n, mu_best_individuals,
                                  self.m, self.sig, self.w)
@@ -854,7 +815,7 @@ class DynamicCMAES(object):
             # print
 
             min_fit = self.print_success(
-                t, offspring_population, offspring_fitnesses)
+                t, self.population, self.population_fitness)
             self.fit_per_gen.append(min_fit)
 
             curr_fit = min_fit  # fitness(m_new, t, chg_freq)
