@@ -165,6 +165,7 @@ class PredictorComparator(object):
                              full_tl_model_name, self.tl_learn_rate,
                              self.chgperiodrepetitions)
         elif self.algorithm == "dyncma":
+            # TODO self.dims verwenden?!?
             alg = DynamicCMAES(self.benchmarkfunction, dimensionality,
                                n_generations, self.experiment_data, self.predictor,
                                self.lbound, self.ubound,
