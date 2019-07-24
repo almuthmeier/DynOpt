@@ -6,15 +6,52 @@ Created on May 25, 2018
 # CMA-ES source code can be found here
 # path-to-python-environment/lib/python3.5/site-packages/cma
 import copy
-from math import floor, log, sqrt, exp
+from math import floor, log, sqrt
 import sys
+import warnings
 
-from numpy import linalg as npla
-from scipy import linalg as spla
 
+from sklearn.preprocessing.data import MinMaxScaler
+
+from code.utils.utils_cmaes import get_new_sig, get_mue_best_individuals,\
+    get_weighted_avg, get_inverse_sqroot, get_new_p_sig, get_offsprings, \
+    get_h_sig, get_new_p_c, visualize_dominant_eigvector, get_C_mu, get_new_C
 import numpy as np
 from utils import utils_dynopt
 from utils.utils_dynopt import environment_changed
+from utils.utils_prediction import build_predictor
+
+
+class MyMinMaxScaler(MinMaxScaler):
+    '''
+    Changes the inverse_transform method.
+    '''
+
+    def inverse_transform(self, X, only_range=False):
+        '''
+        @param X: data to be inverse transformed
+        @param only_range: False for normal inverse transformation behavior
+        (i.e. that of the super class). If True, only the width of the data 
+        range is adapted but not the position of that range.
+        '''
+        if only_range:
+            # e.g. for re-scaling aleatoric uncertainty: only the range should
+            # be adapted but not the "position" since the values have to be
+            # positive
+            X = super(MyMinMaxScaler, self).inverse_transform(X)
+            # In inverse_transform() are the last two lines:
+            #      X -= self.min_
+            #      X /= self.scale_
+            # In order to only adapt the width of the range but not the position
+            # only the last line X /= self.scale_ is needed. Therefore here
+            # the second last line X -= self.min_ is un-done.
+            X *= self.scale_  # undo
+            X += self.min_   # undo
+            X /= self.scale_  # redo
+            return X
+        else:
+            return super(MyMinMaxScaler, self).inverse_transform(X)
+#------------------------------------------------------------------------------
 
 
 class DynamicCMAES(object):
@@ -32,13 +69,16 @@ class DynamicCMAES(object):
                  n_tllayers, tl_model_path, tl_learn_rate, max_n_chperiod_reps,
                  add_noisy_train_data, train_interval, n_required_train_data, use_uncs,
                  train_mc_runs, test_mc_runs, train_dropout, test_dropout,
-                 kernel_size, n_kernels, lr, cma_variant, impr_fct):
+                 kernel_size, n_kernels, lr, cma_variant, impr_fct, pred_variant):
                 #mu_w, w, c_sig, d_sig, c_c, c_1, c_mu, p_sig,
                 # p_c, C, E, chg_freq, c_o, c_o1, p_o, C_o):
         '''
         Constructor
         '''
-
+        # TODOs:
+        # - n durch dim ersetzen
+        # - self-Uebergabeparameter erglassen. Stattdessen in Methoden self. nutzen
+        #  - überall self nutzen, also keine Zuweisungen auf gleichnamige Variablen
         # ---------------------------------------------------------------------
         # for the problem
         # ---------------------------------------------------------------------
@@ -72,14 +112,6 @@ class DynamicCMAES(object):
         self.n_kernels = n_kernels
         self.lr = lr
 
-        # transfer learning
-        self.apply_tl = apply_tl  # True if pre-trained model should be used
-        self.tl_model_path = tl_model_path  # path to the trained tl model
-        self.tl_rnn_type = "RNN"
-        self.n_tllayers = n_tllayers
-        self.with_dense_first = None
-        self.tl_learn_rate = tl_learn_rate
-
         # training/testing specifications
         # number train data with that the network at least is trained
         self.n_required_train_data = max(
@@ -94,8 +126,8 @@ class DynamicCMAES(object):
         # ---------------------------------------------------------------------
         self.cma_np_rnd_generator = cma_np_rnd_generator
         self.pred_np_rnd_generator = pred_np_rnd_generator
-        self.m = mean
-        self.sig = sigma
+        #self.m = mean
+        #self.sig = sigma
         self.reinitialization_mode = reinitialization_mode
         self.sigma_factors = sigma_factors
 
@@ -137,15 +169,20 @@ class DynamicCMAES(object):
         self.p_o = np.zeros(self.n)
         self.C_o = np.identity(self.n)
 
+        self.sig_pred = np.random.rand()
+        self.p_sig_pred = np.zeros(self.n)
+
         # ---------------------------------------------------------------------
         # options
         # ---------------------------------------------------------------------
         self.cma_variant = cma_variant
         self.impr_fct = impr_fct
+        self.pred_variant = pred_variant
 
         # ---------------------------------------------------------------------
         # values that are not passed as parameters to the constructor
         # ---------------------------------------------------------------------
+        self.init_sigma = self.sigma
 
         # ---------------------------------------------------------------------
         # for EA (variable values)
@@ -229,6 +266,7 @@ class DynamicCMAES(object):
 
         # -----
         self.fit_per_gen = []
+        self.ind_per_gen = []
         self.angle_per_gen = []
         self.sig_per_gen = []
         self.p_sig_per_gen = []
@@ -242,7 +280,8 @@ class DynamicCMAES(object):
         self.sig_inner = []
         self.sig_sub = []
         self.m_per_gen = []
-        self.opt_per_gen = []
+        self.glob_opt_per_gen = []
+        self.best_ind_per_chgp = []
         self.p_o_per_gen = []
         self.max_C_frst = []
         self.max_C_scnd = []
@@ -254,93 +293,117 @@ class DynamicCMAES(object):
         self.contour_Y_per_intv = []
         self.contour_Z_per_intv = []
         self.c_idx = 0
-        self.optima = []
+        self.means_per_chgp = []
         self.m_new_per_intv = []
-        self.m_per_intv = []
         self.glob_opt_per_intv = []
+        self.m_per_intv = []
         self.stagnation_markers = []
         self.reset_markers = []
         self.max_sampling_cov_per_gen = []
         self.max_C_elem_idx_changed_marker = []
         self.max_C_elem_idx_per_gen = []
+        self.predictions = []
 
-        use_pre_pop_setups = {"resetcma": False,
-                              "pathcma_simplest": False,
-                              "pathcma_prepop_Co-I_sig-random": True,
-                              "pathcma_prepop": True,
-                              "pathcma_prepop_scaled_Co": True,
-                              "pathcma_prepop_wo_Co": True,
-                              "predcma_simplest": False,
-                              "predcma_sig": True}
+        use_p_o_for_sig_setups = {"resetcma": False,
+                                  "pathcma_p_o_for_sig": True,
+                                  "pathcma_p_o_for_m": False,
+                                  "predcma_external": False,
+                                  "predcma_internal": False,
+                                  "predcma_adapt_sig": False,
+                                  "test": False}
 
-        use_C_o_for_sampling_setups = {"resetcma": False,
-                                       "pathcma_simplest": True,
-                                       "pathcma_prepop_Co-I_sig-random": False,
-                                       "pathcma_prepop": True,
-                                       "pathcma_prepop_scaled_Co": True,
-                                       "pathcma_prepop_wo_Co": False,
-                                       "predcma_simplest": False,
-                                       "predcma_sig": True}
+        do_pred_setups = {"resetcma": False,
+                          "pathcma_p_o_for_sig": False,
+                          "pathcma_p_o_for_m": False,
+                          "predcma_external": True,
+                          "predcma_internal": False,
+                          "predcma_adapt_sig": True,
+                          "test": False}
 
-        use_C_o_for_p_sig_setups = {"resetcma": False,
-                                    "pathcma_simplest": True,
-                                    "pathcma_prepop_Co-I_sig-random": False,
-                                    "pathcma_prepop": True,
-                                    "pathcma_prepop_scaled_Co": True,
-                                    "pathcma_prepop_wo_Co": False,
-                                    "predcma_simplest": False,
-                                    "predcma_sig": True}
+        set_sig_manually_setups = {"resetcma": False,
+                                   "pathcma_p_o_for_sig": False,  # schlecht
+                                   "pathcma_p_o_for_m": False,
+                                   "predcma_external": False,
+                                   "predcma_internal": False,
+                                   # ||(sig = m-pred)||/2
+                                   "predcma_adapt_sig": True,
+                                   "test": True}
+        self.use_p_o_for_sig = use_p_o_for_sig_setups[cma_variant]
+        self.do_pred = do_pred_setups[cma_variant]
+        self.set_sig_manually = set_sig_manually_setups[cma_variant]
 
-        use_C_o_for_C_setups = {"resetcma": False,
-                                "pathcma_simplest": False,
-                                "pathcma_prepop_Co-I_sig-random": False,
-                                "pathcma_prepop": False,
-                                "pathcma_prepop_scaled_Co": False,
-                                "pathcma_prepop_wo_Co": False,
-                                "predcma_simplest": False,
-                                "predcma_sig": False}
+        assert pred_variant in ["simplest", "a", "b", "c", "d", "g"] and cma_variant == "predcma_external" or \
+            pred_variant in ["branke", "f", "h"] and cma_variant == "predcma_internal" or \
+            pred_variant is None and cma_variant not in [
+            "predcma_external", "predcma_internal"]
 
-        scale_C_o_setups = {"resetcma": False,
-                            "pathcma_simplest": False,
-                            "pathcma_prepop_Co-I_sig-random": False,
-                            "pathcma_prepop": False,
-                            "pathcma_prepop_scaled_Co": True,
-                            "pathcma_prepop_wo_Co": False,
-                            "predcma_simplest": False,
-                            "predcma_sig": True}
+    # -------------------------------------------------------------------------------
+    # for prediction
+    def get_prediction(self, pred_type, predictor, train_data, glob_opt, pred_noise,
+                       do_training, curr_m):
+        '''
+        @param pred_noise: is standard deviation
+        @return tupel: (predicted optimum, prediction uncertainty)
+        - prediction uncertainty is (error co-)variance 
+        '''
+        if pred_type == "truepred":
+            return glob_opt + np.random.normal(0, pred_noise), pred_noise**2
+        elif pred_type == "kalman":
+            scaler = None
+            pred, unc = self.predict_with_kalman(
+                train_data, scaler, predictor,  do_training)
+            return curr_m + pred, unc
 
-        use_pred_for_m_setups = {"resetcma": False,
-                                 "pathcma_simplest": False,
-                                 "pathcma_prepop_Co-I_sig-random": False,
-                                 "pathcma_prepop": False,
-                                 "pathcma_prepop_scaled_Co": False,
-                                 "pathcma_prepop_wo_Co": False,
-                                 "predcma_simplest": True,
-                                 "predcma_sig": False}
+    def fit_scaler(self, data_for_fitting):
+        scaler = MyMinMaxScaler(feature_range=(-1, 1))
+        scaler.fit(data_for_fitting)
+        return scaler
 
-        scale_sig_setups = {"resetcma": False,
-                            "pathcma_simplest": False,
-                            "pathcma_prepop_Co-I_sig-random": False,
-                            "pathcma_prepop": False,
-                            "pathcma_prepop_scaled_Co": False,
-                            "pathcma_prepop_wo_Co": False,
-                            "predcma_simplest": False,
-                            "predcma_sig": True}
+    def predict_with_kalman(self, train_data, scaler, predictor,  do_training):
+        '''
+        Predicts next optimum position with a Kalman filter.
+        @param new_train_data: format [n_data, dims]
+        '''
 
-        self.use_pre_pop = use_pre_pop_setups[cma_variant]
-        self.use_C_o_for_sampling = use_C_o_for_sampling_setups[cma_variant]
-        self.use_C_o_for_p_sig = use_C_o_for_p_sig_setups[cma_variant]
-        self.use_C_o_for_C = use_C_o_for_C_setups[cma_variant]
-        self.scale_C_o = scale_C_o_setups[cma_variant]
-        self.use_pred_for_m = use_pred_for_m_setups[cma_variant]
-        self.scale_sig = scale_sig_setups[cma_variant]
+        # scale data (the data are re-scaled directly after the
+        # prediction in this iteration)
+        scaler = self.fit_scaler(train_data)
+        train_data = scaler.transform(copy.copy(train_data))
+        # -----------------
+        if do_training:
+            # "training" of parameters
+            predictor.em(train_data)
 
-    def get_new_p_o(self, mu_w, sig, n, c_o, p_o, o_new, o):
+        # computation of states for past observations
+        means, covariances = predictor.filter(train_data)
+
+        # predicting the next step
+        new_measurement = None  # not yet known
+        next_mean, next_covariance = predictor.filter_update(
+            means[-1], covariances[-1], new_measurement)
+        # variance per dimension
+        next_variance = np.diagonal(next_covariance)
+
+        # invert scaling (1d array would result in DeprecatedWarning -> pass
+        # 2d)
+        next_mean = next_mean.reshape(1, -1)
+        next_variance = next_variance.reshape(1, -1)
+        next_mean = scaler.inverse_transform(next_mean, False).flatten()
+        next_variance = scaler.inverse_transform(next_variance, True).flatten()
+        assert (next_variance >= 0).all()
+        return next_mean, next_variance
+    # -------------------------------------------------------------------------------
+    # for dynamic CMA-ES
+
+    def get_new_p_o(self, mu_w, sig, n, c_o, p_o, o_new, o, use_p_o_for_sig=False):
         if True:
             h_sig = 1  # TODO
             first = (1 - c_o) * p_o
             second = sqrt(c_o * (2 - c_o))
-            third = (o_new - o)
+            if use_p_o_for_sig:
+                third = (o_new - o) / np.linalg.norm(o_new - o)
+            else:
+                third = o_new - o
             #third = np.sqrt(abs(o_new - o))
 
             # Division macht keinen Sinn, weil sigma nichts mit Optimumbewegung zu tun
@@ -357,485 +420,263 @@ class DynamicCMAES(object):
         assert new_p_o.shape == (n,)
         return new_p_o
 
-    def update_C_after_change(self, n, c_o1, C_old, p_o):
-        first = (1 - c_o1) * C_old
-        col_vec = p_o[:, np.newaxis]  # format [n,1]
-        second = c_o1 * np.matmul(col_vec, col_vec.T)
-        new_C = first + second
-        assert new_C.shape == (n, n)
-        return new_C
+    def get_new_pred_path(self, n, c_sig, old_pred_path, mu_w, diff_elem_0, diff_elem_1):
+        diff_vector = np.linalg.norm(diff_elem_0 - diff_elem_1) / 2
 
-    def unit_vector(self, vector):
-        """ Returns the unit vector of the vector.  """
-        return vector / np.linalg.norm(vector)
-
-    def angle_between_vectors(self, v1, v2):
-        """
-        (14.3.19) 
-        https://stackoverflow.com/questions/2827393/angles-between-two-n-dimensional-vectors-in-python/13849249#13849249
-
-            Returns the angle in radians between vectors 'v1' and 'v2'::
-
-                >>> angle_between((1, 0, 0), (0, 1, 0))
-                1.5707963267948966
-                >>> angle_between((1, 0, 0), (1, 0, 0))
-                0.0
-                >>> angle_between((1, 0, 0), (-1, 0, 0))
-                3.141592653589793
-        """
-        v1_u = self.unit_vector(v1)
-        v2_u = self.unit_vector(v2)
-        angle = np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
-        #angle = np.arccos(np.dot(v1_u, v2_u))
-        return np.degrees(angle)
-
-    def signed_angle_between_vectors(self, v1, v2):
-        if len(v1) == 2:
-            if True:
-                v1 = np.concatenate((v1, [0]))
-                v2 = np.concatenate((v2, [0]))
-            if False:
-                x1 = v1[0]
-                x2 = v2[0]
-                y1 = v1[1]
-                y2 = v2[1]
-                # dot product between [x1, y1] and [x2, y2]
-                dot = x1 * x2 + y1 * y2
-                det = x1 * y2 - y1 * x2     # determinant
-                angle = np.arctan2(det, dot)     #
-                deg = np.degrees(angle)
-                #print("2d degree: ", deg)
-                return deg
-        from numpy import (dot, arccos, clip)
-        from numpy.linalg import norm
-        # https://stackoverflow.com/questions/5188561/signed-angle-between-two-3d-vectors-with-same-origin-within-the-same-plane
-        # (4.4.19)
-        # https://web.ma.utexas.edu/users/m408m/Display12-5-4.shtml
-
-        # normal vector of plane that constructs the coordinate system
-        vn = np.ones(len(v1))
-
-        norm1 = norm(v1)
-        norm2 = norm(v2)
-        c = dot(v1, v2) / (norm1 * norm2)  # -> cosine of the angle
-        # angle = arccos(clip(c, -1, 1))  # if you really want the angle
-        angle = arccos(c)  # if you really want the angle
-
-        cross = np.cross(v1, v2)
-
-        dot_comp = dot(vn, cross)
-
-        if dot_comp < 0:
-            angle = -angle
-        deg = np.degrees(angle)
-        return deg
-
-    def visualize_dominant_eigvector(self, n, eig_vals, eig_vctrs):
-        # determine dominant eigenvector
-        max_idx = np.argmax(np.absolute(eig_vals))
-        dom_vect = eig_vctrs[:, max_idx]
-        #print("dom_vect: ", dom_vect)
-        #print("length of dom_vect: ", np.linalg.norm(dom_vect))
-
-        # for i in range(n):
-        #print("length of vect: ", np.linalg.norm(eig_vctrs[:, i]))
-
-        # compute angle to first axis
-        orig_first_axis = np.zeros(n)
-        orig_first_axis[0] = 5  # arbitrary point on first axis
-        #angle = signed_angle_between_vectors(orig_first_axis, dom_vect)
-        #angle = signed_angle_between_vectors(dom_vect, orig_first_axis)
-        angle = np.rad2deg(np.arccos(dom_vect[0]))
-        #print("anlge: ", angle)
-        #print("eig_vec: ", dom_vect)
-        return angle
-
-    #------------------------
-
-    def get_inverse_sqroot(self, M):
-        '''
-        M = TDT^(-1)
-            T: eigenvectors
-            D: eigenvalues
-
-        Computes inverse square root of M on the eigenvalues of M and re-transforms
-        results into original space of M:
-        M^(-1/2) = TD^(-1/2)T^(-1) 
-
-        Returns 
-            - inverse square root of M
-            - square root of eigenvalues of M
-            - eigenvectors of M
-
-        Alternative: Use pre-defined packages:
-        exp_inv = npla.inv(M)  # inverse
-        exp_sqr_inv = spla.sqrtm(exp_inv) # square root
-        '''
-        # eigenvalues & eigenvectors
-        eig_vals, eig_vctrs = npla.eig(M)
-
-        # diagonal matrix of eigenvalues
-        eig_val_diag = np.diag(eig_vals)
-
-        # square root
-        sqrt_of_eig_vals = spla.sqrtm(eig_val_diag)
-
-        # inverse of square root
-        inv_of_sqrt = npla.inv(sqrt_of_eig_vals)
-
-        # re-transform into original space
-        new_M = np.matmul(np.matmul(eig_vctrs, inv_of_sqrt),
-                          npla.inv(eig_vctrs))
-        assert new_M.shape == M.shape
-        return new_M, sqrt_of_eig_vals, eig_vals, eig_vctrs
-
-    def get_offsprings(self, n, m, sig, lambd, sqrt_of_eig_vals, eig_vctrs, t):
-        offspring_population = np.zeros((lambd, n))
-        offspring_fitnesses = np.zeros(lambd)
-
-        # decompose covariance matrix for sampling ("The CMA evolution strategy: a
-        # tutorial, Hansen (2016), p. 28+29)
-        # A = B*sqrt(M), with C = BMB^T (C=covariance matrix)
-        A = np.matmul(eig_vctrs, sqrt_of_eig_vals)
-
-        for k in range(lambd):
-            z_k = np.random.normal(size=n)
-            y_k = np.matmul(A, z_k)
-            x_k = m + sig * y_k
-            # x_k is equal to the following line but saves eigendecompositions:
-            # m + sig * np.random.multivariate_normal(np.zeros(n), C)
-
-            f_k = utils_dynopt.fitness(self.benchmarkfunction,
-                                       x_k, t, self.experiment_data)
-
-            offspring_population[k] = copy.copy(x_k)
-            offspring_fitnesses[k] = f_k
-        return offspring_population, offspring_fitnesses
-
-    def get_mue_best_individuals(self, n, mu, offspring_population, offspring_fitnesses):
-        # sort individuals according to fitness
-        sorted_indices = np.argsort(offspring_fitnesses)
-        sorted_individuals = offspring_population[sorted_indices]
-        # select mu best individuals
-        mu_best_individuals = sorted_individuals[:mu, :]
-        assert mu_best_individuals.shape == (mu, n)
-        return mu_best_individuals  # format [individuals, dimensions]
-
-    def get_weighted_avg(self, n, w, mu_best_individuals):
-        # weight individuals
-        weighted_indvds = mu_best_individuals * w[:, np.newaxis]
-        # sum averaged individuals
-        weighted_avg_indvds = np.sum(weighted_indvds, axis=0)
-        assert weighted_avg_indvds.shape == (n,)
-        return weighted_avg_indvds
-
-    def get_new_p_sig(self, n, c_sig, p_sig, mu_w, m, m_new, sig, inv_squareroot_C):
-        succ_mutation_steps = (m_new - m) / sig
-        # tmp = np.matmul(succ_mutation_steps, inv_squareroot_C) #geht beides
-        tmp = np.matmul(inv_squareroot_C, succ_mutation_steps)
-
-        new_p_sig = (1 - c_sig) * p_sig + \
-            sqrt(c_sig * (2 - c_sig)) * sqrt(mu_w) * tmp
+        new_p_sig = (1 - c_sig) * old_pred_path + \
+            sqrt(c_sig * (2 - c_sig)) * sqrt(mu_w) * diff_vector
         assert new_p_sig.shape == (n,)
         return new_p_sig
 
-    def get_h_sig(self, p_sig_new, c_sig, t, n, E):
-        right_side = sqrt(1 - (1 - c_sig)**(2 * (t + 1))) * \
-            (1.4 + 2 / (n + 1)) * E
-        cond = npla.norm(p_sig_new) < right_side
-        return int(cond == True)  # 0 is False, 1 otherwise
+    def update_sig_and_m_after_chage(self, cma_variant, pred_variant, set_sig_manually,
+                                     do_pred, use_p_o_for_sig,
+                                     p_o, mu, w, p_sig, n, m, m_old, c_sig, d_sig,
+                                     E, pred, unc, mu_w, sig, sig_pred,
+                                     offspring_population, offspring_fitnesses,
+                                     sig_exp, sig_norm, sig_inner, sig_sub,
+                                     means, best_ind_per_chgp, predictions, p_sig_pred):
+        if cma_variant == "pathcma_p_o_for_m" and len(means) > 1:
+            sig = np.linalg.norm(p_o) / 2
+            #sig = np.linalg.norm(np.abs(p_o)) / 2
+        elif cma_variant == "test" and set_sig_manually and len(means) > 1:
+            #sig = (means[-1] - means[-2])
+            sig = np.linalg.norm(means[-1] - means[-2]) / 2
+        elif set_sig_manually and do_pred:
+            sig = np.linalg.norm(m - pred) / 2
+        elif use_p_o_for_sig:
+            sig = get_new_sig(1, c_sig, d_sig, p_o,
+                              E, sig_exp, sig_norm, sig_inner, sig_sub)
+        elif False and do_pred and len(predictions) > 1 and cma_variant == "predcma_simplest" and len(means) > 1:
+            #sig = pred_noise / 2
+            pass
+        elif cma_variant == "pathcma_p_o_for_m":
+            m = m + p_o
+            #sig = np.linalg.norm(m - pred) / 2
 
-    def get_new_p_c(self, n, c_c, p_c, h_sig, mu_w, m_new, m, sig, frst, scnd, thrd):
-        first = (1 - c_c) * p_c
-        second = sqrt(c_c * (2 - c_c))
-        third = (m_new - m)
-        frst.append(first)
-        scnd.append(second)
-        thrd.append(third)
-        new_p_c = first + h_sig * second * \
-            sqrt(mu_w) * third / sig
-        assert new_p_c.shape == (n,)
-        return new_p_c
+        if cma_variant == "predcma_external" and len(predictions) > 1:
+            if pred_variant in ["simplest", "a", "b", "c", "d"]:
+                m = pred
 
-    def get_C_mu(self, n, mu_best_individuals, m, sig, w):
-        # subtract mean from each row, scale with sigma
-        # format: [individuals, dimensions]
-        matrix = (mu_best_individuals - m) / sig
+            if pred_variant == "a":
+                sig = np.sqrt(unc)
+            elif pred_variant == "b":
+                sig = (predictions[-2] - best_ind_per_chgp[-1]) / 2
+                # sig = np.linalg.norm(
+                #    predictions[-2] - train_data[-1])
+            elif pred_variant == "c":
+                # aus Versehen vorher p_sig statt p_sig_pred
+                p_sig_pred = self.get_new_pred_path(
+                    n, c_sig, p_sig_pred, mu_w, predictions[-2], best_ind_per_chgp[-1])
+                sig = p_sig_pred
+            elif pred_variant in ["simplest", "d"]:
+                sig = 1
+            elif pred_variant == "g":
+                sig = np.linalg.norm(
+                    predictions[-1] - best_ind_per_chgp[-1]) / 2
+            else:
+                sig = None
+                m = None
+                warnings.warn("unkown pred_variant: " + pred_variant)
 
-        # multiply each row with respective weight (4.3.19)
-        # https://stackoverflow.com/questions/18522216/multiplying-across-in-a-numpy-array
-        weighted_matrix = w[:, np.newaxis] * matrix
+        elif cma_variant == "predcma_internal" and len(best_ind_per_chgp) > 1:
+            if pred_variant == "e":
+                pass
+            elif pred_variant == "f":
+                p_sig_pred = self.get_new_pred_path(
+                    n, c_sig, p_sig_pred, mu_w, best_ind_per_chgp[-1], best_ind_per_chgp[-2])
+                sig = p_sig_pred
+            elif pred_variant == "h":
+                # auskommentieren für hc)
+                m = m + \
+                    best_ind_per_chgp[-1] - best_ind_per_chgp[-2]
+                # ha)
+                #sig = 1
+                # hb) + hc)
+                #sig = np.linalg.norm(m_old - best_ind_per_chgp[-1]) / 2
+                # hd)
+                p_sig_pred = self.get_new_pred_path(
+                    n, c_sig, p_sig_pred, mu_w, m_old, best_ind_per_chgp[-1])
+                sig = p_sig_pred
+            elif pred_variant == "branke":
+                tmp_mu_best_individuals = get_mue_best_individuals(
+                    n, mu, offspring_population, offspring_fitnesses)
+                m = get_weighted_avg(
+                    n, w, tmp_mu_best_individuals)
 
-        # in the multiplication the matrix is first transposed so that covariance
-        # matrix has format [dimension, dimensions] otherwise it would have format
-        # [individuals, individuals]
-        C_mu = np.matmul(weighted_matrix.T, matrix)
-        assert C_mu.shape == (n, n)
-        return C_mu
-
-    def get_new_C(self, n, c_1, c_mu, C, p_c_new, C_mu, max_C_frst, max_C_scnd, max_C_thrd):
-        if False:  # test other learning rates
-            c_1 = 0.2
-            c_mu = 0.5
-            first = (0.3) * C  # 0.3
+                diff_vals = np.subtract(
+                    best_ind_per_chgp[:-1], best_ind_per_chgp[1:])
+                norm_vals = np.linalg.norm(diff_vals, axis=1)
+                s = np.average(norm_vals)
+                sig = s / 2
+            else:
+                warnings.warn("unkown pred_variant: ", pred_variant)
+                return None, None
         else:
-            first = (1 - c_1 - c_mu) * C
-        col_vec = p_c_new[:, np.newaxis]  # format [n,1]
-        second = c_1 * np.matmul(col_vec, col_vec.T)
-        third = c_mu * C_mu
-        new_C = first + second + third
-        max_C_frst.append(np.max(first))
-        max_C_scnd.append(np.max(second))
-        max_C_thrd.append(np.max(third))
-        # print("max_new_C: ", np.max(new_C), "1. ",
-        #      max_C_frst[-1], " 2. ", max_C_scnd[-1], " 3. ", max_C_thrd[-1])
-        assert new_C.shape == (n, n)
-        return new_C
+            # sig = np.random.rand()  # sonst Error (singuläre Matrix)
+            sig = 1
 
-    def get_new_sig(self, sig, c_sig, d_sig, p_sig_new, E, sig_exp, sig_norm, sig_inner, sig_sub):
-
-        # [ 2.08807787e+09 -2.96451771e-01] davor: [4.27932469e-19 7.26925101e-01]
-        #print("p_sig_new: ", p_sig_new)
-        norm_val = npla.norm(p_sig_new)
-        # print("norm: ", norm_val)  # 2088077871.9406497
-        subtr = norm_val / E - 1
-        inner = (c_sig / d_sig) * subtr
-        # print(c_sig / d_sig) #0.36434206766003985
-        # print("subt: ", subtr) # 1664771783.2035427
-        # print("inner: ", inner)  # 606546393.6744703
-        tmp = exp(inner)
-        sig_exp.append(tmp)
-        sig_norm.append(norm_val)
-        sig_inner.append(inner)
-        sig_sub.append(subtr)
-        return sig * tmp
-
-    def get_new_sig_quadr(self, sig, c_sig, d_sig, p_sig_new, E, sig_tmp, sig_norm, sig_inner, sig_sub):
-        norm_val = npla.norm(p_sig_new)**2
-        subtr = norm_val / 2 - 1
-        inner = (c_sig / 2 * d_sig) * subtr
-        #print("inner: ", inner)
-        tmp = exp(inner)
-        sig_tmp.append(tmp)
-        sig_norm.append(norm_val)
-        sig_inner.append(inner)
-        sig_sub.append(subtr)
-        return sig * tmp
-    # -------------------------------------------------------------------------------
-
-    def print_success(self, t, offspring_population, offspring_fitnesses):
-        min_idx = np.argmin(offspring_fitnesses)
-        print(t, "    ", offspring_fitnesses[min_idx],
-              "    ", offspring_population[min_idx])
-        # return offspring_fitnesses[min_idx]
-        try:
-            return log(offspring_fitnesses[min_idx])  # TODO 23.4 wieder log
-        except ValueError:  # since fitness is zero
-            return log(np.nextafter(0, 1))  # smallest float larger than 0
-
+        return sig, m, p_sig_pred
     # -------------------------------------------------------------------------------
 
     def optimize(self):
+        # ---------------------------------------------------------------------
+        # local variables for predictor
+        # ---------------------------------------------------------------------
+        predictor = build_predictor(self.predictor_name, self.n_time_steps,
+                                    self.dim, self.batch_size, self.n_neurons,
+                                    self.return_seq, False, self.n_layers,
+                                    self.n_epochs, self.tl_rnn_type, self.n_tllayers,
+                                    self.with_dense_first, self.tl_learn_rate, self.use_uncs,
+                                    self.train_mc_runs, self.train_dropout, self.test_dropout,
+                                    self.kernel_size, self.n_kernels, self.lr)
+        ar_predictor = None
+        sess = None  # necessary since is assigned anew after each training
+        if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
+                self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn":
+            import tensorflow as tf
+            # if transfer learning then load weights
+
+            # start session
+            config = tf.ConfigProto()
+            config.gpu_options.allow_growth = True
+            sess = tf.Session(config=config)
+            # initialize empty model (otherwise exception)
+            sess.run(tf.global_variables_initializer())
+            sess.run(tf.local_variables_initializer())
+
+        # ---------------------------------------------------------------------
+        # local variables for CMA-ES
+        # ---------------------------------------------------------------------
+        m_old = None
         best_fit = sys.float_info.max
         unsucc_count = 0
         not_yet_reset = True  # True if C was not manually reset to I during change period
         max_C_elem_idx = 0.3  # index of the maximum element in C
         for t in range(self.generations):
+            glob_opt = self.experiment_data['global_opt_pos_per_gen'][t]
+            print("generation , ", t, " glob opt: ", glob_opt)
+
             env_changed = environment_changed(t, self.population, self.population_fitness,
                                               self.benchmarkfunction, self.experiment_data, self.cma_np_rnd_generator)
             if env_changed:
-                best_fit = sys.float_info.max
-                not_yet_reset = True
-                t_last_chg = t
-                self.detected_n_changes += 1
-                # if False:
                 print("\nchanged")
 
-                self.optima.append(self.m)  # TODO oder m_t-1???
+                best_fit = sys.float_info.max
+                self.means_per_chgp.append(self.m)
+                self.best_ind_per_chgp.append(self.ind_per_gen[-1])
 
-                if len(self.optima) > 1:
-                    self.p_o = self.get_new_p_o(self.mu_w, self.sig, self.n, self.c_o, self.p_o,
-                                                self.optima[-1], self.optima[-2])
-                    self.C_o = self.update_C_after_change(
-                        self.n, self.c_o1, self.C_o, self.p_o)
-                inv_squareroot_C_o, sqrt_of_eig_vals_C_o, eig_vals_C_o, eig_vctrs_C_o = self.get_inverse_sqroot(
-                    self.C_o)
-                if self.scale_C_o:
-                    C_o_scaled = self.C_o / np.max(self.C_o)
-                    inv_squareroot_C_o_scaled, sqrt_of_eig_vals_C_o_scaled, eig_vals_C_o_scaled, eig_vctrs_C_o_scaled = self.get_inverse_sqroot(
-                        C_o_scaled)
-                #m = np.random.randint(0, 100, n)
-                # m = get_moved_glob_opt(t, n, chg_freq)  # + 0.1
-                #print("m: ", m)
-                self.sig = np.random.rand()  # ansonsten Error, wegen singulärer Matrix
-                #p_sig = np.zeros(n)
-                #p_c = np.zeros(n)
+                if self.use_p_o_for_sig and len(self.means_per_chgp) > 1:
+                    p_o = self.get_new_p_o(self.mu_w, self.sig, self.n, self.c_o, self.p_o,
+                                           self.means_per_chgp[-1], self.means_per_chgp[-2], self.use_p_o_for_sig)
+
+                if self.do_pred and len(self.means_per_chgp) > 1:
+                    curr_train_data = min(
+                        len(self.best_ind_per_chgp), self.n_required_train_data)
+                    train_data = self.best_ind_per_chgp[-curr_train_data:]
+                    diff_train_data = np.subtract(
+                        train_data[1:], train_data[:-1])
+                    do_training = t % self.n_required_train_data == 0 or t < 10  # also in first chgp
+                    pred, unc = self.get_prediction(self.predictor_name, predictor, diff_train_data,
+                                                    glob_opt, None, do_training,
+                                                    self.means_per_chgp[-1])
+                    self.pred_opt_pos_per_chgperiod.append(pred)
+
+                self.sig, self.m, self.p_sig_pred = self.update_sig_and_m_after_chage(self.cma_variant, self.pred_variant, self.set_sig_manually,
+                                                                                      self.do_pred, self.use_p_o_for_sig,
+                                                                                      self.p_o, self.mu, self.w, self.p_sig, self.n, self.m, m_old, self.c_sig, self.d_sig,
+                                                                                      self.E, pred, unc, self.mu_w, self.sig, self.sig_pred,
+                                                                                      self.population, self.population_fitness,
+                                                                                      self.sig_exp, self.sig_norm, self.sig_inner, self.sig_sub,
+                                                                                      self.means_per_chgp, np.array(
+                                                                                          self.best_ind_per_chgp), self.pred_opt_pos_per_chgperiod,
+                                                                                      self.p_sig_pred)
+                self.p_sig = np.zeros(self.n)
+                self.p_c = np.zeros(self.n)
                 self.C = np.identity(self.n)
 
-            # restart if stagnation occurs
-            stagnated = len(
-                self.stagnation_markers) > 1 and self.stagnation_markers[-1] == t - 1
-            # if True and t >= chg_freq and t == t_last_chg + chg_freq // 4:
-            # nicht in erster Generation der change period zuruecksetzen
-            if False and stagnated and not_yet_reset and not env_changed:
-                # if stagnated:
-                print("reset: t: ", t)
-                self.sig = np.random.rand()
-                self.C = np.identity(self.n)
-                not_yet_reset = False
-                self.reset_markers.append(t)
             # ---------------------------------------------------------------------
             # eigenvalue decomposition
-            inv_squareroot_C, sqrt_of_eig_vals_C, eig_vals_C, eig_vctrs_C = self.get_inverse_sqroot(
+
+            inv_squareroot_C, sqrt_of_eig_vals_C, eig_vals_C, eig_vctrs_C = get_inverse_sqroot(
                 self.C)
 
             # ---------------------------------------------------------------------
-            # set values
-
-            # for C
-            if self.use_C_o_for_C and env_changed:
-                if self.scale_C_o:
-                    C_for_C = C_o_scaled
-                else:
-                    C_for_C = self.C_o
-            else:
-                C_for_C = self.C
-
-            # for p_sig
-            if self.use_C_o_for_p_sig and env_changed:
-                if self.scale_C_o:
-                    inv_squareroot_for_p_sig = inv_squareroot_C_o_scaled
-                else:
-                    inv_squareroot_for_p_sig = inv_squareroot_C_o
-            else:
-                inv_squareroot_for_p_sig = inv_squareroot_C
-
-            # for sampling
-            if self.use_C_o_for_sampling and env_changed:
-                if self.scale_C_o:
-                    eig_vals_smpl = eig_vals_C_o_scaled
-                    sqrt_of_eig_vals_smpl = sqrt_of_eig_vals_C_o_scaled
-                    eig_vctrs_smpl = eig_vctrs_C_o_scaled
-                    C_for_sampl = C_o_scaled
-                else:
-                    eig_vals_smpl = eig_vals_C_o
-                    sqrt_of_eig_vals_smpl = sqrt_of_eig_vals_C_o
-                    eig_vctrs_smpl = eig_vctrs_C_o
-                    C_for_sampl = self.C_o
-            else:
-                eig_vals_smpl = eig_vals_C
-                sqrt_of_eig_vals_smpl = sqrt_of_eig_vals_C
-                eig_vctrs_smpl = eig_vctrs_C
-                C_for_sampl = self.C
-
-            self.max_sampling_cov_per_gen.append(
-                np.max(C_for_sampl))  # for plot
-            max_C_elem_idx = np.argmax(C_for_sampl)
-
-            self.max_C_elem_idx_per_gen.append(max_C_elem_idx)
-
-            if len(self.max_C_elem_idx_per_gen) > 1 and self.max_C_elem_idx_per_gen[-2] != self.max_C_elem_idx_per_gen[-1]:
-                self.max_C_elem_idx_changed_marker.append(t)
-
-            # new m with new evolution path
-            if env_changed and self.use_pre_pop:
-                pop_for_C_o, fit_for_C_o = self.get_offsprings(
-                    self.n, self.m, self.sig, self.lambd, sqrt_of_eig_vals_C_o, eig_vctrs_C_o, t)  # TODO welches sig nehmen (das zurückgesetzte?)
-                mu_best_inds_for_C_o = self.get_mue_best_individuals(
-                    self.n, self.mu, pop_for_C_o, fit_for_C_o)
-
-                # parameter update
-                self.m = self.get_weighted_avg(
-                    self.n, self.w, mu_best_inds_for_C_o)
-
-            # ---------------------------------------------------------------------
-            glob_opt = self.experiment_data['global_opt_pos_per_gen'][t]
-            print("glob opt: ", glob_opt)
-            #print("C: ", C)
-            #print("max_C: ", np.max(C))
-            self.max_C_per_gen.append(np.max(self.C))
-            self.opt_per_gen.append(glob_opt)
-
-            if env_changed and self.use_pred_for_m:
-                self.m = glob_opt + np.random.rand()
-
-            # ---------------------------------------------------------------------
-            if env_changed and self.scale_sig:
-                self.sig = np.sqrt(np.diagonal(C_for_sampl))
+            print("pred: ", pred)
+            print("unc: ", unc)
+            #print("new_p_o: ", p_o)
+            #print("new_sig: ", sig)
+            print("m    : ", self.m)
+            print("C: ", self.C)
             print("sig: ", self.sig)
+            # ---------------------------------------------------------------------
 
             # offsprings
-            self.population, self.population_fitness = self.get_offsprings(
-                self.n, self.m, self.sig, self.lambd, sqrt_of_eig_vals_smpl, eig_vctrs_smpl, t)
-            mu_best_individuals = self.get_mue_best_individuals(
-                self.n, self.mu, self.population, self.population_fitness)
+            # if env_changed and len(predictions) > 1:
+            #    offspring_population, offspring_fitnesses = get_offsprings(
+            #        n, m, sig_pred, lambd, sqrt_of_eig_vals_C, eig_vctrs_C, t, chg_freq)
+            # else:
+            offspring_population, offspring_fitnesses = get_offsprings(
+                self.n, self.m, self.sig, self.lambd, sqrt_of_eig_vals_C, eig_vctrs_C, t)
+            mu_best_individuals = get_mue_best_individuals(
+                self.n, self.mu, offspring_population, offspring_fitnesses)
 
             # parameter update
-            m_new = self.get_weighted_avg(self.n, self.w, mu_best_individuals)
-            p_sig_new = self.get_new_p_sig(
-                self.n, self.c_sig, self.p_sig, self.mu_w, self.m, m_new, self.sig, inv_squareroot_for_p_sig)
-            h_sig = self.get_h_sig(p_sig_new, self.c_sig, t, self.n, self.E)
-            p_c_new = self.get_new_p_c(self.n, self.c_c, self.p_c, h_sig, self.mu_w,
-                                       m_new, self.m, self.sig, self.frst, self.scnd, self.thrd)
-            C_mu = self.get_C_mu(self.n, mu_best_individuals,
-                                 self.m, self.sig, self.w)
-            C_new = self.get_new_C(self.n, self.c_1, self.c_mu, C_for_C, p_c_new, C_mu,
-                                   self.max_C_frst, self.max_C_scnd, self.max_C_thrd)
-            #print("p_sig_new: ", p_sig_new)
-            try:
-                sig_new = self.get_new_sig(self.sig, self.c_sig, self.d_sig, p_sig_new,
-                                           self.E, self.sig_exp, self.sig_norm, self.sig_inner, self.sig_sub)
-            except:
-                break
-            print("m    : ", self.m)
+            m_new = get_weighted_avg(self.n, self.w, mu_best_individuals)
             print("m_new: ", m_new)
+            p_sig_new = get_new_p_sig(
+                self.n, self.c_sig, self.p_sig, self.mu_w, self.m, m_new, self.sig, inv_squareroot_C)
+            self.h_sig = get_h_sig(p_sig_new, self.c_sig, t, self.n, self.E)
+            p_c_new = get_new_p_c(self.n, self.c_c, self.p_c, self.h_sig, self.mu_w,
+                                  m_new, self.m, self.sig, self.frst, self.scnd, self.thrd)
+            self.C_mu = get_C_mu(self.n, mu_best_individuals, self.m,
+                                 self.sig, self.w, None, pred)
+            C_new = get_new_C(self.n, self.c_1, self.c_mu, self.C, self.p_c_new, self.C_mu,
+                              self.max_C_frst, self.max_C_scnd, self.max_C_thrd)
+            # try:
+            sig_new = get_new_sig(self.sig, self.c_sig, self.d_sig, self.p_sig_new,
+                                  self.E, self.sig_exp, self.sig_norm, self.sig_inner, self.sig_sub)
+            # except:
+            # break
+            # print("error")
+            #sig_new = 1
 
             # ---------------------------------------------------------------------
             # store old variables
+            self.max_sampling_cov_per_gen.append(np.max(self.C))  # for plot
+            max_C_elem_idx = np.argmax(self.C)
+            self.max_C_elem_idx_per_gen.append(max_C_elem_idx)
+            if len(self.max_C_elem_idx_per_gen) > 1 and self.max_C_elem_idx_per_gen[-2] != self.max_C_elem_idx_per_gen[-1]:
+                self.max_C_elem_idx_changed_marker.append(t)
+            self.max_C_per_gen.append(np.max(self.C))
+            self.glob_opt_per_gen.append(glob_opt)
+
             self.angle_per_gen.append(
-                self.visualize_dominant_eigvector(self.n, eig_vals_C, eig_vctrs_C))
+                visualize_dominant_eigvector(self.n, eig_vals_C, eig_vctrs_C))
             try:
                 self.sig_per_gen.append(log(self.sig))
             except:
                 self.sig_per_gen.append(np.log(np.max(self.sig)))
             self.p_sig_per_gen.append(self.p_sig)
-            self.h_sig_per_gen.append(h_sig)
+            try:
+                self.h_sig_per_gen.append(self.h_sig)
+            except UnboundLocalError:  # when do_param_update is False
+                self.h_sig_per_gen.append(-1)
             self.p_c_per_gen.append(self.p_c)
             self.m_per_gen.append(self.m)
             self.p_o_per_gen.append(self.p_o)
 
+            # ---------------------------------------------------------------------
+
             # set variables for next generation
+            if env_changed:
+                m_old = self.m
             self.m = m_new
             self.p_sig = p_sig_new
             self.p_c = p_c_new
             self.C = C_new
             self.sig = sig_new
 
-            # ---------------------------------------------------------------------
-            # print
-
-            min_fit = self.print_success(
-                t, self.population, self.population_fitness)
-            self.fit_per_gen.append(min_fit)
-
-            curr_fit = min_fit  # fitness(m_new, t, chg_freq)
-
-            # detect stagnation
-            if t > 5:
-                fit_diff_to_5_last = abs(curr_fit - self.fit_per_gen[t - 5])
-                fit_diff_to_first = abs(curr_fit - self.fit_per_gen[0])
-                enough_improvement = fit_diff_to_5_last / fit_diff_to_first > self.impr_fct
-            else:
-                enough_improvement = True
-            if curr_fit < best_fit and enough_improvement:
-                best_fit = curr_fit
-                unsucc_count = 0
-            else:
-                unsucc_count += 1
-                if unsucc_count >= 5:
-                    self.stagnation_markers.append(t)
-
-            # TODO gibt man das beste jemals gefundene Individuum zurück? oder das
-            # aktuell beste?
-        #plot_ev_path(p_c_per_gen, p_sig_per_gen)
-        return self.fit_per_gen
+            curr_best_fit, curr_best_ind = self.print_success(
+                t, offspring_population, offspring_fitnesses)
+            self.fit_per_gen.append(curr_best_fit)
+            self.ind_per_gen.append(curr_best_ind)
