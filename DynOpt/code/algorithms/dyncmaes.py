@@ -10,14 +10,13 @@ from math import floor, log, sqrt
 import sys
 import warnings
 
-
 from sklearn.preprocessing.data import MinMaxScaler
 
-from code.utils.utils_cmaes import get_new_sig, get_mue_best_individuals,\
-    get_weighted_avg, get_inverse_sqroot, get_new_p_sig, get_offsprings, \
-    get_h_sig, get_new_p_c, visualize_dominant_eigvector, get_C_mu, get_new_C
 import numpy as np
 from utils import utils_dynopt
+from utils.utils_cmaes import get_new_sig, get_mue_best_individuals,\
+    get_weighted_avg, get_inverse_sqroot, get_new_p_sig, get_offsprings, \
+    get_h_sig, get_new_p_c, visualize_dominant_eigvector, get_C_mu, get_new_C
 from utils.utils_dynopt import environment_changed
 from utils.utils_prediction import build_predictor
 
@@ -428,13 +427,7 @@ class DynamicCMAES(object):
         assert new_p_sig.shape == (n,)
         return new_p_sig
 
-    def update_sig_and_m_after_chage(self, cma_variant, pred_variant, set_sig_manually,
-                                     do_pred, use_p_o_for_sig,
-                                     p_o, mu, w, p_sig, n, m, m_old, c_sig, d_sig,
-                                     E, pred, unc, mu_w, sig, sig_pred,
-                                     offspring_population, offspring_fitnesses,
-                                     sig_exp, sig_norm, sig_inner, sig_sub,
-                                     means, best_ind_per_chgp, predictions, p_sig_pred):
+    def update_sig_and_m_after_chage(self):
         if cma_variant == "pathcma_p_o_for_m" and len(means) > 1:
             sig = np.linalg.norm(p_o) / 2
             #sig = np.linalg.norm(np.abs(p_o)) / 2
