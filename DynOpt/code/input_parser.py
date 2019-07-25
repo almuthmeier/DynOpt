@@ -204,6 +204,7 @@ def initialize_comparator_manually(comparator):
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
     # CMA
     elif comparator.algorithm == "dyncma":
+        # "resetcma" "predcma_internal" "predcma_external"
         comparator.cmavariant = "predcma_internal"
         comparator.predvariant = "h"
 

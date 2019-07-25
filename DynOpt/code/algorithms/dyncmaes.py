@@ -286,7 +286,7 @@ class DynamicCMAES(object):
                 self.sig = np.linalg.norm(
                     self.pred_opt_pos_per_chgperiod[-1] - self.best_found_pos_per_chgperiod[-1]) / 2
             else:
-                warnings.warn("unkown pred_variant: " + self.pred_variant)
+                warnings.warn("unknown pred_variant: " + self.pred_variant)
                 sys.exit()
 
         elif self.cma_variant == "predcma_internal" and len(self.best_found_pos_per_chgperiod) > 1:
@@ -321,10 +321,13 @@ class DynamicCMAES(object):
                 s = np.average(norm_vals)
                 self.sig = s / 2
             else:
-                warnings.warn("unkown pred_variant: ", self.pred_variant)
+                warnings.warn("unknown pred_variant: ", self.pred_variant)
                 sys.exit()
-        else:
+        elif self.cma_variant == "resetcma":
             self.sig = self.init_sigma
+        else:
+            warnings.warn("unknown cma_variant: ", self.cma_variant)
+            sys.exit()
 
     # =============================================================================
 

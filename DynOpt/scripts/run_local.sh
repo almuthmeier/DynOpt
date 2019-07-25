@@ -64,7 +64,7 @@ reinitializationmode="no-RND" # mode for re-initialization of the population: "n
 sigmafactors=0.01,0.1		# list of floats, factors for the sigma environment for random population re-initialization
 
 # CMA-ES
-cmavariant="predcma_internal" # variant how CMA-ES includes prediction or path estimation for dynamic
+cmavariant="predcma_internal" # variant how CMA-ES includes prediction or path estimation for dynamic: "resetcma" "predcma_internal" "predcma_external"
 predvariant="h"				# variant how to calculate sig/m after a change
 
 # predictor
@@ -101,8 +101,10 @@ ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any ex
 # output paths: TODO adapt if necessary
 pathaddition="scriptout" #"firsttest"	# "stepevaluation"
 pathadditions="$pathaddition"
+pathadditions=""
 
-algnameaddition="_""test" 
+#algnameaddition="_""test"
+algnameaddition="" 
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
 outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/DynOpt/output/EvoStar_2020/$benchmarkfunction/"		# path to output
 																																	# folder

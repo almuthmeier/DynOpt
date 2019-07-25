@@ -62,7 +62,7 @@ reinitializationmode=$4		# mode for re-initialization of the population: "no-RND
 sigmafactors=$5				# list of floats, factors for the sigma environment for random population re-initialization
 
 # CMA-ES
-cmavariant="predcma_internal" # variant how CMA-ES includes prediction or path estimation for dynamic
+cmavariant="predcma_internal" # variant how CMA-ES includes prediction or path estimation for dynamic: "resetcma" "predcma_internal" "predcma_external"
 predvariant="h"				# variant how to calculate sig/m after a change
 
 # predictor
@@ -95,9 +95,10 @@ ngpus=1    					# number of GPUs to use (for RNN model)
 ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any experiment are run parallel)  
 
 # output paths
-pathaddition="architecture/trainparams" #"firsttest"	# "stepevaluation"
+#pathaddition="architecture/trainparams" #"firsttest"	# "stepevaluation"
 #pathadditions="$pathaddition/steps""_""$timesteps"
 pathadditions="$pathaddition"
+pathadditions=""
 
 # ==================================================================================================================================================
 # ==================================================================================================================================================
@@ -120,7 +121,7 @@ predictor=$1				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, ka
 algnameaddition=$2
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
 #outputdirectorypath="/raid/almuth/Uncertainty/Ausgaben/output_2019-04-16_mpb/$benchmarkfunction/"		# path to output folder
-outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/output_2019-04-17_kal-alle-dim/$benchmarkfunction/"
+outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/output_2019-07-25_DSB_vel-0.5/$benchmarkfunction/"
 #------------------------------------------------------------------------------
 
 # (There must always be a space between the argument and the backslash!)
