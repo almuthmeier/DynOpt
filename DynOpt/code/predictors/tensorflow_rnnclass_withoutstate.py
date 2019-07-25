@@ -199,7 +199,7 @@ class TFRNNWithoutState():
                 rnn_layer = tf.nn.rnn_cell.BasicRNNCell(
                     num_units=n_neurons, activation=self.act_func)
             else:
-                warnings.warn("unsupported RNN type: ", self.rnn_type)
+                warnings.warn("unsupported RNN type: " + self.rnn_type)
             # Dropout for RNN
             # https://www.tensorflow.org/api_docs/python/tf/contrib/rnn/DropoutWrapper
             # input_size: TensorShape object

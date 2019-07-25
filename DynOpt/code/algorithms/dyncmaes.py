@@ -313,7 +313,7 @@ class DynamicCMAES(object):
                         m_old, self.best_found_pos_per_chgperiod[-1])
                     self.sig = self.p_sig_pred
                 else:
-                    warnings.warn("unknown pred_variant: ", self.pred_variant)
+                    warnings.warn("unknown pred_variant: " + self.pred_variant)
                     sys.exit()
 
             elif self.pred_variant == "branke":
@@ -328,12 +328,12 @@ class DynamicCMAES(object):
                 s = np.average(norm_vals)
                 self.sig = s / 2
             else:
-                warnings.warn("unknown pred_variant: ", self.pred_variant)
+                warnings.warn("unknown pred_variant: " + self.pred_variant)
                 sys.exit()
         elif self.cma_variant == "resetcma":
             self.sig = self.init_sigma
         else:
-            warnings.warn("unknown cma_variant: ", self.cma_variant)
+            warnings.warn("unknown cma_variant: " + self.cma_variant)
             sys.exit()
 
     # =============================================================================

@@ -34,7 +34,7 @@ def fitness(problem, individual, curr_gen, problem_data):
                                                problem_data['global_opt_pos_per_gen'],
                                                problem_data['orig_global_opt_pos'])
     else:
-        warnings.warn("unknown problem: ", problem)
+        warnings.warn("unknown problem: " + problem)
 
 
 def environment_changed(curr_gen, individuals_from_last_gen, fitness_from_last_gen,
