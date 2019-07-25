@@ -170,17 +170,13 @@ class PredictorComparator(object):
                                n_generations, self.experiment_data, self.predictor,
                                self.lbound, self.ubound,
                                alg_np_rnd_generator, pred_np_rnd_generator,
-                               self.mean, self.sigma,
-                               self.reinitializationmode, self.sigmafactors,
                                self.timesteps,
                                n_neurons, self.epochs, self.batchsize,
-                               self.n_layers, self.apply_tl, self.n_tllayers,
-                               full_tl_model_name, self.tl_learn_rate,
-                               self.chgperiodrepetitions, self.addnoisytraindata,
+                               self.n_layers,
                                self.traininterval, self.nrequiredtraindata, self.useuncs,
                                self.trainmcruns, self.testmcruns, self.traindropout, self.testdropout,
                                self.kernelsize, self.nkernels, self.lr,
-                               self.cmavariant, self.imprfct)
+                               self.cmavariant)
         else:
             warnings.warn("unknown optimization algorithm")
             exit(1)
