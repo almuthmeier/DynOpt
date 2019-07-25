@@ -251,7 +251,7 @@ def initialize_comparator_manually(comparator):
     # assertions
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
-    if not comparator.useuncs:
+    if not comparator.useuncs and comparator.algorithm == "dynea":
         assert (comparator.reinitializationmode !=
                 "pred-UNC" and comparator.reinitializationmode != "pred-KAL")
     if (not comparator.predictor == 'kalman' and not comparator.predictor == "truepred"
@@ -355,7 +355,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     # assertions
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
-    if not comparator.useuncs:
+    if not comparator.useuncs and comparator.algorithm == "dynea":
         assert (comparator.reinitializationmode !=
                 "pred-UNC" and comparator.reinitializationmode != "pred-KAL")
     if (not comparator.predictor == 'kalman' and not comparator.predictor == "truepred"

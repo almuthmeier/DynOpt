@@ -9,8 +9,8 @@
 #  $1 -> predictor type
 #  $2 -> algnameaddition
 #  $3 -> whether uncertainties are used
-#  $4 -> re-initialization mode
-#  $5 -> sigma factors
+#  $4 -> cmavariant
+#  $5 -> predvariant
 #  $6 -> dimension
 
 # ----------------------------------------------------------------------------
