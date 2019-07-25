@@ -226,7 +226,7 @@ class DynamicCMAES(object):
 
         assert pred_variant in ["simplest", "a", "b", "c", "d", "g"] and cma_variant == "predcma_external" or \
             pred_variant in ["branke", "f", "h"] and cma_variant == "predcma_internal" or \
-            pred_variant is None and cma_variant not in [
+            pred_variant is "None" and cma_variant not in [
                 "predcma_external", "predcma_internal"]
 
     # =============================================================================
@@ -331,7 +331,7 @@ class DynamicCMAES(object):
                 warnings.warn("unknown pred_variant: " + self.pred_variant)
                 sys.exit()
         else:
-            if self.cma_variant in ["resetcma", "predcma_external", "predcma_external"]:
+            if self.cma_variant in ["resetcma", "predcma_internal", "predcma_external"]:
                 # is the case e.g. when not yet enough predictions were made
                 self.sig = self.init_sigma
             else:
@@ -492,7 +492,7 @@ class DynamicCMAES(object):
                 self.population_fitness[min_fitness_index])
             self.best_found_pos_per_gen[t] = copy.copy(
                 self.population[min_fitness_index])
-            print("best: ", self.population_fitness[min_fitness_index],
+            print(str(t) + ": best: ", self.population_fitness[min_fitness_index],
                   "[", self.population[min_fitness_index], "]")
 
         if self.predictor_name in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
