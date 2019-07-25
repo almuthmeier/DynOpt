@@ -255,8 +255,8 @@ class DynamicCMAES(object):
             unc = self.pred_unc_per_chgperiod[-1]
         except IndexError:
             unc = None
-        print("pred: ", pred)
-        print("unc: ", unc)
+        #print("pred: ", pred)
+        #print("unc: ", unc)
 
         # set sig and m
         if self.cma_variant == "predcma_external" and len(self.pred_opt_pos_per_chgperiod) > 1:
@@ -330,11 +330,13 @@ class DynamicCMAES(object):
             else:
                 warnings.warn("unknown pred_variant: " + self.pred_variant)
                 sys.exit()
-        elif self.cma_variant == "resetcma":
-            self.sig = self.init_sigma
         else:
-            warnings.warn("unknown cma_variant: " + self.cma_variant)
-            sys.exit()
+            if self.cma_variant in ["resetcma", "predcma_external", "predcma_external"]:
+                # is the case e.g. when not yet enough predictions were made
+                self.sig = self.init_sigma
+            else:
+                warnings.warn("unknown cma_variant: " + self.cma_variant)
+                sys.exit()
 
     # =============================================================================
 
@@ -374,12 +376,12 @@ class DynamicCMAES(object):
 
         for t in range(self.n_generations):
             glob_opt = self.experiment_data['global_opt_pos_per_gen'][t]
-            print("generation , ", t, " glob opt: ", glob_opt)
+            #print("generation , ", t, " glob opt: ", glob_opt)
 
             env_changed = environment_changed(t, self.population, self.population_fitness,
                                               self.benchmarkfunction, self.experiment_data, self.cma_np_rnd_generator)
             if env_changed and t != 0:
-                print("\nchanged")
+                # print("\nchanged")
                 # count change
                 self.detected_n_changes += 1
                 # count new train data
@@ -427,9 +429,9 @@ class DynamicCMAES(object):
             inv_squareroot_C, sqrt_of_eig_vals_C, eig_vals_C, eig_vctrs_C = get_inverse_sqroot(
                 self.C)
 
-            print("m    : ", self.m)
-            print("C: ", self.C)
-            print("sig: ", self.sig)
+            #print("m    : ", self.m)
+            #print("C: ", self.C)
+            #print("sig: ", self.sig)
             # ---------------------------------------------------------------------
 
             self.population, self.population_fitness = get_offsprings(

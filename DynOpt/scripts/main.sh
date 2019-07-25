@@ -21,8 +21,8 @@ useuncs1="False"
 useuncs2="False"
 
 
-algnameaddition1="$predvariant1"
-algnameaddition2="$predvariant2"
+algnameaddition1="_$predvariant1"
+algnameaddition2="_$predvariant2"
 
 # ----------------------------------------------------------------------------
 # no, ar (Vegas)

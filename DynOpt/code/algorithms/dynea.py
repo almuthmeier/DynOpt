@@ -508,7 +508,7 @@ class DynamicEA():
         start_pops_fit_for_curr_chgperiod = self.population_fitness
         for i in range(self.n_generations):
             glob_opt = self.experiment_data['global_opt_pos_per_gen'][i]
-            print("generation , ", i, " glob opt: ", glob_opt)
+            #print("generation , ", i, " glob opt: ", glob_opt)
             # store generations that have to be repeated (to compute the
             # variance of the ES)
             gens_for_rep.append(i)
