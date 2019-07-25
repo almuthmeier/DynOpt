@@ -178,8 +178,7 @@ class PredictorComparator(object):
                                self.kernelsize, self.nkernels, self.lr,
                                self.cmavariant, self.predvariant)
         else:
-            warnings.warn("unknown optimization algorithm")
-            exit(1)
+            exit("Error: unknown optimization algorithm")
         return alg
 
     def save_results(self, repetition_ID, alg):
@@ -214,8 +213,7 @@ class PredictorComparator(object):
                  stddev_among_runs_per_chgp=alg.stddev_among_runs_per_chgp,
                  mean_among_runs_per_chgp=alg.mean_among_runs_per_chgp,
                  pred_unc_per_chgperiod=alg.pred_unc_per_chgperiod,
-                 aleat_unc_per_chgperiod=alg.aleat_unc_per_chgperiod
-                 )
+                 aleat_unc_per_chgperiod=alg.aleat_unc_per_chgperiod)
 
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):
         '''
@@ -254,6 +252,7 @@ class PredictorComparator(object):
 
         # =====================================================================
         # save results
+        print("\n    save results for run: ", repetition_ID, flush=True)
         self.save_results(repetition_ID, alg)
 
     def run_runs_parallel(self):

@@ -8,7 +8,6 @@ Created on May 25, 2018
 import copy
 from math import floor, log, sqrt
 import sys
-import warnings
 
 import numpy as np
 from utils import utils_dynopt
@@ -177,14 +176,16 @@ class DynamicCMAES(object):
         # training error per epoch for each chgperiod (if prediction was done)
         self.train_error_for_epochs_per_chgperiod = []
 
+        # ---------------------------------------------------------------------
         # CMA-ES variables
-        self.angle_per_gen = []
-        self.sig_per_gen = []
-        self.p_sig_per_gen = []
-        self.h_sig_per_gen = []
-        self.p_c_per_gen = []
-        self.p_sig_pred_per_gen = []
-        self.m_per_gen = []
+        # ---------------------------------------------------------------------
+        #self.angle_per_gen = []
+        #self.sig_per_gen = []
+        #self.p_sig_per_gen = []
+        #self.h_sig_per_gen = []
+        #self.p_c_per_gen = []
+        #self.p_sig_pred_per_gen = []
+        #self.m_per_gen = []
 
         # global optimum
         self.glob_opt_per_gen = []
@@ -225,7 +226,7 @@ class DynamicCMAES(object):
         # ---------------------------------------------------------------------
 
         assert pred_variant in ["simplest", "a", "b", "c", "d", "g"] and cma_variant == "predcma_external" or \
-            pred_variant in ["branke", "f", "h"] and cma_variant == "predcma_internal" or \
+            (pred_variant in ["branke", "f"] or pred_variant.startswith("h")) and cma_variant == "predcma_internal" or \
             pred_variant == "None" and cma_variant in ["resetcma"]
 
     # =============================================================================
@@ -261,16 +262,14 @@ class DynamicCMAES(object):
         if self.cma_variant == "predcma_external" and len(self.pred_opt_pos_per_chgperiod) > 1:
             if self.pred_variant in ["simplest", "a", "b", "c", "d"]:
                 if pred is None:
-                    warnings.warn(
-                        "pred_variant " + self.pred_variant + " requires a prediction")
-                    sys.exit()
+                    sys.exit("Error: pred_variant " + self.pred_variant +
+                             " requires a prediction")
                 self.m = pred
 
             if self.pred_variant == "a":
                 if unc is None:
-                    warnings.warn(
-                        "pred_variant " + self.pred_variant + " requires an uncertainty estimation")
-                    sys.exit()
+                    sys.exit("Error: pred_variant " + self.pred_variant +
+                             " requires an uncertainty estimation")
                 self.sig = np.sqrt(unc)
             elif self.pred_variant == "b":
                 self.sig = (
@@ -285,8 +284,7 @@ class DynamicCMAES(object):
                 self.sig = np.linalg.norm(
                     self.pred_opt_pos_per_chgperiod[-1] - self.best_found_pos_per_chgperiod[-1]) / 2
             else:
-                warnings.warn("unknown pred_variant: " + self.pred_variant)
-                sys.exit()
+                sys.exit("Error: unknown pred_variant: " + self.pred_variant)
 
         elif self.cma_variant == "predcma_internal" and len(self.best_found_pos_per_chgperiod) > 1:
             if self.pred_variant == "e":
@@ -312,8 +310,7 @@ class DynamicCMAES(object):
                         m_old, self.best_found_pos_per_chgperiod[-1])
                     self.sig = self.p_sig_pred
                 else:
-                    warnings.warn("unknown pred_variant: " + self.pred_variant)
-                    sys.exit()
+                    sys.exit("Error: unknown pred_variant: " + self.pred_variant)
 
             elif self.pred_variant == "branke":
                 tmp_mu_best_individuals = get_mue_best_individuals(
@@ -327,15 +324,13 @@ class DynamicCMAES(object):
                 s = np.average(norm_vals)
                 self.sig = s / 2
             else:
-                warnings.warn("unknown pred_variant: " + self.pred_variant)
-                sys.exit()
+                sys.exit("Error: unknown pred_variant: " + self.pred_variant)
         else:
             if self.cma_variant in ["resetcma", "predcma_internal", "predcma_external"]:
                 # is the case e.g. when not yet enough predictions were made
                 self.sig = self.init_sigma
             else:
-                warnings.warn("unknown cma_variant: " + self.cma_variant)
-                sys.exit()
+                sys.exit("Error: unknown cma_variant: " + self.cma_variant)
 
     # =============================================================================
 
@@ -455,15 +450,15 @@ class DynamicCMAES(object):
 
             # ---------------------------------------------------------------------
             # store old variables
-            self.glob_opt_per_gen.append(glob_opt)
-            self.angle_per_gen.append(
-                visualize_dominant_eigvector(self.dim, eig_vals_C, eig_vctrs_C))
-            self.sig_per_gen.append(self.sig)
-            self.p_sig_per_gen.append(self.p_sig)
-            self.h_sig_per_gen.append(h_sig)
-            self.p_c_per_gen.append(self.p_c)
-            self.p_sig_pred_per_gen.append(self.p_sig_pred_per_gen)
-            self.m_per_gen.append(self.m)
+            # self.glob_opt_per_gen.append(glob_opt)
+            # self.angle_per_gen.append(
+            # visualize_dominant_eigvector(self.dim, eig_vals_C, eig_vctrs_C))
+            # self.sig_per_gen.append(self.sig)
+            # self.p_sig_per_gen.append(self.p_sig)
+            # self.h_sig_per_gen.append(h_sig)
+            # self.p_c_per_gen.append(self.p_c)
+            # self.p_sig_pred_per_gen.append(self.p_sig_pred_per_gen)
+            # self.m_per_gen.append(self.m)
 
             # ---------------------------------------------------------------------
             # set variables for next generation
@@ -491,8 +486,8 @@ class DynamicCMAES(object):
                 self.population_fitness[min_fitness_index])
             self.best_found_pos_per_gen[t] = copy.copy(
                 self.population[min_fitness_index])
-            print(str(t) + ": best: ", self.population_fitness[min_fitness_index],
-                  "[", self.population[min_fitness_index], "]")
+            # print(str(t) + ": best: ", self.population_fitness[min_fitness_index],
+            #      "[", self.population[min_fitness_index], "]")
 
         if self.predictor_name in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
             # TODO why not for "rnn"?
