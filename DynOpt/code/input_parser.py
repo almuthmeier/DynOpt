@@ -268,7 +268,8 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     n_current_inputs = len(vars(args))
 
     if n_current_inputs != 55:
-        exit("Error: input_parser.py: false number of inputs: " + str(n_current_inputs))
+        exit("Error: input_parser.py: false number of inputs: " +
+             str(n_current_inputs))
 
     # benchmark problem
     comparator.algorithm = args.algorithm
@@ -432,8 +433,8 @@ def run_parser():
     orig_stderr = sys.stderr
     f = open(
         log_file_name, 'w')
-    # sys.stdout = f  # TODO(exe) in-comment this
-    #sys.stderr = f
+    sys.stdout = f  # TODO(exe) in-comment this
+    sys.stderr = f
     #
     # =======================================================================
     # run experiments
