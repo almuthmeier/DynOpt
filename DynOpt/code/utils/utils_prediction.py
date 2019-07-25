@@ -9,12 +9,17 @@ Created on Jan 18, 2018
 @author: ameier
 '''
 
+import copy
 import math
 import warnings
 
 import numpy as np
 from predictors.myautomatictcn import MyAutoTCN
+from utils import utils_dynopt
 from utils.my_scaler import MyMinMaxScaler
+from utils.utils_prediction import calculate_n_train_samples,\
+    calculate_n_required_chgps_from_n_train_samples
+from utils.utils_prediction import predict_next_optimum_position, get_noisy_time_series, fit_scaler
 
 
 def make_multidim_samples_from_series(train_data, n_time_steps):
@@ -675,3 +680,93 @@ def calculate_n_required_chgps_from_n_train_samples(n_train_samples, pred_diffs,
         return n_train_samples + n_time_steps + 1
     else:
         return n_train_samples + n_time_steps
+
+
+def prepare_data_train_and_predict(sess, gen_idx, n_features, predictor,
+                                   experiment_data, n_epochs, batch_size,
+                                   return_seq, shuffle_train_data, n_new_train_data,
+                                   best_found_pos_per_chgperiod, train_interval,
+                                   predict_diffs, n_time_steps, n_required_train_data,
+                                   predictor_name, add_noisy_train_data,
+                                   n_noisy_series, stddev_among_runs_per_chgp,
+                                   test_mc_runs, benchmarkfunction, use_uncs,
+                                   epist_unc_per_chgperiod, aleat_unc_per_chgperiod,
+                                   pred_opt_pos_per_chgperiod, pred_opt_fit_per_chgperiod,
+                                   kal_variance_per_chgperiod, train_error_per_chgperiod,
+                                   train_error_for_epochs_per_chgperiod):
+    '''
+    TODO use this function in dynpso
+    '''
+    ar_predictor = None
+    n_past_chgps = len(best_found_pos_per_chgperiod)
+    # number of train data that can be produced from the last chg. periods
+    overall_n_train_data = calculate_n_train_samples(
+        n_past_chgps, predict_diffs, n_time_steps)
+
+    # prevent training with too few train data
+    if (overall_n_train_data < n_required_train_data or predictor_name == "no"):
+        my_pred_mode = "no"
+        train_data = None
+        prediction = None
+
+    else:
+        my_pred_mode = predictor_name
+
+        # number of required change periods (to construct training data)
+        n_required_chgps = calculate_n_required_chgps_from_n_train_samples(
+            n_required_train_data, predict_diffs, n_time_steps)
+        best_found_vals_per_chgperiod = best_found_pos_per_chgperiod[-n_required_chgps:]
+
+        # transform absolute values to differences
+        if predict_diffs:
+            best_found_vals_per_chgperiod = np.subtract(
+                best_found_vals_per_chgperiod[1:], best_found_vals_per_chgperiod[:-1])
+
+        # scale data (the data are re-scaled directly after the
+        # prediction in this iteration)
+        scaler = fit_scaler(best_found_vals_per_chgperiod)
+        train_data = scaler.transform(
+            copy.copy(best_found_vals_per_chgperiod))
+
+        # add noisy training data in order to make network more robust and
+        # increase the number of training data
+        if add_noisy_train_data:
+            # 3d array [n_series, n_chgperiods, dims]
+            noisy_series = get_noisy_time_series(np.array(best_found_pos_per_chgperiod),
+                                                 n_noisy_series,
+                                                 stddev_among_runs_per_chgp)
+            if predict_diffs:
+                noisy_series = np.array([np.subtract(
+                    noisy_series[i, 1:], noisy_series[i, :-1]) for i in range(len(noisy_series))])
+            # scale data
+            noisy_series = np.array([scaler.transform(
+                copy.copy(noisy_series[i])) for i in range(len(noisy_series))])
+        else:
+            noisy_series = None
+
+        # train data
+        train_data = np.array(train_data)
+        # train the model only when train_interval new data are available
+        do_training = n_new_train_data >= train_interval
+        if do_training:
+            n_new_train_data = 0
+        # predict next optimum position or difference (and re-scale value)
+        (prediction, train_error, train_err_per_epoch,
+         ep_unc, avg_al_unc, kal_variance, ar_predictor) = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
+                                                                                         n_epochs, batch_size,
+                                                                                         n_time_steps, n_features,
+                                                                                         scaler, predictor, return_seq, shuffle_train_data,
+                                                                                         do_training, best_found_pos_per_chgperiod,
+                                                                                         predict_diffs, test_mc_runs, n_new_train_data)
+        pred_opt_pos_per_chgperiod.append(copy.copy(prediction))
+        pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
+            benchmarkfunction, prediction, gen_idx, experiment_data))
+        if ep_unc is not None and use_uncs:
+            epist_unc_per_chgperiod.append(copy.copy(ep_unc))
+            aleat_unc_per_chgperiod.append(copy.copy(avg_al_unc))
+        if predictor_name == "kalman" and kal_variance is not None:
+            kal_variance_per_chgperiod.append(copy.copy(kal_variance))
+        train_error_per_chgperiod.append(train_error)
+        train_error_for_epochs_per_chgperiod.append(
+            train_err_per_epoch)
+    return my_pred_mode, ar_predictor

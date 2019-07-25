@@ -14,10 +14,8 @@ from utils import utils_dynopt
 from utils.utils_dynopt import environment_changed
 from utils.utils_ea import dominant_recombination, gaussian_mutation,\
     mu_plus_lambda_selection, adapt_sigma
-from utils.utils_prediction import build_predictor,\
-    predict_next_optimum_position, get_noisy_time_series, fit_scaler
-from utils.utils_prediction import calculate_n_train_samples,\
-    calculate_n_required_chgps_from_n_train_samples
+from utils.utils_prediction import build_predictor
+from utils.utils_prediction import prepare_data_train_and_predict
 from utils.utils_transferlearning import get_variables_and_names
 from utils.utils_values import make_values_feasible_for_square
 
@@ -474,85 +472,6 @@ class DynamicEA():
         '''
         self.sigma = self.init_sigma
 
-    def prepare_data_train_and_predict(self, sess, gen_idx,
-                                       n_features, predictor):
-        '''
-        TODO insert this function into dynpso
-        '''
-        ar_predictor = None
-        n_past_chgps = len(self.best_found_pos_per_chgperiod)
-        # number of train data that can be produced from the last chg. periods
-        overall_n_train_data = calculate_n_train_samples(
-            n_past_chgps, self.predict_diffs, self.n_time_steps)
-
-        # prevent training with too few train data
-        if (overall_n_train_data < self.n_required_train_data or self.predictor_name == "no"):
-            my_pred_mode = "no"
-            train_data = None
-            prediction = None
-
-        else:
-            my_pred_mode = self.predictor_name
-
-            # number of required change periods (to construct training data)
-            n_required_chgps = calculate_n_required_chgps_from_n_train_samples(
-                self.n_required_train_data, self.predict_diffs, self.n_time_steps)
-            best_found_vals_per_chgperiod = self.best_found_pos_per_chgperiod[-n_required_chgps:]
-
-            # transform absolute values to differences
-            if self.predict_diffs:
-                best_found_vals_per_chgperiod = np.subtract(
-                    best_found_vals_per_chgperiod[1:], best_found_vals_per_chgperiod[:-1])
-
-            # scale data (the data are re-scaled directly after the
-            # prediction in this iteration)
-            scaler = fit_scaler(best_found_vals_per_chgperiod)
-            train_data = scaler.transform(
-                copy.copy(best_found_vals_per_chgperiod))
-
-            # add noisy training data in order to make network more robust and
-            # increase the number of training data
-            if self.add_noisy_train_data:
-                # 3d array [n_series, n_chgperiods, dims]
-                noisy_series = get_noisy_time_series(np.array(self.best_found_pos_per_chgperiod),
-                                                     self.n_noisy_series,
-                                                     self.stddev_among_runs_per_chgp)
-                if self.predict_diffs:
-                    noisy_series = np.array([np.subtract(
-                        noisy_series[i, 1:], noisy_series[i, :-1]) for i in range(len(noisy_series))])
-                # scale data
-                noisy_series = np.array([scaler.transform(
-                    copy.copy(noisy_series[i])) for i in range(len(noisy_series))])
-            else:
-                noisy_series = None
-
-            # train data
-            train_data = np.array(train_data)
-            # train the model only when train_interval new data are available
-            do_training = self.n_new_train_data >= self.train_interval
-            if do_training:
-                self.n_new_train_data = 0
-            # predict next optimum position or difference (and re-scale value)
-            (prediction, train_error, train_err_per_epoch,
-             ep_unc, avg_al_unc, kal_variance, ar_predictor) = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
-                                                                                             self.n_epochs, self.batch_size,
-                                                                                             self.n_time_steps, n_features,
-                                                                                             scaler, predictor, self.return_seq, self.shuffle_train_data,
-                                                                                             do_training, self.best_found_pos_per_chgperiod,
-                                                                                             self.predict_diffs, self.test_mc_runs, self.n_new_train_data)
-            self.pred_opt_pos_per_chgperiod.append(copy.copy(prediction))
-            self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
-                self.benchmarkfunction, prediction, gen_idx, self.experiment_data))
-            if ep_unc is not None and self.use_uncs:
-                self.epist_unc_per_chgperiod.append(copy.copy(ep_unc))
-                self.aleat_unc_per_chgperiod.append(copy.copy(avg_al_unc))
-            if self.predictor_name == "kalman" and kal_variance is not None:
-                self.kal_variance_per_chgperiod.append(copy.copy(kal_variance))
-            self.train_error_per_chgperiod.append(train_error)
-            self.train_error_for_epochs_per_chgperiod.append(
-                train_err_per_epoch)
-        return my_pred_mode, ar_predictor
-
 
 # =============================================================================
 
@@ -652,8 +571,19 @@ class DynamicEA():
                     copy.copy(self.best_found_fit_per_gen[i - 1]))
 
                 # prepare data and predict optimum
-                my_pred_mode, ar_predictor = self.prepare_data_train_and_predict(sess, i,
-                                                                                 self.dim, predictor)
+                (my_pred_mode,
+                 ar_predictor) = prepare_data_train_and_predict(sess, i, self.dim, predictor,
+                                                                self.experiment_data, self.n_epochs, self.batch_size,
+                                                                self.return_seq, self.shuffle_train_data, self.n_new_train_data,
+                                                                self.best_found_pos_per_chgperiod, self.train_interval,
+                                                                self.predict_diffs, self.n_time_steps, self.n_required_train_data,
+                                                                self.predictor_name, self.add_noisy_train_data,
+                                                                self.n_noisy_series, self.stddev_among_runs_per_chgp,
+                                                                self.test_mc_runs, self.benchmarkfunction, self.use_uncs,
+                                                                self.epist_unc_per_chgperiod, self.aleat_unc_per_chgperiod,
+                                                                self.pred_opt_pos_per_chgperiod, self.pred_opt_fit_per_chgperiod,
+                                                                self.kal_variance_per_chgperiod, self.train_error_per_chgperiod,
+                                                                self.train_error_for_epochs_per_chgperiod)
                 if not ar_predictor is None:
                     predictor = ar_predictor
 
