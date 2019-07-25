@@ -81,6 +81,7 @@ def define_parser_arguments():
     # for predictor
     # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, kalman
     parser.add_argument("-predictor", type=str)
+    parser.add_argument("-trueprednoise", type=float)
     parser.add_argument("-timesteps", type=int)
     parser.add_argument("-addnoisytraindata", type=str)
     parser.add_argument("-traininterval", type=int)
@@ -191,8 +192,8 @@ def initialize_comparator_manually(comparator):
 
     # EA
     elif comparator.algorithm == "dynea":
-        comparator.mu = 50
-        comparator.la = 100
+        comparator.mu = 5
+        comparator.la = 10
         comparator.ro = 2
         comparator.mean = 0.0
         comparator.sigma = 1.0
@@ -208,7 +209,10 @@ def initialize_comparator_manually(comparator):
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
-    comparator.predictor = "no"
+    # "truepred" (true prediction, disturbed with known noise)
+    comparator.predictor = "truepred"
+    # known prediction noise (standard deviation) of predition "truepred"
+    comparator.trueprednoise = 0.0
     comparator.timesteps = 4
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 5
@@ -223,9 +227,7 @@ def initialize_comparator_manually(comparator):
     comparator.lr = 0.002
 
     # for ANN predictor
-    if (comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or
-            comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense" or
-            comparator.predictor == "tcn"):
+    if comparator.predictor in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
         # (not everything is necessary for every predictor)
         comparator.neuronstype = "fixed20"
         comparator.epochs = 80
@@ -249,8 +251,9 @@ def initialize_comparator_manually(comparator):
     if not comparator.useuncs:
         assert (comparator.reinitializationmode !=
                 "pred-UNC" and comparator.reinitializationmode != "pred-KAL")
-    if not comparator.predictor == 'kalman' and not (comparator.predictor == "tcn" and comparator.useuncs):
-        # if neither Kalman prediction model nor AutoTCN is used reinitialization
+    if (not comparator.predictor == 'kalman' and not comparator.predictor == "truepred"
+            and not (comparator.predictor == "tcn" and comparator.useuncs)):
+        # if neither Kalman prediction model, truepred, nor AutoTCN is used reinitialization
         # type pred-KAL must not be employed (since no uncertainty estimations
         # available)
         assert comparator.reinitializationmode != "pred-KAL"
@@ -261,7 +264,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 54:
+    if n_current_inputs != 55:
         print("input_parser.py: false number of inputs: ", n_current_inputs)
         exit(0)
 
@@ -313,6 +316,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     # predictor
     comparator.predictor = args.predictor
+    comparator.trueprednoise = args.trueprednoise
     comparator.timesteps = args.timesteps
     comparator.addnoisytraindata = args.addnoisytraindata == 'True'
     comparator.traininterval = args.traininterval
@@ -351,7 +355,8 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     if not comparator.useuncs:
         assert (comparator.reinitializationmode !=
                 "pred-UNC" and comparator.reinitializationmode != "pred-KAL")
-    if not comparator.predictor == 'kalman' and not (comparator.predictor == "tcn" and comparator.useuncs):
+    if (not comparator.predictor == 'kalman' and not comparator.predictor == "truepred"
+            and not (comparator.predictor == "tcn" and comparator.useuncs)):
         # if neither Kalman prediction model nor AutoTCN is used reinitialization
         # type pred-KAL must not be employed (since no uncertainty estimations
         # available)

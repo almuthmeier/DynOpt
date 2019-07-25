@@ -65,3 +65,9 @@ In the ICANN 2019 paper we propose a new benchmark generator for dynamic optimiz
 
 ### May 2019
 - corrected ICANN 2019 code (parameters for normal deviation)
+
+
+
+- "truepred" ist noch nicht in Re-initialisierungsstrategien eingebaut (25.7.19)
+	-> compute_noisy_opt_positions() in dynea.py
+- epist_unc_per_chgperiod und kal_variance_per_chgperiod durch pred_unc_per_chgperiod ersetzt; wird also von allen Vorhersagemethoden, die eine Unsicherheitsschätzung haben, verwendet. aleat_unc_per_chgperiod ist weiterhin nur für TCN 

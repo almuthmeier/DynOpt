@@ -139,6 +139,8 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                               n_time_steps, kernel_size, batch_size,
                               train_mc_runs, train_dropout, test_dropout, lr,
                               init=False, use_uncs=use_uncs)
+    elif mode == "truepred":
+        predictor = None
     else:
         msg = "unknown prediction mode " + mode
         warnings.warn(msg)
@@ -519,11 +521,26 @@ def rescale_tcn_auto_results(scaler, predictions, aleat_uncts, pred_diffs, best_
     return predictions, aleat_uncts
 
 
+def predict_with_truepred(glob_opt, trueprednoise, pred_np_rnd_generator):
+    '''
+    Disturbs the known global optimum with known noise that follows a 
+    normal distribution with mean=0.0 and standard deviation=trueprednoise
+    @param glob_opt: global optimum
+    @param trueprednoise: standard deviation of noise 
+    @param pred_np_rnd_generator: random number generator
+    @return: Tupel (noisy global optimum, variance of noise)  
+    '''
+    prediction = glob_opt + \
+        pred_np_rnd_generator.normal(0, trueprednoise, size=(len(glob_opt)))
+    pred_unc = trueprednoise**2
+    return prediction, pred_unc
+
+
 def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_epochs, batch_size,
                                   n_time_steps, n_features, scaler, predictor,
                                   returnseq, shuffle, do_training, best_found_pos_per_chgperiod,
                                   predict_diffs, test_mc_runs, n_new_train_data,
-                                  pred_np_rnd_generator):
+                                  glob_opt, trueprednoise, pred_np_rnd_generator):
     '''
     @param mode: the desired predictor
     @param new_train_data: 2d numpy array: contains time series of 
@@ -541,9 +558,8 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     '''
     train_error = None
     train_err_per_epoch = None
-    ep_unc = None
+    pred_unc = None
     avg_al_unc = None
-    variance = None
     ar_predictor = None
     if mode == "rnn":
         prediction = predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size,
@@ -555,7 +571,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
         except ValueError:
             raise
     elif mode == "kalman":
-        prediction, variance = predict_with_kalman(
+        prediction, pred_unc = predict_with_kalman(
             new_train_data, scaler, predictor, do_training)
     elif mode == "no":
         prediction = None
@@ -564,18 +580,21 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
                                                                           n_features, scaler, predictor, returnseq, shuffle,
                                                                           pred_np_rnd_generator)
     elif mode == "tcn":
-        prediction, ep_unc, avg_al_unc = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
-                                                          n_time_steps, n_features, scaler, predictor,
-                                                          shuffle, do_training,
-                                                          best_found_pos_per_chgperiod, predict_diffs,
-                                                          test_mc_runs, pred_np_rnd_generator)
+        prediction, pred_unc, avg_al_unc = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
+                                                            n_time_steps, n_features, scaler, predictor,
+                                                            shuffle, do_training,
+                                                            best_found_pos_per_chgperiod, predict_diffs,
+                                                            test_mc_runs, pred_np_rnd_generator)
+    elif mode == "truepred":
+        prediction, pred_unc = predict_with_truepred(
+            glob_opt, trueprednoise, pred_np_rnd_generator)
 
-    # convert predicted difference into position (tcn has already re-scaled the values
-    # in the sub-functions)
+    # convert predicted difference into position (tcn has already re-scaled and
+    # added the values in the sub-functions)
     # TODO (dev) add possibly predictor type
     if predict_diffs and mode != "tcn":
         prediction = np.add(best_found_pos_per_chgperiod[-1], prediction)
-    return prediction, train_error, train_err_per_epoch, ep_unc, avg_al_unc, variance, ar_predictor
+    return prediction, train_error, train_err_per_epoch, pred_unc, avg_al_unc, ar_predictor
 
 
 def get_n_neurons(n_neurons_type, dim):
@@ -692,10 +711,11 @@ def prepare_data_train_and_predict(sess, gen_idx, n_features, predictor,
                                    predictor_name, add_noisy_train_data,
                                    n_noisy_series, stddev_among_runs_per_chgp,
                                    test_mc_runs, benchmarkfunction, use_uncs,
-                                   epist_unc_per_chgperiod, aleat_unc_per_chgperiod,
+                                   pred_unc_per_chgperiod, aleat_unc_per_chgperiod,
                                    pred_opt_pos_per_chgperiod, pred_opt_fit_per_chgperiod,
-                                   kal_variance_per_chgperiod, train_error_per_chgperiod,
-                                   train_error_for_epochs_per_chgperiod, pred_np_rnd_generator):
+                                   train_error_per_chgperiod,
+                                   train_error_for_epochs_per_chgperiod,
+                                   glob_opt, trueprednoise, pred_np_rnd_generator):
     '''
     TODO use this function in dynpso
     '''
@@ -754,20 +774,20 @@ def prepare_data_train_and_predict(sess, gen_idx, n_features, predictor,
             n_new_train_data = 0
         # predict next optimum position or difference (and re-scale value)
         (prediction, train_error, train_err_per_epoch,
-         ep_unc, avg_al_unc, kal_variance, ar_predictor) = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
-                                                                                         n_epochs, batch_size,
-                                                                                         n_time_steps, n_features,
-                                                                                         scaler, predictor, return_seq, shuffle_train_data,
-                                                                                         do_training, best_found_pos_per_chgperiod,
-                                                                                         predict_diffs, test_mc_runs, n_new_train_data, pred_np_rnd_generator)
+         pred_unc, avg_al_unc, ar_predictor) = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
+                                                                             n_epochs, batch_size,
+                                                                             n_time_steps, n_features,
+                                                                             scaler, predictor, return_seq, shuffle_train_data,
+                                                                             do_training, best_found_pos_per_chgperiod,
+                                                                             predict_diffs, test_mc_runs, n_new_train_data,
+                                                                             glob_opt, trueprednoise, pred_np_rnd_generator)
         pred_opt_pos_per_chgperiod.append(copy.copy(prediction))
         pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
             benchmarkfunction, prediction, gen_idx, experiment_data))
-        if ep_unc is not None and use_uncs:
-            epist_unc_per_chgperiod.append(copy.copy(ep_unc))
+        if pred_unc is not None and use_uncs:
+            pred_unc_per_chgperiod.append(copy.copy(pred_unc))
+        if avg_al_unc is not None and use_uncs:
             aleat_unc_per_chgperiod.append(copy.copy(avg_al_unc))
-        if predictor_name == "kalman" and kal_variance is not None:
-            kal_variance_per_chgperiod.append(copy.copy(kal_variance))
         train_error_per_chgperiod.append(train_error)
         train_error_for_epochs_per_chgperiod.append(
             train_err_per_epoch)

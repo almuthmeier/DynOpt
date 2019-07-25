@@ -70,10 +70,11 @@ class PredictorComparator(object):
 
         # CMA-ES
         self.cmavariant = None  # str
-        self.predvariant = None
+        self.predvariant = None  # str
 
         # predictor
         self.predictor = None  # string
+        self.trueprednoise = None  # float
         self.timesteps = None  # int
         self.addnoisytraindata = None  # bool
         self.traininterval = None  # int
@@ -127,10 +128,10 @@ class PredictorComparator(object):
         pred_np_rnd_generator = np.random.RandomState(seed_pred_generator)
 
         dimensionality = len(self.experiment_data['orig_global_opt_pos'])
+        assert dimensionality == self.dims
         n_generations = self.get_n_generations()
-        if (self.predictor == "no" or self.predictor == "autoregressive" or
-                self.predictor == "tfrnn" or self.predictor == "rnn" or
-                self.predictor == "tcn" or self.predictor == "kalman"):
+        if self.predictor in ["no", "autoregressive", "tfrnn", "rnn", "tcn",
+                              "kalman", "truepred"]:
             n_neurons = None
             full_tl_model_name = None
         else:
@@ -140,7 +141,7 @@ class PredictorComparator(object):
         if self.algorithm == "dynea":
             alg = DynamicEA(self.benchmarkfunction, dimensionality,
                             n_generations, self.experiment_data, self.predictor,
-                            self.lbound, self.ubound,
+                            self.trueprednoise, self.lbound, self.ubound,
                             alg_np_rnd_generator, pred_np_rnd_generator,
                             self.mu, self.la, self.ro, self.mean, self.sigma,
                             self.trechenberg, self.tau,
@@ -165,10 +166,9 @@ class PredictorComparator(object):
                              full_tl_model_name, self.tl_learn_rate,
                              self.chgperiodrepetitions)
         elif self.algorithm == "dyncma":
-            # TODO self.dims verwenden?!?
             alg = DynamicCMAES(self.benchmarkfunction, dimensionality,
                                n_generations, self.experiment_data, self.predictor,
-                               self.lbound, self.ubound,
+                               self.trueprednoise, self.lbound, self.ubound,
                                alg_np_rnd_generator, pred_np_rnd_generator,
                                self.timesteps,
                                n_neurons, self.epochs, self.batchsize,
@@ -213,9 +213,8 @@ class PredictorComparator(object):
                  final_pop_fitness_per_run_per_changeperiod=alg.final_pop_fitness_per_run_per_changeperiod,
                  stddev_among_runs_per_chgp=alg.stddev_among_runs_per_chgp,
                  mean_among_runs_per_chgp=alg.mean_among_runs_per_chgp,
-                 epist_unc_per_chgperiod=alg.epist_unc_per_chgperiod,
-                 aleat_unc_per_chgperiod=alg.aleat_unc_per_chgperiod,
-                 kal_variance_per_chgperiod=alg.kal_variance_per_chgperiod
+                 pred_unc_per_chgperiod=alg.pred_unc_per_chgperiod,
+                 aleat_unc_per_chgperiod=alg.aleat_unc_per_chgperiod
                  )
 
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):
@@ -267,7 +266,7 @@ class PredictorComparator(object):
 
         # distribute runs on different GPUs so that each GPU has the same number of
         # processes
-        if self.ngpus is None or self.ngpus is 0 or self.predictor == "no" or self.predictor == "arr":
+        if self.ngpus is None or self.ngpus is 0 or self.predictor in ["no", "arr", "truepred"]:
             # no gpus required
             gpus_for_runs = np.array(self.repetitions * [None])
         else:

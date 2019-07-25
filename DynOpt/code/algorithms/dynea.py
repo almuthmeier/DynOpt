@@ -22,7 +22,8 @@ from utils.utils_values import make_values_feasible_for_square
 
 class DynamicEA():
     def __init__(self, benchmarkfunction, dim,
-                 n_generations, experiment_data, predictor_name, lbound, ubound,
+                 n_generations, experiment_data, predictor_name,
+                 trueprednoise, lbound, ubound,
                  ea_np_rnd_generator, pred_np_rnd_generator,
                  mu, la, ro, mean, sigma, trechenberg, tau,
                  reinitialization_mode, sigma_factors,
@@ -73,7 +74,7 @@ class DynamicEA():
         @param n_required_train_data: (int) number of training data that is
         used for training
         @param use_uncs: (True) if predictive uncertainty should be estimated; 
-        only possible for predictors "kalman" and "tcn" 
+        only possible for predictors "kalman", "tcn" and "truepred" 
         @param train_mc_runs: (int) number of Monte Carlo runs during training
         (when predictive uncertainty is estimated)
         @param test_mc_runs: (int) number of Monte Carlo runs during prediciton
@@ -90,6 +91,7 @@ class DynamicEA():
         self.n_generations = n_generations
         self.experiment_data = experiment_data
         self.predictor_name = predictor_name
+        self.trueprednoise = trueprednoise  # TODO unused so far
 
         self.lbound = lbound  # 100  # assumed that the input data follow this assumption
         self.ubound = ubound  # 200  # TODO(exe) , TODO insert into dynPSO
@@ -185,12 +187,8 @@ class DynamicEA():
         # each change period)
         self.pred_opt_pos_per_chgperiod = []
         self.pred_opt_fit_per_chgperiod = []
-        self.epist_unc_per_chgperiod = []  # predictive variance
+        self.pred_unc_per_chgperiod = []  # predictive variance
         self.aleat_unc_per_chgperiod = []  # average aleatoric uncertainty
-        # estimated variance by kal. filter
-        # TODO use epist_unc_per_chgperiod also for Kalman filter (both have
-        # currently same format)
-        self.kal_variance_per_chgperiod = []
         # training error per chgperiod (if prediction was done)
         self.train_error_per_chgperiod = []
         # training error per epoch for each chgperiod (if prediction was done)
@@ -281,14 +279,7 @@ class DynamicEA():
         elif self.reinitialization_mode == "pred-UNC":
             # predictive variance for re-initialization
             # -> different variance for each dimension
-            try:
-                # for predictor "tcn" (AutoTCN)
-                # variance (vector)
-                covariance = self.epist_unc_per_chgperiod[-1]
-            except:
-                # for predictor "kalman"
-                # variance (vector)
-                covariance = self.kal_variance_per_chgperiod[-1]
+            covariance = self.pred_unc_per_chgperiod[-1]
             assert len(covariance) == self.dim
         elif self.reinitialization_mode == "pred-DEV":
             # -> one variance for all dimensions
@@ -314,12 +305,7 @@ class DynamicEA():
             # for explanation of this type see the paper "Tracking moving optima
             # using Kalman-Based predictions"
             c = 0.1  # seemed to be good setting in the paper
-            try:
-                # for predictor "kalman"
-                covariance = self.kal_variance_per_chgperiod[-1]
-            except:
-                # for predictor "tcn" (AutoTCN)
-                covariance = self.epist_unc_per_chgperiod[-1]
+            covariance = self.pred_unc_per_chgperiod[-1]
             max_variance = np.max(covariance)
             max_sigma = np.sqrt(max_variance)
             g = c / (1 + max_sigma)
@@ -414,10 +400,8 @@ class DynamicEA():
                 warnings.warn("unknown reinitialization mode: " +
                               self.reinitialization_mode)
 
-        elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive" or \
-                my_pred_mode == "tfrnn" or my_pred_mode == "tftlrnn" or \
-                my_pred_mode == "tftlrnndense" or my_pred_mode == "tcn" or \
-                my_pred_mode == "kalman":
+        elif my_pred_mode in ["rnn", "autoregressive", "tfrnn", "tftlrnn",
+                              "tftlrnndense", "tcn", "kalman", "truepred"]:
             # last predicted optimum
             pred_optimum_position = self.pred_opt_pos_per_chgperiod[-1]
             # insert predicted optimum into immigrants
@@ -488,8 +472,7 @@ class DynamicEA():
                                     self.kernel_size, self.n_kernels, self.lr)
         ar_predictor = None
         sess = None  # necessary since is assigned anew after each training
-        if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
-                self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn":
+        if self.predictor_name in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
             import tensorflow as tf
             # if transfer learning then load weights
             if self.apply_tl:
@@ -524,6 +507,8 @@ class DynamicEA():
         start_pop_for_curr_chgperiod = self.population
         start_pops_fit_for_curr_chgperiod = self.population_fitness
         for i in range(self.n_generations):
+            glob_opt = self.experiment_data['global_opt_pos_per_gen'][i]
+            print("generation , ", i, " glob opt: ", glob_opt)
             # store generations that have to be repeated (to compute the
             # variance of the ES)
             gens_for_rep.append(i)
@@ -580,11 +565,11 @@ class DynamicEA():
                                                                 self.predictor_name, self.add_noisy_train_data,
                                                                 self.n_noisy_series, self.stddev_among_runs_per_chgp,
                                                                 self.test_mc_runs, self.benchmarkfunction, self.use_uncs,
-                                                                self.epist_unc_per_chgperiod, self.aleat_unc_per_chgperiod,
+                                                                self.pred_unc_per_chgperiod, self.aleat_unc_per_chgperiod,
                                                                 self.pred_opt_pos_per_chgperiod, self.pred_opt_fit_per_chgperiod,
-                                                                self.kal_variance_per_chgperiod, self.train_error_per_chgperiod,
+                                                                self.train_error_per_chgperiod,
                                                                 self.train_error_for_epochs_per_chgperiod,
-                                                                self.pred_np_rnd_generator)
+                                                                glob_opt, self.trueprednoise, self.pred_np_rnd_generator)
                 if not ar_predictor is None:
                     predictor = ar_predictor
 

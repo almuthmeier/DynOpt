@@ -28,7 +28,8 @@ class DynamicCMAES(object):
 
     def __init__(self,
                  benchmarkfunction, dim,
-                 n_generations, experiment_data, predictor_name, lbound, ubound,
+                 n_generations, experiment_data, predictor_name,
+                 trueprednoise, lbound, ubound,
                  cma_np_rnd_generator, pred_np_rnd_generator,
                  timesteps, n_neurons, epochs, batchsize, n_layers,
                  train_interval, n_required_train_data, use_uncs,
@@ -47,6 +48,7 @@ class DynamicCMAES(object):
         self.n_generations = n_generations  # TODO rename
         self.experiment_data = experiment_data
         self.predictor_name = predictor_name
+        self.trueprednoise = trueprednoise
 
         self.lbound = lbound  # 100  # assumed that the input data follow this assumption
         self.ubound = ubound  # 200  # TODO(exe) , TODO insert into dynPSO
@@ -168,12 +170,8 @@ class DynamicCMAES(object):
         # each change period)
         self.pred_opt_pos_per_chgperiod = []
         self.pred_opt_fit_per_chgperiod = []
-        self.epist_unc_per_chgperiod = []  # predictive variance
+        self.pred_unc_per_chgperiod = []  # predictive variance
         self.aleat_unc_per_chgperiod = []  # average aleatoric uncertainty
-        # estimated variance by kal. filter
-        # TODO use epist_unc_per_chgperiod also for Kalman filter (both have
-        # currently same format)
-        self.kal_variance_per_chgperiod = []
         # training error per chgperiod (if prediction was done)
         self.train_error_per_chgperiod = []
         # training error per epoch for each chgperiod (if prediction was done)
@@ -254,12 +252,9 @@ class DynamicCMAES(object):
         except IndexError:
             pred = None
         try:
-            unc = self.epist_unc_per_chgperiod[-1]
+            unc = self.pred_unc_per_chgperiod[-1]
         except IndexError:
-            try:
-                unc = self.kal_variance_per_chgperiod[-1]
-            except IndexError:
-                unc = None
+            unc = None
         print("pred: ", pred)
         print("unc: ", unc)
 
@@ -346,8 +341,7 @@ class DynamicCMAES(object):
                                     self.kernel_size, self.n_kernels, self.lr)
         ar_predictor = None
         sess = None  # necessary since is assigned anew after each training
-        if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
-                self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn":
+        if self.predictor_name in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
             import tensorflow as tf
             # if transfer learning then load weights
 
@@ -402,11 +396,11 @@ class DynamicCMAES(object):
                                                                 self.predictor_name, self.add_noisy_train_data,
                                                                 self.n_noisy_series, self.stddev_among_runs_per_chgp,
                                                                 self.test_mc_runs, self.benchmarkfunction, self.use_uncs,
-                                                                self.epist_unc_per_chgperiod, self.aleat_unc_per_chgperiod,
+                                                                self.pred_unc_per_chgperiod, self.aleat_unc_per_chgperiod,
                                                                 self.pred_opt_pos_per_chgperiod, self.pred_opt_fit_per_chgperiod,
-                                                                self.kal_variance_per_chgperiod, self.train_error_per_chgperiod,
+                                                                self.train_error_per_chgperiod,
                                                                 self.train_error_for_epochs_per_chgperiod,
-                                                                self.pred_np_rnd_generator)
+                                                                glob_opt, self.trueprednoise, self.pred_np_rnd_generator)
 
                 if not ar_predictor is None:
                     predictor = ar_predictor
@@ -489,8 +483,7 @@ class DynamicCMAES(object):
             print("best: ", self.population_fitness[min_fitness_index],
                   "[", self.population[min_fitness_index], "]")
 
-        if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
-                self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn":
+        if self.predictor_name in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
             # TODO why not for "rnn"?
             sess.close()
             tf.reset_default_graph()
