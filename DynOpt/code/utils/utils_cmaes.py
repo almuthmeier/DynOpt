@@ -13,7 +13,7 @@ import numpy as np
 from utils import utils_dynopt
 
 
-def visualize_dominant_eigvector(self, n, eig_vals, eig_vctrs):
+def visualize_dominant_eigvector(n, eig_vals, eig_vctrs):
     # determine dominant eigenvector
     max_idx = np.argmax(np.absolute(eig_vals))
     dom_vect = eig_vctrs[:, max_idx]
@@ -36,7 +36,7 @@ def visualize_dominant_eigvector(self, n, eig_vals, eig_vctrs):
 #------------------------
 
 
-def get_inverse_sqroot(self, M):
+def get_inverse_sqroot(M):
     '''
     M = TDT^(-1)
         T: eigenvectors
@@ -74,7 +74,8 @@ def get_inverse_sqroot(self, M):
     return new_M, sqrt_of_eig_vals, eig_vals, eig_vctrs
 
 
-def get_offsprings(self, n, m, sig, lambd, sqrt_of_eig_vals, eig_vctrs, t):
+def get_offsprings(n, m, sig, lambd, sqrt_of_eig_vals, eig_vctrs, t,
+                   benchmarkfunction, experiment_data, cma_np_rnd_generator):
     offspring_population = np.zeros((lambd, n))
     offspring_fitnesses = np.zeros(lambd)
 
@@ -84,21 +85,21 @@ def get_offsprings(self, n, m, sig, lambd, sqrt_of_eig_vals, eig_vctrs, t):
     A = np.matmul(eig_vctrs, sqrt_of_eig_vals)
 
     for k in range(lambd):
-        z_k = np.random.normal(size=n)
+        z_k = cma_np_rnd_generator.normal(size=n)
         y_k = np.matmul(A, z_k)
         x_k = m + sig * y_k
         # x_k is equal to the following line but saves eigendecompositions:
-        # m + sig * np.random.multivariate_normal(np.zeros(n), C)
+        # m + sig * cma_np_rnd_generatorndom.multivariate_normal(np.zeros(n), C)
 
-        f_k = utils_dynopt.fitness(self.benchmarkfunction,
-                                   x_k, t, self.experiment_data)
+        f_k = utils_dynopt.fitness(benchmarkfunction,
+                                   x_k, t, experiment_data)
 
         offspring_population[k] = copy.copy(x_k)
         offspring_fitnesses[k] = f_k
     return offspring_population, offspring_fitnesses
 
 
-def get_mue_best_individuals(self, n, mu, offspring_population, offspring_fitnesses):
+def get_mue_best_individuals(n, mu, offspring_population, offspring_fitnesses):
     # sort individuals according to fitness
     sorted_indices = np.argsort(offspring_fitnesses)
     sorted_individuals = offspring_population[sorted_indices]
@@ -108,7 +109,7 @@ def get_mue_best_individuals(self, n, mu, offspring_population, offspring_fitnes
     return mu_best_individuals  # format [individuals, dimensions]
 
 
-def get_weighted_avg(self, n, w, mu_best_individuals):
+def get_weighted_avg(n, w, mu_best_individuals):
     # weight individuals
     weighted_indvds = mu_best_individuals * w[:, np.newaxis]
     # sum averaged individuals
@@ -168,7 +169,7 @@ def get_C_mu(n, mu_best_individuals, m, sig, w):
     return C_mu
 
 
-def get_new_C(self, n, c_1, c_mu, C, p_c_new, C_mu):
+def get_new_C(n, c_1, c_mu, C, p_c_new, C_mu):
     first = (1 - c_1 - c_mu) * C
     col_vec = p_c_new[:, np.newaxis]  # format [n,1]
     second = c_1 * np.matmul(col_vec, col_vec.T)
@@ -178,7 +179,7 @@ def get_new_C(self, n, c_1, c_mu, C, p_c_new, C_mu):
     return new_C
 
 
-def get_new_sig(self, sig, c_sig, d_sig, p_sig_new, E):
+def get_new_sig(sig, c_sig, d_sig, p_sig_new, E):
     norm_val = npla.norm(p_sig_new)
     subtr = norm_val / E - 1
     inner = (c_sig / d_sig) * subtr
@@ -186,7 +187,7 @@ def get_new_sig(self, sig, c_sig, d_sig, p_sig_new, E):
     return sig * tmp
 
 
-def get_best_fit_and_ind_so_far(self, curr_best_fit, curr_best_ind, offspring_population, offspring_fitnesses):
+def get_best_fit_and_ind_so_far(curr_best_fit, curr_best_ind, offspring_population, offspring_fitnesses):
     '''
     Checks whether the fitness of the best individual from the current generation
     is better than a given fitness.

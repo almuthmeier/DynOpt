@@ -158,21 +158,22 @@ class MyAutoTCN():
 
             yield batch_idx + 1, all_indices[start_ind:end_ind]
 
-    def shuffle_data(self, X_train, Y_train, n_train):
+    def shuffle_data(self, X_train, Y_train, n_train, pred_np_rnd_generator):
         # generate and shuffle indices to shuffle input and output data
         # in same order
         idx = np.arange(n_train)
-        np.random.shuffle(idx)
+        pred_np_rnd_generator.shuffle(idx)
         X_train = X_train[idx]
         Y_train = Y_train[idx]
         return X_train, Y_train
 
     def train(self, n_epochs, sess, X_train, Y_train, n_train, log_interval,
-              train_writer, shuffle_between_epochs):
+              train_writer, shuffle_between_epochs, pred_np_rnd_generator):
         # train output layer
         for ep in range(1, n_epochs + 1):
             if shuffle_between_epochs:
-                X_train, Y_train = self.shuffle_data(X_train, Y_train, n_train)
+                X_train, Y_train = self.shuffle_data(
+                    X_train, Y_train, n_train, pred_np_rnd_generator)
             self.train_prediction(ep, sess, X_train, Y_train,
                                   n_train, log_interval, train_writer)
 
@@ -181,7 +182,7 @@ class MyAutoTCN():
             for ep in range(1, n_epochs + 1):
                 if shuffle_between_epochs:
                     X_train, Y_train = self.shuffle_data(
-                        X_train, Y_train, n_train)
+                        X_train, Y_train, n_train, pred_np_rnd_generator)
                 self.train_noise(ep, sess, X_train, Y_train,
                                  n_train, log_interval, train_writer)
 

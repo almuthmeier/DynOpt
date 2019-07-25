@@ -62,8 +62,8 @@ reinitializationmode=$4		# mode for re-initialization of the population: "no-RND
 sigmafactors=$5				# list of floats, factors for the sigma environment for random population re-initialization
 
 # CMA-ES
-cmavariant="pathcma_prepop" # variant how CMA-ES includes prediction or path estimation for dynamic
-imprfct=0					# fitness improvement necessary to determine stagnation
+cmavariant="predcma_internal" # variant how CMA-ES includes prediction or path estimation for dynamic
+predvariant="h"				# variant how to calculate sig/m after a change
 
 # predictor
 timesteps=50				# number of previous optima used for the predictions
@@ -156,7 +156,7 @@ python3.5 ../code/input_parser.py -algorithm="$algorithm" \
 -reinitializationmode="$reinitializationmode" \
 -sigmafactors="$sigmafactors" \
 -cmavariant="$cmavariant" \
--imprfct="$imprfct" \ 
+-predvariant="$predvariant" \ 
 -predictor="$predictor" \
 -timesteps="$timesteps" \
 -addnoisytraindata="$addnoisytraindata" \

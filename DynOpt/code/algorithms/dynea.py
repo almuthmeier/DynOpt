@@ -583,7 +583,8 @@ class DynamicEA():
                                                                 self.epist_unc_per_chgperiod, self.aleat_unc_per_chgperiod,
                                                                 self.pred_opt_pos_per_chgperiod, self.pred_opt_fit_per_chgperiod,
                                                                 self.kal_variance_per_chgperiod, self.train_error_per_chgperiod,
-                                                                self.train_error_for_epochs_per_chgperiod)
+                                                                self.train_error_for_epochs_per_chgperiod,
+                                                                self.pred_np_rnd_generator)
                 if not ar_predictor is None:
                     predictor = ar_predictor
 

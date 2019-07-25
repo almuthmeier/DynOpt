@@ -12,6 +12,7 @@ import warnings
 
 import numpy as np
 from utils import utils_dynopt
+from utils.utils_cmaes import get_best_fit_and_ind_so_far
 from utils.utils_cmaes import get_new_sig, get_mue_best_individuals,\
     get_weighted_avg, get_inverse_sqroot, get_new_p_sig, get_offsprings, \
     get_h_sig, get_new_p_c, visualize_dominant_eigvector, get_C_mu, get_new_C
@@ -37,15 +38,13 @@ class DynamicCMAES(object):
         Constructor
         '''
         # TODOs:
-        # - n durch dim ersetzen
-        #  - überall self nutzen, also keine Zuweisungen auf gleichnamige Variablen
         # - alle "Speichervariablen" vom EA nutzen, damit Ausgabedateien identisch sind
         # ---------------------------------------------------------------------
         # for the problem
         # ---------------------------------------------------------------------
         self.benchmarkfunction = benchmarkfunction
-        self.n = dim  # TODO rename
-        self.generations = n_generations  # TODO rename
+        self.dim = dim
+        self.n_generations = n_generations  # TODO rename
         self.experiment_data = experiment_data
         self.predictor_name = predictor_name
 
@@ -91,7 +90,7 @@ class DynamicCMAES(object):
         # -------------------------------------------------------------------------
         # fixed parameters
         # -------------------------------------------------------------------------
-        self.lambd = 4 + floor(3 * log(self.n))  # offsprings
+        self.lambd = 4 + floor(3 * log(self.dim))  # offsprings
         self.mu = floor(self.lambd / 2)  # parents
         # weights (vector of size ń)
         w_divisor = np.sum([(log(self.mu + 0.5) - log(j))
@@ -100,15 +99,16 @@ class DynamicCMAES(object):
                            for i in range(1, self.mu + 1)])
         # other
         self.mu_w = 1 / np.sum(np.square(self.w))
-        self.c_sig = (self.mu_w + 2) / (self.n + self.mu_w + 3)
+        self.c_sig = (self.mu_w + 2) / (self.dim + self.mu_w + 3)
         self.d_sig = 1 + self.c_sig + 2 * \
-            max(0, sqrt((self.mu_w - 1) / (self.n + 1)) - 1)
-        self.c_c = 4 / (self.n + 4)
+            max(0, sqrt((self.mu_w - 1) / (self.dim + 1)) - 1)
+        self.c_c = 4 / (self.dim + 4)
         self.c_1 = (2 * min(1, self.lambd / 6)) / \
-            ((self.n + 1.3)**2 + self.mu_w)
+            ((self.dim + 1.3)**2 + self.mu_w)
         self.c_mu = (2 * (self.mu_w - 2 + 1 / self.mu_w)) / \
-            ((self.n + 2)**2 + self.mu_w)
-        self.E = sqrt(self.n) * (1 - 1 / (4 * self.n) + 1 / (21 * self.n**2))
+            ((self.dim + 2)**2 + self.mu_w)
+        self.E = sqrt(self.dim) * \
+            (1 - 1 / (4 * self.dim) + 1 / (21 * self.dim**2))
 
         self.c_o = self.c_c
         self.c_o1 = self.c_1
@@ -116,12 +116,13 @@ class DynamicCMAES(object):
         # -------------------------------------------------------------------------
         # initialization
         # -------------------------------------------------------------------------
-        self.m = np.random.randint(self.lbound, self.ubound, self.n)
-        self.sig = np.random.rand()
-        self.p_sig = np.zeros(self.n)
-        self.p_c = np.zeros(self.n)
-        self.C = np.identity(self.n)
-        self.p_sig_pred = np.zeros(self.n)
+        self.m = self.cma_np_rnd_generator.randint(
+            self.lbound, self.ubound, self.dim)
+        self.sig = cma_np_rnd_generator.rand()
+        self.p_sig = np.zeros(self.dim)
+        self.p_c = np.zeros(self.dim)
+        self.C = np.identity(self.dim)
+        self.p_sig_pred = np.zeros(self.dim)
 
         # ---------------------------------------------------------------------
         # options
@@ -139,7 +140,7 @@ class DynamicCMAES(object):
         # ---------------------------------------------------------------------
         # initialize population (mu candidates) and compute fitness.
         self.population = self.cma_np_rnd_generator.uniform(self.lbound,
-                                                            self.ubound, (self.mu, self.n))
+                                                            self.ubound, (self.mu, self.dim))
         # 2d numpy array (for each individual one row)
         self.population_fitness = np.array([utils_dynopt.fitness(self.benchmarkfunction,
                                                                  individual, 0,
@@ -156,9 +157,9 @@ class DynamicCMAES(object):
         # for each detected change the corresponding generation numbers
         self.detected_chgperiods_for_gens = []
         # best found individual for each generation (2d numpy array)
-        self.best_found_pos_per_gen = np.zeros((self.generations, self.n))
+        self.best_found_pos_per_gen = np.zeros((self.n_generations, self.dim))
         # fitness of best found individual for each generation (1d numpy array)
-        self.best_found_fit_per_gen = np.zeros(self.generations)
+        self.best_found_fit_per_gen = np.zeros(self.n_generations)
         # position of found optima (one for each change period)
         self.best_found_pos_per_chgperiod = []
         # fitness of found optima (one for each change period)
@@ -190,6 +191,41 @@ class DynamicCMAES(object):
         # global optimum
         self.glob_opt_per_gen = []
 
+        # ---------------------------------------------------------------------
+        # for EA (evaluation of variance) (repetitions of change periods)
+        # not used for CMA-ES, only for similar output files like EA
+        # ---------------------------------------------------------------------
+        # add noisy data (noise equals standard deviation among change period
+        # runs TODO could be replaced by "max_n_chgperiod_reps > 1"
+        self.add_noisy_train_data = False  # False since unused
+        self.n_noisy_series = 20
+        # number repetitions of the single change periods (at least 1 -> 1 run)
+        # TODO insert into PSO
+        self.max_n_chgperiod_reps = 1  # arbitrary value since unused
+        # population for last generation of change period (for each run)
+        # used for determining the EAs variance for change periods
+        # 4d list [runs, chgperiods, parents, dims]
+        # TODO insert into PSO
+        self.final_pop_per_run_per_chgperiod = [
+            [] for _ in range(self.max_n_chgperiod_reps)]
+        # fitness of final population per run of each chgperiod
+        # 3d list [runs, chgperiods, parents]
+        # TODO insert into PSO
+        self.final_pop_fitness_per_run_per_changeperiod = [
+            [] for _ in range(self.max_n_chgperiod_reps)]
+        # best found solution for each run of all change periods
+        # format [runs, chgperiods, dims]
+        self.best_found_pos_per_run_per_chgp = [
+            [] for _ in range(self.max_n_chgperiod_reps)]
+        # standard deviation and mean of the position of the best found solution
+        # (computed over the change period runs)
+        self.stddev_among_runs_per_chgp = [
+            [] for _ in range(self.max_n_chgperiod_reps)]
+        self.mean_among_runs_per_chgp = [
+            [] for _ in range(self.max_n_chgperiod_reps)]
+
+        # ---------------------------------------------------------------------
+
         assert pred_variant in ["simplest", "a", "b", "c", "d", "g"] and cma_variant == "predcma_external" or \
             pred_variant in ["branke", "f", "h"] and cma_variant == "predcma_internal" or \
             pred_variant is None and cma_variant not in [
@@ -203,7 +239,7 @@ class DynamicCMAES(object):
 
         new_p_sig = (1 - self.c_sig) * self.p_sig_pred + \
             sqrt(self.c_sig * (2 - self.c_sig)) * sqrt(self.mu_w) * diff_vector
-        assert new_p_sig.shape == (self.n,)
+        assert new_p_sig.shape == (self.dim,)
         return new_p_sig
 
     def update_sig_and_m_after_chage(self, m_old, my_pred_mode):
@@ -280,9 +316,9 @@ class DynamicCMAES(object):
                 self.sig = self.p_sig_pred
             elif self.pred_variant == "branke":
                 tmp_mu_best_individuals = get_mue_best_individuals(
-                    self.n, self.mu, self.population, self.population_fitness)
+                    self.dim, self.mu, self.population, self.population_fitness)
                 self.m = get_weighted_avg(
-                    self.n, self.w, tmp_mu_best_individuals)
+                    self.dim, self.w, tmp_mu_best_individuals)
 
                 diff_vals = np.subtract(
                     self.best_found_pos_per_chgperiod[:-1], self.best_found_pos_per_chgperiod[1:])
@@ -304,8 +340,8 @@ class DynamicCMAES(object):
         predictor = build_predictor(self.predictor_name, self.n_time_steps,
                                     self.dim, self.batch_size, self.n_neurons,
                                     self.return_seq, False, self.n_layers,
-                                    self.n_epochs, self.tl_rnn_type, self.n_tllayers,
-                                    self.with_dense_first, self.tl_learn_rate, self.use_uncs,
+                                    self.n_epochs, None, None,
+                                    None, None, self.use_uncs,
                                     self.train_mc_runs, self.train_dropout, self.test_dropout,
                                     self.kernel_size, self.n_kernels, self.lr)
         ar_predictor = None
@@ -332,7 +368,7 @@ class DynamicCMAES(object):
         so_far_best_fit = sys.float_info.max
         so_far_best_ind = None
 
-        for t in range(self.generations):
+        for t in range(self.n_generations):
             glob_opt = self.experiment_data['global_opt_pos_per_gen'][t]
             print("generation , ", t, " glob opt: ", glob_opt)
 
@@ -369,16 +405,17 @@ class DynamicCMAES(object):
                                                                 self.epist_unc_per_chgperiod, self.aleat_unc_per_chgperiod,
                                                                 self.pred_opt_pos_per_chgperiod, self.pred_opt_fit_per_chgperiod,
                                                                 self.kal_variance_per_chgperiod, self.train_error_per_chgperiod,
-                                                                self.train_error_for_epochs_per_chgperiod)
+                                                                self.train_error_for_epochs_per_chgperiod,
+                                                                self.pred_np_rnd_generator)
 
                 if not ar_predictor is None:
                     predictor = ar_predictor
 
                 # (re-)set variables
                 self.update_sig_and_m_after_chage(m_begin_chgp, my_pred_mode)
-                self.p_sig = np.zeros(self.n)
-                self.p_c = np.zeros(self.n)
-                self.C = np.identity(self.n)
+                self.p_sig = np.zeros(self.dim)
+                self.p_c = np.zeros(self.dim)
+                self.C = np.identity(self.dim)
 
             # ---------------------------------------------------------------------
             # eigenvalue decomposition
@@ -392,29 +429,30 @@ class DynamicCMAES(object):
             # ---------------------------------------------------------------------
 
             self.population, self.population_fitness = get_offsprings(
-                self.n, self.m, self.sig, self.lambd, sqrt_of_eig_vals_C, eig_vctrs_C, t)
+                self.dim, self.m, self.sig, self.lambd, sqrt_of_eig_vals_C, eig_vctrs_C, t,
+                self.benchmarkfunction, self.experiment_data, self.cma_np_rnd_generator)
             mu_best_individuals = get_mue_best_individuals(
-                self.n, self.mu, self.population, self.population_fitness)
+                self.dim, self.mu, self.population, self.population_fitness)
 
             # parameter update
-            m_new = get_weighted_avg(self.n, self.w, mu_best_individuals)
+            m_new = get_weighted_avg(self.dim, self.w, mu_best_individuals)
             p_sig_new = get_new_p_sig(
-                self.n, self.c_sig, self.p_sig, self.mu_w, self.m, m_new, self.sig, inv_squareroot_C)
-            h_sig = get_h_sig(p_sig_new, self.c_sig, t, self.n, self.E)
-            p_c_new = get_new_p_c(self.n, self.c_c, self.p_c, h_sig, self.mu_w,
+                self.dim, self.c_sig, self.p_sig, self.mu_w, self.m, m_new, self.sig, inv_squareroot_C)
+            h_sig = get_h_sig(p_sig_new, self.c_sig, t, self.dim, self.E)
+            p_c_new = get_new_p_c(self.dim, self.c_c, self.p_c, h_sig, self.mu_w,
                                   m_new, self.m, self.sig)
-            C_mu = get_C_mu(self.n, mu_best_individuals,
+            C_mu = get_C_mu(self.dim, mu_best_individuals,
                             self.m, self.sig, self.w)
-            C_new = get_new_C(self.n, self.c_1, self.c_mu,
-                              self.C, self.p_c_new, C_mu)
+            C_new = get_new_C(self.dim, self.c_1, self.c_mu,
+                              self.C, p_c_new, C_mu)
             sig_new = get_new_sig(self.sig, self.c_sig,
-                                  self.d_sig, self.p_sig_new, self.E)
+                                  self.d_sig, p_sig_new, self.E)
 
             # ---------------------------------------------------------------------
             # store old variables
             self.glob_opt_per_gen.append(glob_opt)
             self.angle_per_gen.append(
-                visualize_dominant_eigvector(self.n, eig_vals_C, eig_vctrs_C))
+                visualize_dominant_eigvector(self.dim, eig_vals_C, eig_vctrs_C))
             self.sig_per_gen.append(self.sig)
             self.p_sig_per_gen.append(self.p_sig)
             self.h_sig_per_gen.append(h_sig)
@@ -439,8 +477,8 @@ class DynamicCMAES(object):
             self.detected_chgperiods_for_gens.append(self.detected_n_changes)
 
             # best fitness and individual so far in change period
-            so_far_best_fit, so_far_best_ind = self.get_best_fit_and_ind_so_far(
-                so_far_best_fit, self.population, self.population_fitness)
+            so_far_best_fit, so_far_best_ind = get_best_fit_and_ind_so_far(
+                so_far_best_fit, so_far_best_ind, self.population, self.population_fitness)
 
             # best fitness and individual in generation
             min_fitness_index = np.argmin(self.population_fitness)

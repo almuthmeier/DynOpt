@@ -76,7 +76,7 @@ def define_parser_arguments():
 
     # for CMA-ES
     parser.add_argument("-cmavariant", type=str)
-    parser.add_argument("-imprfct", type=float)
+    parser.add_argument("-predvariant", type=str)
 
     # for predictor
     # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, kalman
@@ -156,7 +156,7 @@ def initialize_comparator_manually(comparator):
     path_to_dynoptim = '/'.join(os.path.abspath(os.pardir).split('/')[:])
 
     # benchmark problem
-    comparator.algorithm = "dyncma"  # "dynea"
+    comparator.algorithm = "dyncma"  # "dyncma"  # "dynea"
     comparator.repetitions = 1
     comparator.chgperiodrepetitions = 1
     comparator.chgperiods = 50
@@ -203,8 +203,8 @@ def initialize_comparator_manually(comparator):
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
     # CMA
     elif comparator.algorithm == "dyncma":
-        comparator.cmavariant = "pathcma_prepop"
-        comparator.imprfct = 0
+        comparator.cmavariant = "predcma_internal"
+        comparator.predvariant = "h"
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
@@ -309,7 +309,7 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     # CMA
     elif comparator.algorithm == "dyncma":
         comparator.cmavariant = args.cmavariant
-        comparator.imprfct = args.imprfct
+        comparator.predvariant = args.predvariant
 
     # predictor
     comparator.predictor = args.predictor

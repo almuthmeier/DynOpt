@@ -64,8 +64,8 @@ reinitializationmode="no-RND" # mode for re-initialization of the population: "n
 sigmafactors=0.01,0.1		# list of floats, factors for the sigma environment for random population re-initialization
 
 # CMA-ES
-cmavariant="pathcma_prepop" # variant how CMA-ES includes prediction or path estimation for dynamic
-imprfct=0					# fitness improvement necessary to determine stagnation
+cmavariant="predcma_internal" # variant how CMA-ES includes prediction or path estimation for dynamic
+predvariant="h"				# variant how to calculate sig/m after a change
 
 # predictor
 predictor=no				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, kalman
@@ -144,7 +144,7 @@ outputdirectorypath="/home/ameier/Documents/Promotion/GIT_Lab/DynOptimization/Dy
 -reinitializationmode="$reinitializationmode" \
 -sigmafactors="$sigmafactors" \
 -cmavariant="$cmavariant" \
--imprfct="$imprfct" \
+-predvariant="$predvariant" \
 -predictor="$predictor" \
 -timesteps="$timesteps" \
 -addnoisytraindata="$addnoisytraindata" \

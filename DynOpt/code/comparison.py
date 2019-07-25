@@ -70,7 +70,7 @@ class PredictorComparator(object):
 
         # CMA-ES
         self.cmavariant = None  # str
-        self.imprfct = None  # float # see usage in CMA-ES
+        self.predvariant = None
 
         # predictor
         self.predictor = None  # string
@@ -115,16 +115,16 @@ class PredictorComparator(object):
         self.metrics_file_path = None
         self.logs_file_path = None
 
-    def instantiate_optimization_alg(self):
+    def instantiate_optimization_alg(self, seed_alg_generator, seed_pred_generator):
         from utils.utils_prediction import get_n_neurons
         # random number generators
 
         # random generator for the optimization algorithm
         #  (e.g. for creation of population, random immigrants)
-        alg_np_rnd_generator = np.random.RandomState()
+        alg_np_rnd_generator = np.random.RandomState(seed_alg_generator)
         # so?: np.random.RandomState(random.randint(1, 567))
         # for predictor related stuff: random generator for  numpy arrays
-        pred_np_rnd_generator = np.random.RandomState()
+        pred_np_rnd_generator = np.random.RandomState(seed_pred_generator)
 
         dimensionality = len(self.experiment_data['orig_global_opt_pos'])
         n_generations = self.get_n_generations()
@@ -176,7 +176,7 @@ class PredictorComparator(object):
                                self.traininterval, self.nrequiredtraindata, self.useuncs,
                                self.trainmcruns, self.testmcruns, self.traindropout, self.testdropout,
                                self.kernelsize, self.nkernels, self.lr,
-                               self.cmavariant)
+                               self.cmavariant, self.predvariant)
         else:
             warnings.warn("unknown optimization algorithm")
             exit(1)
@@ -224,11 +224,14 @@ class PredictorComparator(object):
         '''
         np.random.seed(seed)
         random.seed(seed)
+        seed_alg_generator = np.random.randint(1, 654)
+        seed_pred_generator = np.random.randint(732, 1230)
 
         print("\n run: ", repetition_ID, flush=True)
         # =====================================================================
         # instantiate algorithm
-        alg = self.instantiate_optimization_alg()
+        alg = self.instantiate_optimization_alg(
+            seed_alg_generator, seed_pred_generator)
 
         # =====================================================================
 
@@ -285,7 +288,7 @@ class PredictorComparator(object):
             argument_list[-1][0] = i
             # set gpu ID
             argument_list[-1][1] = gpus_for_runs[i]
-            argument_list[-1][1] = seeds_for_runs[i]
+            argument_list[-1][2] = seeds_for_runs[i]
         # execute repetitions of the experiments on different CPUs
         n_kernels = self.ncpus
         '''
