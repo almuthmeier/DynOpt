@@ -226,8 +226,7 @@ class DynamicCMAES(object):
 
         assert pred_variant in ["simplest", "a", "b", "c", "d", "g"] and cma_variant == "predcma_external" or \
             pred_variant in ["branke", "f", "h"] and cma_variant == "predcma_internal" or \
-            pred_variant is "None" and cma_variant not in [
-                "predcma_external", "predcma_internal"]
+            pred_variant == "None" and cma_variant in ["resetcma"]
 
     # =============================================================================
     # for dynamic CMA-ES
