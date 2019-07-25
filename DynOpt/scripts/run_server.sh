@@ -63,7 +63,7 @@ sigmafactors=$5				# list of floats, factors for the sigma environment for rando
 
 # CMA-ES
 cmavariant="predcma_internal" # variant how CMA-ES includes prediction or path estimation for dynamic: "resetcma" "predcma_internal" "predcma_external"
-predvariant="h"				# variant how to calculate sig/m after a change
+predvariant="h"				# variant how to calculate sig/m after a change: "simplest", "a", "b", "c", "d", "g" ,"branke", "f", "ha", "hb", "hd", "hawom", "hbwom", "hdwom"
 
 # predictor
 timesteps=50				# number of previous optima used for the predictions

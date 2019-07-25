@@ -296,19 +296,26 @@ class DynamicCMAES(object):
                 self.p_sig_pred = self.get_new_pred_path(
                     self.best_found_pos_per_chgperiod[-1], self.best_found_pos_per_chgperiod[-2])
                 self.sig = self.p_sig_pred
-            elif self.pred_variant == "h":
+            elif self.pred_variant.startswith("h"):
                 # auskommentieren für hc)
-                self.m = self.m + \
-                    self.best_found_pos_per_chgperiod[-1] - \
-                    self.best_found_pos_per_chgperiod[-2]
-                # ha)
-                #sig = 1
-                # hb) + hc)
-                #sig = np.linalg.norm(m_old - self.best_found_pos_per_chgperiod[-1]) / 2
-                # hd)
-                self.p_sig_pred = self.get_new_pred_path(
-                    m_old, self.best_found_pos_per_chgperiod[-1])
-                self.sig = self.p_sig_pred
+                if not self.pred_variant.endswith("wom"):
+                    # wom = without mean, i.e., no adaptation of the mean
+                    self.m = self.m + \
+                        self.best_found_pos_per_chgperiod[-1] - \
+                        self.best_found_pos_per_chgperiod[-2]
+                if self.pred_variant.startswith("ha"):  # ha)
+                    self.sig = 1
+                elif self.pred_variant.startswith("hb"):  # hb)  [hc) = hbwom]
+                    self.sig = np.linalg.norm(
+                        m_old - self.best_found_pos_per_chgperiod[-1]) / 2
+                elif self.pred_variant.startswith("hd"):  # hd)
+                    self.p_sig_pred = self.get_new_pred_path(
+                        m_old, self.best_found_pos_per_chgperiod[-1])
+                    self.sig = self.p_sig_pred
+                else:
+                    warnings.warn("unknown pred_variant: ", self.pred_variant)
+                    sys.exit()
+
             elif self.pred_variant == "branke":
                 tmp_mu_best_individuals = get_mue_best_individuals(
                     self.dim, self.mu, self.population, self.population_fitness)

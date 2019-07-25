@@ -206,6 +206,8 @@ def initialize_comparator_manually(comparator):
     elif comparator.algorithm == "dyncma":
         # "resetcma" "predcma_internal" "predcma_external"
         comparator.cmavariant = "predcma_internal"
+        # "simplest", "a", "b", "c", "d", "g" ,"branke", "f", "ha", "hb", "hd",
+        # "hawom", "hbwom", "hdwom"
         comparator.predvariant = "h"
 
     # for predictor
