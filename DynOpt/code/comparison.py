@@ -167,6 +167,7 @@ class PredictorComparator(object):
                              self.chgperiodrepetitions)
         elif self.algorithm == "dyncma":
             alg = DynamicCMAES(self.benchmarkfunction, dimensionality,
+                               self.lenchgperiod,
                                n_generations, self.experiment_data, self.predictor,
                                self.trueprednoise, self.lbound, self.ubound,
                                alg_np_rnd_generator, pred_np_rnd_generator,

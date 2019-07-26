@@ -26,7 +26,7 @@ class DynamicCMAES(object):
     '''
 
     def __init__(self,
-                 benchmarkfunction, dim,
+                 benchmarkfunction, dim, lenchgperiod,
                  n_generations, experiment_data, predictor_name,
                  trueprednoise, lbound, ubound,
                  cma_np_rnd_generator, pred_np_rnd_generator,
@@ -44,6 +44,7 @@ class DynamicCMAES(object):
         # ---------------------------------------------------------------------
         self.benchmarkfunction = benchmarkfunction
         self.dim = dim
+        self.lenchgperiod = lenchgperiod
         self.n_generations = n_generations  # TODO rename
         self.experiment_data = experiment_data
         self.predictor_name = predictor_name
@@ -310,7 +311,8 @@ class DynamicCMAES(object):
                         m_old, self.best_found_pos_per_chgperiod[-1])
                     self.sig = self.p_sig_pred
                 else:
-                    sys.exit("Error: unknown pred_variant: " + self.pred_variant)
+                    sys.exit("Error: unknown pred_variant: " +
+                             self.pred_variant)
 
             elif self.pred_variant == "branke":
                 tmp_mu_best_individuals = get_mue_best_individuals(
@@ -372,8 +374,10 @@ class DynamicCMAES(object):
             glob_opt = self.experiment_data['global_opt_pos_per_gen'][t]
             #print("generation , ", t, " glob opt: ", glob_opt)
 
-            env_changed = environment_changed(t, self.population, self.population_fitness,
-                                              self.benchmarkfunction, self.experiment_data, self.cma_np_rnd_generator)
+            # env_changed = environment_changed(t, self.population, self.population_fitness,
+            # self.benchmarkfunction, self.experiment_data,
+            # self.cma_np_rnd_generator)
+            env_changed = t % self.lenchgperiod == 0 and t > 0  # TODO
             if env_changed and t != 0:
                 # print("\nchanged")
                 # count change
