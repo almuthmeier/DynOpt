@@ -17,6 +17,7 @@
 # sphere, rastrigin, rosenbrock
 
 functions=(sphere rastrigin rosenbrock)
+functions=(rastrigin)
 poschgt="sinefreq"
 n=0.00
 #for f in "${functions[@]}"
