@@ -199,7 +199,7 @@ def create_problems(output_parent_dir_path=None):
                         seed = np_rand_gen.randint(4)
                         desired_curv = 10
                         desired_min_acc = 0.5  # no longer used
-                        desired_med_acc = 1.0
+                        desired_med_acc = 5.0
                     opts = generate_sine_fcts_for_multiple_dimensions(dim, n_chg_periods, seed,
                                                                       lbound, ubound, desired_curv,
                                                                       desired_min_acc, desired_med_acc)
