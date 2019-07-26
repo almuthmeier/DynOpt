@@ -9,16 +9,16 @@ dims=(2 5 10 20)
 #predictor
 
 pred1="truepred"
-pred2="no"
+pred2="tcn"
 
 cmavariant1="predcma_external"
-cmavariant2="predcma_internal"
+cmavariant2="predcma_external"
 
 predvariant1="a"
-predvariant2="branke"
+predvariant2="c"
 							
 useuncs1="True"
-useuncs2="False"
+useuncs2="True"
 
 
 algnameaddition1="_$predvariant1"
@@ -78,8 +78,8 @@ for d in "${dims[@]}"
 do
 	#./subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$cmavariant1" "$predvariant1" "$d" &
 	#./subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$cmavariant2" "$predvariant2" "$d" &	
-		sbatch --mem=35G --job-name="$predvariant1" --output="slurm_$predvariant1.%j.out" --error="slurm_$predvariant1.%j.err" subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$cmavariant1" "$predvariant1" "$d" &
-	#	sbatch --mem=35G --job-name="$predvariant2" --output="slurm_$predvariant2.%j.out" --error="slurm_$predvariant2.%j.err" subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$cmavariant2" "$predvariant2" "$d" &
+	#	sbatch --mem=30G --job-name="d$d-$predvariant1" --output="slurm_d$d-$predvariant1.%j.out" --error="slurm_d$d-$predvariant1.%j.err" subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$cmavariant1" "$predvariant1" "$d" &
+		sbatch --mem=30G --job-name="d$d-$predvariant2" --output="slurm_d$d-$predvariant2.%j.out" --error="slurm_d$d-$predvariant2.%j.err" subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$cmavariant2" "$predvariant2" "$d" &
 done
 
 
