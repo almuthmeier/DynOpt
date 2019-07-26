@@ -274,13 +274,13 @@ def update_function_values_from_diff_values(old_values, new_diff_vals):
 
 
 def start_generation():
-    seed = None  # 53
-    dims = 3
+    seed = 4  # None  # 53
+    dims = 2
     n_data = math.ceil(2 * math.pi * 10 * 100)
     desired_curv = 10  # five extremes in base interval [0, pi], ten in [0,2pi]
-    desired_min_vel = 0.5
+    desired_min_vel = 0.5  # no longer used
     desired_med_vel = 0.5
-    min_val = 5
+    min_val = 0
     max_val = 100
 
     _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed,
