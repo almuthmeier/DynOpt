@@ -12,7 +12,7 @@ dims=(2)
 pred1="no"
 pred2="no"
 
-cmavariant1="predcma_internal"
+cmavariant1="resetcma"
 cmavariant2="predcma_internal"
 
 predvariant1="None"
