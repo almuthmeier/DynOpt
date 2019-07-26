@@ -14,11 +14,11 @@ pred2="tcn"
 cmavariant1="predcma_external"
 cmavariant2="predcma_external"
 
-predvariant1="None"
-predvariant2="branke"
+predvariant1="c"
+predvariant2="a"
 							
-useuncs1="c"
-useuncs2="a"
+useuncs1="False"
+useuncs2="True"
 
 
 algnameaddition1="_$predvariant1"
