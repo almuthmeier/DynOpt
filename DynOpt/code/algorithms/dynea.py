@@ -557,19 +557,20 @@ class DynamicEA():
 
                 # prepare data and predict optimum
                 (my_pred_mode,
-                 ar_predictor) = prepare_data_train_and_predict(sess, i, self.dim, predictor,
-                                                                self.experiment_data, self.n_epochs, self.batch_size,
-                                                                self.return_seq, self.shuffle_train_data, self.n_new_train_data,
-                                                                self.best_found_pos_per_chgperiod, self.train_interval,
-                                                                self.predict_diffs, self.n_time_steps, self.n_required_train_data,
-                                                                self.predictor_name, self.add_noisy_train_data,
-                                                                self.n_noisy_series, self.stddev_among_runs_per_chgp,
-                                                                self.test_mc_runs, self.benchmarkfunction, self.use_uncs,
-                                                                self.pred_unc_per_chgperiod, self.aleat_unc_per_chgperiod,
-                                                                self.pred_opt_pos_per_chgperiod, self.pred_opt_fit_per_chgperiod,
-                                                                self.train_error_per_chgperiod,
-                                                                self.train_error_for_epochs_per_chgperiod,
-                                                                glob_opt, self.trueprednoise, self.pred_np_rnd_generator)
+                 ar_predictor,
+                 self.n_new_train_data) = prepare_data_train_and_predict(sess, i, self.dim, predictor,
+                                                                         self.experiment_data, self.n_epochs, self.batch_size,
+                                                                         self.return_seq, self.shuffle_train_data, self.n_new_train_data,
+                                                                         self.best_found_pos_per_chgperiod, self.train_interval,
+                                                                         self.predict_diffs, self.n_time_steps, self.n_required_train_data,
+                                                                         self.predictor_name, self.add_noisy_train_data,
+                                                                         self.n_noisy_series, self.stddev_among_runs_per_chgp,
+                                                                         self.test_mc_runs, self.benchmarkfunction, self.use_uncs,
+                                                                         self.pred_unc_per_chgperiod, self.aleat_unc_per_chgperiod,
+                                                                         self.pred_opt_pos_per_chgperiod, self.pred_opt_fit_per_chgperiod,
+                                                                         self.train_error_per_chgperiod,
+                                                                         self.train_error_for_epochs_per_chgperiod,
+                                                                         glob_opt, self.trueprednoise, self.pred_np_rnd_generator)
                 if not ar_predictor is None:
                     predictor = ar_predictor
 

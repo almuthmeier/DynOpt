@@ -791,4 +791,4 @@ def prepare_data_train_and_predict(sess, gen_idx, n_features, predictor,
         train_error_per_chgperiod.append(train_error)
         train_error_for_epochs_per_chgperiod.append(
             train_err_per_epoch)
-    return my_pred_mode, ar_predictor
+    return my_pred_mode, ar_predictor, n_new_train_data
