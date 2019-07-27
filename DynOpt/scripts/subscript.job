@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:0
 #SBATCH --ntasks=4
 #SBATCH --time=3-00:00
 
@@ -17,7 +17,7 @@
 # sphere, rastrigin, rosenbrock
 
 functions=(sphere rastrigin rosenbrock)
-functions=(rosenbrock)
+#functions=(rosenbrock)
 poschgt="sinefreq"
 n=0.00
 #for f in "${functions[@]}"

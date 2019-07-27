@@ -120,7 +120,7 @@ predictor=$1				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, ka
 
 algnameaddition=$2
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/DynCMA/Ausgaben/output_2019-07-25_DSB_vel-0.5_d-20/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/raid/almuth/DynCMA/Ausgaben/output_2019-07-25_DSB_vel-0.5/$benchmarkfunction/"		# path to output folder
 #outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/DynCMA/output_2019-07-25_DSB_vel-0.5_d-20/$benchmarkfunction/"
 #------------------------------------------------------------------------------
 
