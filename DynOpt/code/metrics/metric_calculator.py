@@ -222,6 +222,10 @@ class MetricCalculator():
         array_file_names_per_run_and_alg = {
             key: [] for key in alg_types}
         print("        alg_types: ", alg_types, flush=True)
+        if "logs" in alg_types and "metrics" in alg_types and "arrays" in alg_types:
+            # no special types for the current algorithm
+            alg_types = [""]
+
         # algorithms with predictor types, e.g. "ea_no"
         for alg in alg_types:
             print("            \n\nalg: ", alg, flush=True)
