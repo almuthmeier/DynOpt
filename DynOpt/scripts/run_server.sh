@@ -95,10 +95,9 @@ ngpus=1    					# number of GPUs to use (for RNN model)
 ncpus=2						# e.g. =n_repetitions; number of CPUs to use (repetitions of any experiment are run parallel)  
 
 # output paths
-#pathaddition="architecture/trainparams" #"firsttest"	# "stepevaluation"
+pathaddition="architecture/trainparams" #"firsttest"	# "stepevaluation"
 #pathadditions="$pathaddition/steps""_""$timesteps"
-#pathadditions="$pathaddition"
-pathadditions=""
+pathadditions="$pathaddition"
 
 # ==================================================================================================================================================
 # ==================================================================================================================================================

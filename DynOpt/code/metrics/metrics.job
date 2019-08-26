@@ -17,7 +17,7 @@ fitchgtypes=none
 #dims=2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 dims=2,5,10,20
 noises=0.00 #,0.01,0.05
-pathaddition="" #"architecture/"
+pathaddition="architecture/"
 metricfilename="output_2019-08-26.csv"
 onlyforpreds="True"			# True if metrics should be computed only over change periods where a prediction was made
 
