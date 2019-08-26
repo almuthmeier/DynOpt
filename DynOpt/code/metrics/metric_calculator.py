@@ -215,16 +215,17 @@ class MetricCalculator():
         # different alg types/predictors
         alg_types = [d for d in listdir(subdir_path) if (
             isdir(join(subdir_path, d)))]
+        if "logs" in alg_types and "metrics" in alg_types and "arrays" in alg_types:
+            # no special types for the current algorithm
+            alg_types = [""]
         # dictionary: for each algorithm  a list of 1d numpy arrays
         # (for each run the array of best found fitness values)
         best_found_fit_per_gen_and_run_and_alg = {
             key: [] for key in alg_types}
         array_file_names_per_run_and_alg = {
             key: [] for key in alg_types}
+
         print("        alg_types: ", alg_types, flush=True)
-        if "logs" in alg_types and "metrics" in alg_types and "arrays" in alg_types:
-            # no special types for the current algorithm
-            alg_types = [""]
 
         # algorithms with predictor types, e.g. "ea_no"
         for alg in alg_types:
