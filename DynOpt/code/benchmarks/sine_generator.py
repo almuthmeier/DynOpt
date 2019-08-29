@@ -61,8 +61,10 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     n_functions = np.random.randint(min_n_functions, max_n_functions)
     print("n_functions: ", n_functions)
 
-    # TODO (exe) must match max_val
-    max_a = 4
+    # maximum amplitude must match max_val (apply root to compute max_a)
+    value_range = max_val - min_val
+    max_a = math.floor(math.pow(value_range / 2, 1 / n_functions))
+    print("max_a: ", max_a)
 
     # depends only on curviness
     max_b = desired_curv / 2
