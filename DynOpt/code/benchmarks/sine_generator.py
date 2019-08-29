@@ -54,7 +54,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     time = time[:n_data]
 
     #============================================
-
+    assert min_val < max_val
     # number of functions to multiply
     min_n_functions = 1
     max_n_functions = 4  # TODO (exe) adapt if desired
@@ -77,10 +77,9 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
 
     # y-movement for the composed function (not for the single ones)
     # Is chosen so that min_val really is the minimum value
-    # "max(...)" because of oscillating function the minimum value of the
-    # function might be the negative (maximally possible) amplitude
     # "math.pow(max_a, n_functions)" maximally possible amplitude
-    y_movement = max(min_val, math.pow(max_a, n_functions))
+    y_movement = min_val + math.pow(max_a, n_functions)
+    print("y_movement: ", y_movement)
     assert math.pow(max_a, n_functions) <= max_val
 
     # 2d array: each row consists of 5 values: the values for parameters a,b,c
@@ -160,6 +159,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
 
     assert len(final_vals) == n_data, "len(final_vals):" + \
         str(len(final_vals)) + " n_data: " + str(n_data)
+    assert np.min(final_vals) >= min_val, "min: " + str(np.min(final_vals))
+    assert np.max(final_vals) <= max_val, "max: " + str(np.max(final_vals))
     return final_vals, new_fcts
 
 
