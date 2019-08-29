@@ -193,16 +193,14 @@ def create_problems(output_parent_dir_path=None):
                     if conference == "GECCO_2019":
                         seed = np_rand_gen.randint(4)
                         desired_curv = 10
-                        desired_min_acc = 0.5  # no longer used
-                        desired_med_acc = 0.5
+                        desired_med_vel = 0.5
                     elif conference == "EvoStar_2020":
                         seed = np_rand_gen.randint(4)
                         desired_curv = 10
-                        desired_min_acc = 0.5  # no longer used
-                        desired_med_acc = 10.0
+                        desired_med_vel = 10.0
                     opts = generate_sine_fcts_for_multiple_dimensions(dim, n_chg_periods, seed,
                                                                       lbound, ubound, desired_curv,
-                                                                      desired_min_acc, desired_med_acc)
+                                                                      desired_med_vel)
                 else:
                     warnings.warn("unknown position change type")
                 opts = np.array(opts)

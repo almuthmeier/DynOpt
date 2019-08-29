@@ -16,7 +16,7 @@ import numpy as np
 
 def generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed,
                                                min_val, max_val, desired_curv,
-                                               desired_min_vel, desired_med_vel):
+                                               desired_med_vel):
     '''
     Generates the optimum movement separately for each dimension.
 
@@ -29,15 +29,14 @@ def generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed,
     for d in range(dims):
         print("d: ", d)
         values, fcts_params = generate_sine_fcts_for_one_dimension(
-            n_chg_periods, desired_curv, desired_min_vel,
-            desired_med_vel, min_val, max_val)
+            n_chg_periods, desired_curv, desired_med_vel, min_val, max_val)
         values_per_dim.append(values)
 
     data = np.transpose(np.array(values_per_dim))
     return data
 
 
-def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_vel,
+def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
                                          desired_med_vel, min_val, max_val):
     '''
     variables used in the following:
@@ -147,7 +146,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_vel,
     # parameters could not be corrected, only the function values)
 
     final_vals, new_fcts = correct_params(
-        fcts, time, desired_min_vel, desired_med_vel)
+        fcts, time, desired_med_vel)
     if do_print:
         print("\nfor all time steps (after correction)")
         min_vel, max_vel, med_vel, _ = compute_velocity_analytically(
@@ -220,56 +219,29 @@ def compute_vals_for_fct(fcts, time):
     return values * f[4] + f[3]
 
 
-def correct_params(fcts, time, desired_min_vel, desired_med_vel):
+def correct_params(fcts, time, desired_med_vel):
     '''
     Corrects medium velocity (also minimum vel. would be possible)
 
     @param fcts: params for already specified functions
     @param desired_min_vel: desired minimum velocity of overall function
     '''
-    correct_min = False
+    # current function values
     values = compute_vals_for_fct(fcts, time)
-
     # current minimum/medium velocity
-    min_vel, _, med_vel, diff_vals = compute_velocity_analytically(values)
-
-    # correct min vel
-    if correct_min:
-        # should not be used in most cases since function values will be
-        # overly large afterwards.
-        missing_min_vel = desired_min_vel - min_vel
-        missing_min_vel_ratio = desired_min_vel / min_vel
-        if missing_min_vel > 0:
-            # to small velocity
-            diff_vals *= missing_min_vel_ratio
-
-        # testing
-        curr_min = np.min(np.abs(diff_vals))
-        assert abs(desired_min_vel - curr_min) < 0.01,  "curr_min: " + str(
-            curr_min) + " desired_min_vel: " + str(desired_min_vel)
-    else:  # correct median velocity (may be too large or too small)
-
-        # desired factor for scaling the composition function
-        missing_med_vel_ratio = desired_med_vel / med_vel
-
-        if False:  # correct differences (more complicated, used until 29.8.19)
-            diff_vals *= missing_med_vel_ratio  # adapt all differences accordingly
-            # update function values
-            corrected_values = update_function_values_from_diff_values(
-                values, diff_vals)
-            # testing
-            curr_med = np.median(np.abs(diff_vals))
-            curr_min = np.min(np.abs(diff_vals))
-            curr_max = np.max(np.abs(diff_vals))
-        else:  # scale function values directly
-            fcts[:, -1] = missing_med_vel_ratio
-            corrected_values = compute_vals_for_fct(fcts, time)
-            curr_min, curr_max, curr_med, _ = compute_velocity_analytically(
-                corrected_values)
-
-        print("curr_min/max/med: ", curr_min, ", ", curr_max, ", ", curr_med)
-        assert abs(desired_med_vel - curr_med) < 0.01,  "curr_med: " + str(
-            curr_med) + " desired_med_vel: " + str(desired_med_vel)
+    _, _, med_vel, _ = compute_velocity_analytically(values)
+    # desired factor for scaling the composition function
+    missing_med_vel_ratio = desired_med_vel / med_vel
+    # store scaling factor
+    fcts[:, -1] = missing_med_vel_ratio
+    # compute corrected function values and velocity
+    corrected_values = compute_vals_for_fct(fcts, time)
+    curr_min, curr_max, curr_med, _ = compute_velocity_analytically(
+        corrected_values)
+    # print and test
+    print("curr_min/max/med: ", curr_min, ", ", curr_max, ", ", curr_med)
+    assert abs(desired_med_vel - curr_med) < 0.01,  "curr_med: " + str(
+        curr_med) + " desired_med_vel: " + str(desired_med_vel)
 
     return corrected_values, fcts
 
@@ -294,14 +266,13 @@ def start_generation():
     dims = 2
     n_data = math.ceil(2 * math.pi * 10 * 100)
     desired_curv = 10  # five extremes in base interval [0, pi], ten in [0,2pi]
-    desired_min_vel = 0.5  # no longer used
     desired_med_vel = 0.5
     min_val = 0
     max_val = 100
 
     _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed,
                                                    min_val, max_val, desired_curv,
-                                                   desired_min_vel, desired_med_vel)
+                                                   desired_med_vel)
 
 
 if __name__ == '__main__':
