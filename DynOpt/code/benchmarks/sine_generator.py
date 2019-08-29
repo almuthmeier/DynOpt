@@ -144,9 +144,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
 
     # correct velocity (after that "fcts" must not be used, since the
     # parameters could not be corrected, only the function values)
+    final_vals, new_fcts = correct_params(fcts, time, desired_med_vel)
 
-    final_vals, new_fcts = correct_params(
-        fcts, time, desired_med_vel)
     if do_print:
         print("\nfor all time steps (after correction)")
         min_vel, max_vel, med_vel, _ = compute_velocity_analytically(
@@ -244,21 +243,6 @@ def correct_params(fcts, time, desired_med_vel):
         curr_med) + " desired_med_vel: " + str(desired_med_vel)
 
     return corrected_values, fcts
-
-
-def update_function_values_from_diff_values(old_values, new_diff_vals):
-    n_vals = len(old_values)
-    new_vals = np.zeros(n_vals)
-    # first value is equal to old value (because it is the starting point)
-    new_vals[0] = old_values[0]
-    # add differences to function values (beginning from starting point)
-    for i in range(1, n_vals):
-        new_vals[i] = new_vals[i - 1] + new_diff_vals[i - 1]
-
-    # testing (differences should be equal before and after correction of vel.)
-    test_diffs = new_vals[1:] - new_vals[:-1]
-    assert np.sum(np.abs(test_diffs - new_diff_vals)) < 0.1
-    return new_vals
 
 
 def start_generation():
