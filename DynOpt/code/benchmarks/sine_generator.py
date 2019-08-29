@@ -28,9 +28,10 @@ def generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed,
     values_per_dim = []
     for d in range(dims):
         print("d: ", d)
-        values_per_dim.append(generate_sine_fcts_for_one_dimension(
+        values, fcts_params = generate_sine_fcts_for_one_dimension(
             n_chg_periods, desired_curv, desired_min_vel,
-            desired_med_vel, min_val, max_val))
+            desired_med_vel, min_val, max_val)
+        values_per_dim.append(values)
 
     data = np.transpose(np.array(values_per_dim))
     return data
@@ -83,15 +84,18 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_vel,
     y_movement = max(min_val, math.pow(max_a, n_functions))
     assert math.pow(max_a, n_functions) <= max_val
 
-    # 2d array: each row consists of 4 values: the values for parameters a,b,c
+    # 2d array: each row consists of 5 values: the values for parameters a,b,c
     # of the base function: a*sin(bx+c), and the fourth value is the vertical
-    # movement of the composed function.
+    # movement of the composed function, and the fifth value is the overall
+    # scaling of the composed function.
     fcts = []
     b_idx = 1  # b is second parameter in the "fcts"-array
+
+    overall_scale = 1  # default; will be updated in correct_params
     for i in range(n_functions):
         a = 0
         b = 0
-        while a == 0:  # must not be zero otherwise is whole function zero
+        while a == 0:  # must not be zero otherwise whole function is zero
             a = get_a_or_b(max_a, a_prob_smaller_one)
         while b == 0:  # must not be zero otherwise function has constant value
             # compute current curviness in order to...
@@ -106,7 +110,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_vel,
                 b = get_a_or_b(curr_max_b, b_prob_smaller_one)
 
         c = np.random.uniform(min_c, max_c)
-        fcts.append([a, b, c, y_movement])
+        fcts.append([a, b, c, y_movement, overall_scale])
         # compute current function values
         vals = a * np.sin(b * time + c)
         if do_print:
@@ -142,7 +146,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_vel,
     # correct velocity (after that "fcts" must not be used, since the
     # parameters could not be corrected, only the function values)
 
-    final_vals = correct_parms(fcts, time, desired_min_vel, desired_med_vel)
+    final_vals, new_fcts = correct_params(
+        fcts, time, desired_min_vel, desired_med_vel)
     if do_print:
         print("\nfor all time steps (after correction)")
         min_vel, max_vel, med_vel, _ = compute_velocity_analytically(
@@ -157,7 +162,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_min_vel,
 
     assert len(final_vals) == n_data, "len(final_vals):" + \
         str(len(final_vals)) + " n_data: " + str(n_data)
-    return final_vals
+    return final_vals, new_fcts
 
 
 def get_a_or_b(max_val, perc_smaller_one):
@@ -165,7 +170,7 @@ def get_a_or_b(max_val, perc_smaller_one):
     Choose random value for parameter (a or b). 
 
     @param perc_smaller_one: percentage with that a value in [0,1) should be 
-    returned. With probability 1- perc_smaller-one the value is in [1,max_val).
+    returned. With probability 1-perc_smaller_one the value is in [1,max_val).
     '''
     if np.random.rand() > perc_smaller_one:
         # param in [0,1)
@@ -203,19 +208,19 @@ def compute_vals_for_fct(fcts, time):
     '''
     Computes product of component sine-functions with specified parameters
 
-    @param fct: 2d array: for each component function one row containing three
+    @param fct: 2d array: for each component function one row containing five
     values: first: a, second: b, third: c (for base function a*sin(bx+c))
-    fourth: y-movement
+    fourth: vertical movement, fifth: overall scaling
     @return 1d array for each time step the function value
     '''
     values = np.ones(len(time))
 
     for f in fcts:
         values *= f[0] * np.sin(f[1] * time + f[2])
-    return values + f[3]
+    return values * f[4] + f[3]
 
 
-def correct_parms(fcts, time, desired_min_vel, desired_med_vel):
+def correct_params(fcts, time, desired_min_vel, desired_med_vel):
     '''
     Corrects medium velocity (also minimum vel. would be possible)
 
@@ -243,19 +248,30 @@ def correct_parms(fcts, time, desired_min_vel, desired_med_vel):
         assert abs(desired_min_vel - curr_min) < 0.01,  "curr_min: " + str(
             curr_min) + " desired_min_vel: " + str(desired_min_vel)
     else:  # correct median velocity (may be too large or too small)
-        missing_med_vel_ratio = desired_med_vel / med_vel
-        diff_vals *= missing_med_vel_ratio  # adapt all difference accordingly
 
-        # testing
-        curr_med = np.median(np.abs(diff_vals))
+        # desired factor for scaling the composition function
+        missing_med_vel_ratio = desired_med_vel / med_vel
+
+        if False:  # correct differences (more complicated, used until 29.8.19)
+            diff_vals *= missing_med_vel_ratio  # adapt all differences accordingly
+            # update function values
+            corrected_values = update_function_values_from_diff_values(
+                values, diff_vals)
+            # testing
+            curr_med = np.median(np.abs(diff_vals))
+            curr_min = np.min(np.abs(diff_vals))
+            curr_max = np.max(np.abs(diff_vals))
+        else:  # scale function values directly
+            fcts[:, -1] = missing_med_vel_ratio
+            corrected_values = compute_vals_for_fct(fcts, time)
+            curr_min, curr_max, curr_med, _ = compute_velocity_analytically(
+                corrected_values)
+
+        print("curr_min/max/med: ", curr_min, ", ", curr_max, ", ", curr_med)
         assert abs(desired_med_vel - curr_med) < 0.01,  "curr_med: " + str(
             curr_med) + " desired_med_vel: " + str(desired_med_vel)
 
-    # update function values
-    corrected_values = update_function_values_from_diff_values(
-        values, diff_vals)
-
-    return corrected_values
+    return corrected_values, fcts
 
 
 def update_function_values_from_diff_values(old_values, new_diff_vals):
