@@ -27,7 +27,7 @@ def generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed,
 
     values_per_dim = []
     for d in range(dims):
-        print("d: ", d)
+        print("\n\nd: ", d)
         values, fcts_params = generate_sine_fcts_for_one_dimension(
             n_chg_periods, desired_curv, desired_med_vel, min_val, max_val)
         values_per_dim.append(values)
@@ -55,6 +55,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
 
     #============================================
     assert min_val < max_val
+
     # number of functions to multiply
     min_n_functions = 1
     max_n_functions = 4  # TODO (exe) adapt if desired
@@ -66,14 +67,16 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     max_a = math.floor(math.pow(value_range / 2, 1 / n_functions))
     print("max_a: ", max_a)
 
-    # depends only on curviness
+    # allowed frequency depends only on curviness
     max_b = desired_curv / 2
 
-    # only positive, since positive and negative movement are the same
+    # only positive, since positive and negative horizontal movement are the
+    # same
     min_c = 0
     max_c = 2 * math.pi
 
-    # probabilities that a or b, respectively, are in [0,1)
+    # probabilities that a or b, respectively, are in [0,1) (chosen
+    # arbitrarily)
     a_prob_smaller_one = 0.2
     b_prob_smaller_one = 0.5
 
@@ -102,6 +105,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
             summed_frequency = 0 if fcts == [] else np.sum(fcts, axis=0)[b_idx]
             # ...compute the maximum possible frequency
             curr_max_b = max_b - summed_frequency
+            print("summed_frequency: ", summed_frequency)
+            print("curr_max_b: ", curr_max_b)
             if i == n_functions - 1:
                 # last time; b must be chosen so that requirements are
                 # fulfilled
@@ -111,59 +116,54 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
 
         c = np.random.uniform(min_c, max_c)
         fcts.append([a, b, c, y_movement, overall_scale])
-        # compute current function values
-        vals = a * np.sin(b * time + c)
         if do_print:
+            # compute current function values
+            vals = a * np.sin(b * time + c)
             min_vel, max_vel, med_vel, _ = compute_velocity_analytically(
                 vals)
-            print("curv: ", compute_curviness_analytically(vals))
-            print("min, max, med: ", (min_vel, max_vel, med_vel))
+            print("min_vel, max_vel, med_vel: ", (min_vel, max_vel, med_vel))
             print("a, b, c: ", a, ", ", b, ", ", c)
 
     fcts = np.array(fcts)
 
+    # correct velocity (after that "fcts" must not be used, since the
+    # parameters could not be corrected, only the function values)
+    final_vals, final_fcts = correct_params(fcts, time, desired_med_vel)
+
+    #============================================
+    # test number data
+    assert len(final_vals) == n_data, "len(final_vals):" + \
+        str(len(final_vals)) + " n_data: " + str(n_data)
+    # test range
+    assert np.min(final_vals) >= min_val, "min: " + str(np.min(final_vals))
+    assert np.max(final_vals) <= max_val, "max: " + str(np.max(final_vals))
+    # test curviness
+    min_vel, max_vel, med_vel, _ = compute_velocity_analytically(final_vals)
+    base_time = np.arange(0, 2 * math.pi, 0.1)
+    final_base_vals = final_vals[:len(base_time)]
+    curr_curv = compute_curviness_analytically(final_base_vals)
+    assert desired_curv == curr_curv, "curv: " + str(curr_curv)
+
     if do_print:
+        print()
         import matplotlib.pyplot as plt
-        print("\nfor base time:")
-        base_time = np.arange(0, 2 * math.pi, 0.1)
-        vals = compute_vals_for_fct(fcts, base_time)
-        min_vel, max_vel, med_vel, _ = compute_velocity_analytically(vals)
-        print("\ncurv: ", compute_curviness_analytically(vals))
+        # curviness
+        print("curr_curv: ", curr_curv)
+        # min, max, med velocity
         print("min, max, med: ", (min_vel, max_vel, med_vel))
-        plt.plot(vals)
+        # function parameters
+        print("final_fcts: ")
+        print(final_fcts)
+        # function values within base interval
+        plt.plot(final_base_vals)
         plt.title("for base time")
         plt.show()
-
-        print("\nfor all time steps")
-        vals = compute_vals_for_fct(fcts, time)
-        min_vel, max_vel, med_vel, _ = compute_velocity_analytically(vals)
-        print("\ncurv: ", compute_curviness_analytically(vals))
-        print("min, max, med: ", (min_vel, max_vel, med_vel))
-        plt.plot(vals)
+        # all function values
+        plt.plot(final_vals)
         plt.title("for all time steps")
         plt.show()
 
-    # correct velocity (after that "fcts" must not be used, since the
-    # parameters could not be corrected, only the function values)
-    final_vals, new_fcts = correct_params(fcts, time, desired_med_vel)
-
-    if do_print:
-        print("\nfor all time steps (after correction)")
-        min_vel, max_vel, med_vel, _ = compute_velocity_analytically(
-            final_vals)
-        base_time = base_time = np.arange(0, 2 * math.pi, 0.1)
-        final_base_vals = final_vals[:len(base_time)]
-        print("\ncurv (base): ", compute_curviness_analytically(final_base_vals))
-        print("min, max, med: ", (min_vel, max_vel, med_vel))
-        plt.plot(final_vals)
-        plt.title("all time steps (after correction)")
-        plt.show()
-
-    assert len(final_vals) == n_data, "len(final_vals):" + \
-        str(len(final_vals)) + " n_data: " + str(n_data)
-    assert np.min(final_vals) >= min_val, "min: " + str(np.min(final_vals))
-    assert np.max(final_vals) <= max_val, "max: " + str(np.max(final_vals))
-    return final_vals, new_fcts
+    return final_vals, final_fcts
 
 
 def get_a_or_b(max_val, perc_smaller_one):
@@ -178,7 +178,7 @@ def get_a_or_b(max_val, perc_smaller_one):
         return np.random.rand()
     else:
         min_val = 1
-        return np.random.uniform(min_val, max_val)
+        return np.random.uniform(min_val, max_val + 1)
 
 
 def compute_curviness_analytically(values):
@@ -238,10 +238,8 @@ def correct_params(fcts, time, desired_med_vel):
     fcts[:, -1] = missing_med_vel_ratio
     # compute corrected function values and velocity
     corrected_values = compute_vals_for_fct(fcts, time)
-    curr_min, curr_max, curr_med, _ = compute_velocity_analytically(
-        corrected_values)
+    _, _, curr_med, _ = compute_velocity_analytically(corrected_values)
     # print and test
-    print("curr_min/max/med: ", curr_min, ", ", curr_max, ", ", curr_med)
     assert abs(desired_med_vel - curr_med) < 0.01,  "curr_med: " + str(
         curr_med) + " desired_med_vel: " + str(desired_med_vel)
 
@@ -252,7 +250,8 @@ def start_generation():
     seed = 4  # None  # 53
     dims = 2
     n_data = math.ceil(2 * math.pi * 10 * 100)
-    desired_curv = 10  # five extremes in base interval [0, pi], ten in [0,2pi]
+    # 10 extremes in base interval [0, pi], ten in [0,2pi]
+    desired_curv = 10
     desired_med_vel = 0.5
     min_val = 0
     max_val = 100
