@@ -5,6 +5,7 @@ Created on Jul 24, 2019
 '''
 import copy
 from math import sqrt, exp
+import warnings
 
 from numpy import linalg as npla
 from scipy import linalg as spla
@@ -36,6 +37,15 @@ def visualize_dominant_eigvector(n, eig_vals, eig_vctrs):
 #------------------------
 
 
+def check_symmetric(A, rtol=1e-20, atol=1e-20):
+    '''
+    Checks whether matrix A is symmetric. Taken from
+    https://stackoverflow.com/questions/42908334/checking-if-a-matrix-is-symmetric-in-numpy (28.8.19)
+    @return: True if matrix A is symmectric
+    '''
+    return np.allclose(A, A.T, rtol=rtol, atol=atol)
+
+
 def get_inverse_sqroot(M):
     '''
     M = TDT^(-1)
@@ -57,6 +67,11 @@ def get_inverse_sqroot(M):
     '''
     # eigenvalues & eigenvectors
     eig_vals, eig_vctrs = npla.eig(M)
+
+    if np.any(np.iscomplex(eig_vals)):
+        print("eig_vals complex", flush=True)
+    if np.any(np.iscomplex(eig_vctrs)):
+        print("\neig_vctrs complex", flush=True)
 
     # diagonal matrix of eigenvalues
     eig_val_diag = np.diag(eig_vals)
@@ -89,13 +104,15 @@ def get_offsprings(n, m, sig, lambd, sqrt_of_eig_vals, eig_vctrs, t,
         y_k = np.matmul(A, z_k)
         x_k = m + sig * y_k
         # x_k is equal to the following line but saves eigendecompositions:
-        # m + sig * cma_np_rnd_generatorndom.multivariate_normal(np.zeros(n), C)
+        # m + sig * cma_np_rnd_generator.multivariate_normal(np.zeros(n), C)
 
         f_k = utils_dynopt.fitness(benchmarkfunction,
                                    x_k, t, experiment_data)
 
         offspring_population[k] = copy.copy(x_k)
         offspring_fitnesses[k] = f_k
+        # if x_k is complex, f_k is unequal to fitness(offspring_population[k])
+        # (28.8.19)
     return offspring_population, offspring_fitnesses
 
 
@@ -176,6 +193,25 @@ def get_new_C(n, c_1, c_mu, C, p_c_new, C_mu):
     third = c_mu * C_mu
     new_C = first + second + third
     assert new_C.shape == (n, n)
+
+    # -----
+    # make matrix (numerically) symmetric, otherwise complex eigenvectors
+
+    # check whether new_C generally is correct
+    assert check_symmetric(new_C, rtol=1e-15, atol=1e-15)
+
+    # round values to make sure that C is symmetric (if 15 or more decimals
+    # are used, sometimes complex eigenvectors occur)
+    new_C = np.around(new_C, decimals=10, out=None)
+
+    # copy the upper triangle to make matrix really symmetric
+    # to the lower one (28.8.19)
+    # https://stackoverflow.com/questions/16444930/copy-upper-triangle-to-lower-triangle-in-a-python-matrix
+    i_lower = np.tril_indices(n, -1)
+    new_C[i_lower] = new_C.T[i_lower]  # make the matrix symmetric
+    assert check_symmetric(new_C, rtol=1e-15, atol=1e-15)
+    # -----
+
     return new_C
 
 
