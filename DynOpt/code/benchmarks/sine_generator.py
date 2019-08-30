@@ -46,12 +46,6 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     '''
 
     do_print = False  # plot data?
-    #============================================
-    step_size = math.pi / 30  # TODO (exe) must fit to curvature
-    # define sampling points
-    max_time_point = math.ceil(n_data * step_size)
-    time = np.arange(0, max_time_point, step_size)
-    time = time[:n_data]
 
     #============================================
     assert min_val < max_val
@@ -87,6 +81,26 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     print("y_movement: ", y_movement)
     assert math.pow(max_a, n_functions) <= max_val
 
+    #============================================
+    # determine step size with Nyquist–Shannon sampling theorem
+    # (step size must match curvature (and frequency))
+    step_size = 1 / (2 * max_b)
+    # step size must me lower than the computed boundary (here it is 1/8th
+    # smaller (chosen arbitrarily))
+    step_size = step_size - (1 / 8) * step_size
+    print("step_size: ", step_size)
+
+    # define sampling points
+    max_time_point = math.ceil(n_data * step_size)
+    time = np.arange(0, max_time_point, step_size)
+    time = time[:n_data]
+
+    # number of time points in base interval [0, 2*pi)
+    n_base_time_points = len(time[time < 2 * math.pi])
+    print("n_base_time_points: ", n_base_time_points)
+
+    #============================================
+
     # 2d array: each row consists of 5 values: the values for parameters a,b,c
     # of the base function: a*sin(bx+c), and the fourth value is the vertical
     # movement of the composed function, and the fifth value is the overall
@@ -113,16 +127,22 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
                 b = curr_max_b
             else:
                 b = get_a_or_b(curr_max_b, b_prob_smaller_one)
+            print("chosen b: ", b)
 
         c = np.random.uniform(min_c, max_c)
         fcts.append([a, b, c, y_movement, overall_scale])
         if do_print:
             # compute current function values
-            vals = a * np.sin(b * time + c)
+            tmp_vals = a * np.sin(b * time + c)
             min_vel, max_vel, med_vel, _ = compute_velocity_analytically(
-                vals)
+                tmp_vals)
             print("min_vel, max_vel, med_vel: ", (min_vel, max_vel, med_vel))
             print("a, b, c: ", a, ", ", b, ", ", c)
+
+            tmp_base_vals = tmp_vals[:n_base_time_points]
+            # plt.plot(tmp_vals)
+            tmp_curv = compute_curviness_analytically(tmp_base_vals)
+            print("tmp_curv: ", tmp_curv)
 
     fcts = np.array(fcts)
 
@@ -139,8 +159,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     assert np.max(final_vals) <= max_val, "max: " + str(np.max(final_vals))
     # test curviness
     min_vel, max_vel, med_vel, _ = compute_velocity_analytically(final_vals)
-    base_time = np.arange(0, 2 * math.pi, 0.1)
-    final_base_vals = final_vals[:len(base_time)]
+    #base_time = np.arange(0, 2 * math.pi, 0.1)
+    final_base_vals = final_vals[:n_base_time_points]
     curr_curv = compute_curviness_analytically(final_base_vals)
     assert desired_curv == curr_curv, "curv: " + str(curr_curv)
 
@@ -185,13 +205,21 @@ def compute_curviness_analytically(values):
     '''
     @param values: for each time step the function values
     '''
+    import matplotlib.pyplot as plt
+    plt.plot(values)
+    plt.show()
+
     diff_vals = values[1:] - values[:-1]
     signs = np.sign(diff_vals)
     sign_chgs = 0
+    n_comparisons = 0
     for i in range(1, len(signs)):
+        n_comparisons += 1
         if (signs[i] == -1 and signs[i - 1] == 1) or \
                 (signs[i] == 1 and signs[i - 1] == -1):
             sign_chgs += 1
+    print("n_comparisons: ", n_comparisons)
+    print("len(signs): ", len(signs))
     return sign_chgs
 
 
