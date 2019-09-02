@@ -52,11 +52,11 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
 
     # number of functions to multiply
     min_n_functions = 1
-    max_n_functions = 10  # TODO (exe) adapt if desired
+    max_n_functions = 4  # TODO (exe) adapt if desired
     n_functions = np.random.randint(min_n_functions, max_n_functions)
     print("n_functions: ", n_functions)
 
-    # maximum amplitude must match max_val (apply root to compute max_a)
+    # maximum amplitude must match value range (apply root to compute max_a)
     value_range = u_bound - l_bound
     max_a = math.floor(math.pow(value_range / 2, 1 / n_functions))
     print("max_a: ", max_a)
@@ -82,7 +82,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     # determine step size with Nyquist–Shannon sampling theorem
     # (step size must match curvature (and frequency))
     step_size = 1 / (2 * max_b)
-    # step size must me lower than the computed boundary (here it is 1/8th
+    # step size must be LOWER than the computed boundary (here it is 1/8th
     # smaller (chosen arbitrarily))
     step_size = step_size - (1 / 8) * step_size
     print("step_size: ", step_size)
@@ -94,8 +94,15 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
 
     # number of time points in base interval [0, 2*pi)
     n_base_time_points = len(time[time < 2 * math.pi])
+    print("n_base_time_points before: ", n_base_time_points)
+    n_base_time_points = 63
     print("n_base_time_points: ", n_base_time_points)
 
+    # curvature larger than n_base_time_points - 2 is not possible (it is
+    # not possible to produce points with more an so many sign-differences).
+    # Even if curv is valid, it often migth be the case that no function will
+    # be produced that satisfies a very large curv.
+    #assert desired_curv <= n_base_time_points - 2
     #============================================
 
     # 2d array: each row consists of 5 values: the values for parameters a,b,c
@@ -144,8 +151,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
             tmp_curv = compute_curviness_analytically(tmp_base_vals)
             print("tmp_curv: ", tmp_curv)
             import matplotlib.pyplot as plt
-            # plt.plot(tmp_base_vals)
-            # plt.show()
+            plt.plot(tmp_base_vals)
+            plt.show()
 
     fcts = np.array(fcts)
 
@@ -318,7 +325,7 @@ def start_generation():
     dims = 2
     n_data = math.ceil(2 * math.pi * 10 * 100)
     # 10 extremes in base interval [0, pi], ten in [0,2pi]
-    desired_curv = 100
+    desired_curv = 10
     desired_med_vel = 0.5
     l_bound = 0
     u_bound = 200
