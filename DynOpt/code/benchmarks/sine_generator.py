@@ -11,6 +11,8 @@ Created on Jan 10, 2019
 @author: ameier
 '''
 import math
+import sys
+
 import numpy as np
 
 
@@ -52,20 +54,18 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
 
     # number of functions to multiply
     min_n_functions = 1
-    max_n_functions = 4  # TODO (exe) adapt if desired
+    max_n_functions = 10  # TODO (exe) adapt if desired
     n_functions = np.random.randint(min_n_functions, max_n_functions)
     print("n_functions: ", n_functions)
+    assert max_n_functions < desired_curv
 
     # maximum amplitude must match value range (apply root to compute max_a)
     value_range = u_bound - l_bound
     max_a = math.floor(math.pow(value_range / 2, 1 / n_functions))
     print("max_a: ", max_a)
 
-    # allowed frequency depends only on curviness
-    max_b = desired_curv / 2
-
-    # only positive, since positive and negative horizontal movement are the
-    # same
+    # horizontal movement only positive, since positive and negative values
+    # have the same effect
     min_c = 0
     max_c = 2 * math.pi
 
@@ -79,30 +79,28 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     y_movement = 0
 
     #============================================
-    # determine step size with Nyquist–Shannon sampling theorem
-    # (step size must match curvature (and frequency))
-    step_size = 1 / (2 * max_b)
-    # step size must be LOWER than the computed boundary (here it is 1/8th
-    # smaller (chosen arbitrarily))
-    step_size = step_size - (1 / 8) * step_size
-    print("step_size: ", step_size)
+    # number sampling points in base interval [0,2pi)
+    n_base_time_points = 100
+    # equidistant points
+    step_size = (2 * math.pi) / n_base_time_points
+    # according to Shannon-Nyquist
+    max_possible_b = 1 / (2 * step_size)
+    max_b = desired_curv / 2  # according to desired curvature
+    assert max_b < max_possible_b
+    # max number extremes in an interval with length 2pi
+    max_possible_curv = 2 * max_possible_b
+    assert desired_curv < max_possible_curv
+    if desired_curv == 0:
+        # TODO implement this case
+        print("case desired_curv==0 not yet implemented")
+        sys.exit()
 
     # define sampling points
     max_time_point = math.ceil(n_data * step_size)
+    print("max_time_point: ", max_time_point)
     time = np.arange(0, max_time_point, step_size)
     time = time[:n_data]
 
-    # number of time points in base interval [0, 2*pi)
-    n_base_time_points = len(time[time < 2 * math.pi])
-    print("n_base_time_points before: ", n_base_time_points)
-    n_base_time_points = 63
-    print("n_base_time_points: ", n_base_time_points)
-
-    # curvature larger than n_base_time_points - 2 is not possible (it is
-    # not possible to produce points with more an so many sign-differences).
-    # Even if curv is valid, it often migth be the case that no function will
-    # be produced that satisfies a very large curv.
-    #assert desired_curv <= n_base_time_points - 2
     #============================================
 
     # 2d array: each row consists of 5 values: the values for parameters a,b,c
@@ -110,49 +108,53 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     # movement of the composed function, and the fifth value is the overall
     # scaling of the composed function.
     fcts = []
+    a_idx = 0
     b_idx = 1  # b is second parameter in the "fcts"-array
+    c_idx = 2
     y_movement_idx = 3
     scaling_idx = 4
 
     overall_scale = 1  # default; will be updated in correct_velocity
+    summed_real_curv = 0
     for i in range(n_functions):
         a = 0
         b = 0
+        # number of functions that also have to be constructed
+        n_remaining_fcts = (n_functions - i) - 1
         while a == 0:  # must not be zero otherwise whole function is zero
             a = get_a_or_b(max_a, a_prob_smaller_one)
         while b == 0:  # must not be zero otherwise function has constant value
             # compute current curviness in order to...
             summed_frequency = 0 if fcts == [] else np.sum(fcts, axis=0)[b_idx]
-            # ...compute the maximum possible frequency
-            curr_max_b = max_b - summed_frequency
-            print("summed_frequency: ", summed_frequency)
-            print("curr_max_b: ", curr_max_b)
+            # ...compute the maximum possible frequency (for each remaining
+            # function at least one extreme must remain; division by 2 to
+            # convert curviness to frequency)
+            curr_max_b = max_b - n_remaining_fcts / 2 - summed_real_curv / 2
             assert curr_max_b >= 0
             if i == n_functions - 1:
                 # last time; b must be chosen so that requirements are
                 # fulfilled
                 b = curr_max_b
+            elif curr_max_b == 0 and i != n_functions:
+                # frequency reached but still functions that have to be created
+                print("frequency reached but still functions that have to be created")
+                sys.exit()
             else:
                 b = get_a_or_b(curr_max_b, b_prob_smaller_one)
-            print("chosen b: ", b)
+            if do_print:
+                print("summed_frequency: ", summed_frequency)
+                print("summed_real_curv----: ", summed_real_curv)
+                print("curr_max_b: ", curr_max_b)
+                print("chosen b: ", b)
 
+        # horizontal movement
         c = np.random.uniform(min_c, max_c)
+        # store (preliminary) values, b probably is corrected afterwards
         fcts.append([a, b, c, y_movement, overall_scale])
-        if do_print:
-            # compute current function values
-            tmp_vals = a * np.sin(b * time + c)
-            min_vel, max_vel, med_vel, _ = compute_velocity_analytically(
-                tmp_vals)
-            print("min_vel, max_vel, med_vel: ", (min_vel, max_vel, med_vel))
-            print("a, b, c: ", a, ", ", b, ", ", c)
-
-            # compute current curviness
-            tmp_base_vals = tmp_vals[:n_base_time_points]
-            tmp_curv = compute_curviness_analytically(tmp_base_vals)
-            print("tmp_curv: ", tmp_curv)
-            import matplotlib.pyplot as plt
-            plt.plot(tmp_base_vals)
-            plt.show()
+        # correct b
+        summed_real_curv, fcts = correct_frequency(a, b, c, fcts, time,
+                                                   n_base_time_points, summed_real_curv,
+                                                   desired_curv, n_remaining_fcts, a_idx, b_idx, c_idx, do_print)
 
     fcts = np.array(fcts)
 
@@ -177,6 +179,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     assert desired_curv == curr_curv, "curv: " + str(curr_curv)
 
     if do_print:
+        import matplotlib.pyplot as plt
         print()
         # curviness
         print("curr_curv: ", curr_curv)
@@ -186,13 +189,13 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
         print("final_fcts: ")
         print(final_fcts)
         # function values within base interval
-        plt.plot(final_base_vals)
-        plt.title("for base time")
-        plt.show()
+        # plt.plot(final_base_vals)
+        #plt.title("for base time")
+        # plt.show()
         # all function values
-        plt.plot(final_vals)
-        plt.title("for all time steps")
-        plt.show()
+        # plt.plot(final_vals)
+        #plt.title("for all time steps")
+        # plt.show()
 
     return final_vals, final_fcts
 
@@ -216,6 +219,21 @@ def get_a_or_b(max_val, perc_smaller_one):
 
     else:
         return np.random.rand() * (max_val - min) + min
+
+
+def compute_single_curviness(a, b, c, time, n_base_time_points):
+    # compute current function values for single function
+    single_vals = a * np.sin(b * time + c)
+    # compute curviness of single function
+    single_base_vals = single_vals[:n_base_time_points]
+    single_curv = compute_curviness_analytically(single_base_vals)
+    return single_curv
+
+
+def compute_composition_curviness(fcts, time, n_base_time_points):
+    compos_vals = compute_vals_for_fct(fcts, time)
+    compos_base_vals = compos_vals[:n_base_time_points]
+    return compute_curviness_analytically(compos_base_vals)
 
 
 def compute_curviness_analytically(values):
@@ -301,6 +319,8 @@ def correct_range(fcts, time, l_bound, u_bound, y_movement_idx):
     possible_range = u_bound - l_bound
     if curr_range > possible_range:
         # nothing possible to do
+        print("curr_min: ", curr_min)
+        print("curr_max: ", curr_max)
         raise Exception("Current range is larger than possible range. No" +
                         " correction possible, otherwise it is not possible" +
                         " to comply with the velocity.")
@@ -310,7 +330,9 @@ def correct_range(fcts, time, l_bound, u_bound, y_movement_idx):
     else:
         # place function in the middle of the possible range
         middle_of_range = l_bound + possible_range / 2
-        fcts[:, y_movement_idx] = middle_of_range
+        curr_middle = curr_min + curr_range / 2
+        movement = middle_of_range - curr_middle
+        fcts[:, y_movement_idx] = movement
     # compute corrected function value
     corrected_values = compute_vals_for_fct(fcts, time)
     # test
@@ -320,15 +342,64 @@ def correct_range(fcts, time, l_bound, u_bound, y_movement_idx):
     return corrected_values, fcts
 
 
+def correct_frequency(a, b, c, fcts, time, n_base_time_points, summed_real_curv,
+                      desired_curv, n_remaining_fcts, a_idx, b_idx, c_idx, do_print):
+    '''
+    Corrects frequency of last generated single function if the curviness of
+    the composition function of all functions generated so far is too large.
+    Also it is corrected when the last single function was generated but the 
+    curviness is still too small.
+    '''
+
+    single_curv = compute_single_curviness(a, b, c, time, n_base_time_points)
+
+    # compute curviness of composition function
+    compos_curv = compute_composition_curviness(fcts, time, n_base_time_points)
+
+    if do_print:
+        print("a, b, c: ", a, ", ", b, ", ", c)
+        print("single_curv: ", single_curv)
+        import matplotlib.pyplot as plt
+        # plt.plot(single_base_vals)
+        # plt.show()
+        print("summed_real_curv: ", summed_real_curv)
+        print("compos_curv:", compos_curv)
+
+    # correct b if curvature of composition function already is too large
+    if compos_curv > desired_curv or (n_remaining_fcts == 0 and compos_curv < desired_curv):
+        # division by 2 to convert curvature into frequency
+        correction_term_b = (
+            (compos_curv + n_remaining_fcts) - desired_curv) / 2
+        print("b: ", b, ", ", fcts[-1][b_idx])
+        print("correction: ", correction_term_b)
+        if correction_term_b != 0:
+            fcts[-1][b_idx] = b - correction_term_b
+            print("new b: ", fcts[-1][b_idx])
+
+    # re-compute single curviness
+    new_single_curv = compute_single_curviness(
+        fcts[-1][a_idx], fcts[-1][b_idx], fcts[-1][c_idx], time, n_base_time_points)
+    new_compos_curv = compute_composition_curviness(
+        fcts, time, n_base_time_points)
+    # sum up curviness of all single functions so far
+    summed_real_curv += new_single_curv
+
+    if do_print:
+        print("new_single_curv: ", new_single_curv)
+        print("new_compos_curv: ", new_compos_curv)
+
+    return summed_real_curv, fcts
+
+
 def start_generation():
     seed = 4  # None  # 53
-    dims = 2
+    dims = 10
     n_data = math.ceil(2 * math.pi * 10 * 100)
     # 10 extremes in base interval [0, pi], ten in [0,2pi]
-    desired_curv = 10
+    desired_curv = 15
     desired_med_vel = 0.5
     l_bound = 0
-    u_bound = 200
+    u_bound = 300
 
     _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed,
                                                    l_bound, u_bound, desired_curv,
