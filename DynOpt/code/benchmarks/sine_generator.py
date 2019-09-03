@@ -175,9 +175,11 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     curr_curv = compute_curviness_analytically(final_base_vals)
     assert desired_curv == curr_curv, "curv: " + str(curr_curv)
 
-    # test velocity
+    # test velocity (approximately)
+    # https://docs.python.org/3/tutorial/floatingpoint.html (3.9.2019)
     min_vel, max_vel, med_vel, _ = compute_velocity_analytically(final_vals)
-    assert med_vel == desired_med_vel, "med_vel: " + str(med_vel)
+    assert format(med_vel, '.12g') == format(
+        desired_med_vel, '.12g'), "med_vel: " + str(med_vel)
 
     #============================================
 
