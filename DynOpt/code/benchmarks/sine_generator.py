@@ -18,28 +18,37 @@ import numpy as np
 
 def generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed,
                                                l_bound, u_bound, desired_curv,
-                                               desired_med_vel):
+                                               desired_med_vel, max_n_functions):
     '''
     Generates the optimum movement separately for each dimension.
 
     @return 2d array: for each change period the optimum position (each row 
     contains one position)
+            3d array: for each dimension the parameters of the generating 
+            functions: [#d, #functions, 5] (are the same parameters for all
+            change periods since the according functions are sampled with the 
+            returned step_size)
+            scalar: step_size
     '''
     np.random.seed(seed)
 
     values_per_dim = []
+    fcts_params_per_dim = []
     for d in range(dims):
         print("\n\nd: ", d)
-        values, fcts_params = generate_sine_fcts_for_one_dimension(
-            n_chg_periods, desired_curv, desired_med_vel, l_bound, u_bound)
+        values, fcts_params, step_size = generate_sine_fcts_for_one_dimension(
+            n_chg_periods, desired_curv, desired_med_vel, l_bound, u_bound, max_n_functions)
         values_per_dim.append(values)
+        param_arr = np.asarray(fcts_params)
+        fcts_params_per_dim.append(param_arr)
 
     data = np.transpose(np.array(values_per_dim))
-    return data
+    params = np.array(fcts_params_per_dim)
+    return data, params, step_size
 
 
-def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
-                                         desired_med_vel, l_bound, u_bound):
+def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
+                                         l_bound, u_bound, max_n_functions):
     '''
     variables used in the following:
     a: amplitude
@@ -47,16 +56,15 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     c: phase shift
     '''
 
-    do_print = True  # plot data?
+    do_print = False  # plot data?
 
     #============================================
     assert l_bound < u_bound
 
     # number of functions to multiply
     min_n_functions = 1
-    max_n_functions = 4  # TODO (exe) adapt if desired
+    max_n_functions = max_n_functions
     n_functions = np.random.randint(min_n_functions, max_n_functions)
-    print("n_functions: ", n_functions)
     assert max_n_functions < desired_curv
 
     # maximum amplitude must match value range (apply root to compute max_a)
@@ -182,15 +190,15 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
         print("final_fcts: ")
         print(final_fcts)
         # function values within base interval
-        # plt.plot(final_base_vals)
-        #plt.title("for base time")
-        # plt.show()
+        plt.plot(final_base_vals)
+        plt.title("for base time")
+        plt.show()
         # all function values
-        # plt.plot(final_vals)
-        #plt.title("for all time steps")
-        # plt.show()
+        plt.plot(final_vals)
+        plt.title("for all time steps")
+        plt.show()
 
-    return final_vals, final_fcts
+    return final_vals, final_fcts, step_size
 
 
 def get_a_or_b(max_val, perc_smaller_one):
@@ -400,17 +408,18 @@ def correct_frequency(fcts, time, n_base_time_points,
 
 def start_generation():
     seed = 4  # None  # 53
-    dims = 13
+    dims = 2
     n_data = math.ceil(2 * math.pi * 10 * 100)
     # 10 extremes in base interval [0, pi], ten in [0,2pi]
-    desired_curv = 15
+    desired_curv = 10
     desired_med_vel = 0.5
     l_bound = 0
-    u_bound = 300
+    u_bound = 100
+    max_n_functions = 4
 
-    _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed,
-                                                   l_bound, u_bound, desired_curv,
-                                                   desired_med_vel)
+    _, _, _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed,
+                                                         l_bound, u_bound, desired_curv,
+                                                         desired_med_vel, max_n_functions)
 
 
 if __name__ == '__main__':

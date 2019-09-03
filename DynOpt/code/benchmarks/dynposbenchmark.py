@@ -55,6 +55,8 @@ def create_problems(output_parent_dir_path=None):
     conference = "EvoStar_2020"
     lbound = 0
     ubound = 100
+    fcts_params_per_dim = None  # only used for sine_generator
+    step_size = None  # only used for sine_generator
     # -------------------------------------------------------------------------
     # for circle movement
 
@@ -198,9 +200,10 @@ def create_problems(output_parent_dir_path=None):
                         seed = np_rand_gen.randint(4)
                         desired_curv = 10
                         desired_med_vel = 10.0
-                    opts = generate_sine_fcts_for_multiple_dimensions(dim, n_chg_periods, seed,
-                                                                      lbound, ubound, desired_curv,
-                                                                      desired_med_vel)
+                        max_n_functions = 4
+                    opts, fcts_params_per_dim, step_size = generate_sine_fcts_for_multiple_dimensions(dim, n_chg_periods, seed,
+                                                                                                      lbound, ubound, desired_curv,
+                                                                                                      desired_med_vel, max_n_functions)
                 else:
                     warnings.warn("unknown position change type")
                 opts = np.array(opts)
@@ -209,7 +212,9 @@ def create_problems(output_parent_dir_path=None):
                     str(dim) + "_chgperiods-" + str(n_chg_periods) + "_" + pos_chng_type + "_" + \
                     fit_chng_type + "_" + day + '_' + time + ".npz"
                 np.savez(ds_file_name, global_opt_fit_per_chgperiod=global_opt_fit,
-                         global_opt_pos_per_chgperiod=opts, orig_global_opt_pos=orig_global_opt_position)
+                         global_opt_pos_per_chgperiod=opts, orig_global_opt_pos=orig_global_opt_position,
+                         fcts_params_per_dim=fcts_params_per_dim,
+                         step_size=step_size)
 
 
 def original_fitness(x, problem):
