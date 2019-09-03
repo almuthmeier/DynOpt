@@ -16,7 +16,7 @@ import sys
 import numpy as np
 
 
-def generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed,
+def generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed, n_base_time_points,
                                                l_bound, u_bound, desired_curv,
                                                desired_med_vel, max_n_functions):
     '''
@@ -37,7 +37,8 @@ def generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed,
     for d in range(dims):
         print("\n\nd: ", d)
         values, fcts_params, step_size = generate_sine_fcts_for_one_dimension(
-            n_chg_periods, desired_curv, desired_med_vel, l_bound, u_bound, max_n_functions)
+            n_chg_periods, desired_curv, desired_med_vel, l_bound, u_bound,
+            max_n_functions, n_base_time_points)
         values_per_dim.append(values)
         param_arr = np.asarray(fcts_params)
         fcts_params_per_dim.append(param_arr)
@@ -48,7 +49,8 @@ def generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed,
 
 
 def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
-                                         l_bound, u_bound, max_n_functions):
+                                         l_bound, u_bound, max_n_functions,
+                                         n_base_time_points):
     '''
     variables used in the following:
     a: amplitude
@@ -77,18 +79,11 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     min_c = 0
     max_c = 2 * math.pi
 
-    # probabilities that a or b, respectively, are in [0,1) (chosen
-    # arbitrarily)
-    a_prob_smaller_one = 0.2
-    b_prob_smaller_one = 0.5
-
     # y-movement for the composed function (not for the single ones)
     # will be set in correct_range()
     y_movement = 0
 
     #============================================
-    # number sampling points in base interval [0,2pi)
-    n_base_time_points = 100
     # equidistant points
     step_size = (2 * math.pi) / n_base_time_points
     # according to Shannon-Nyquist
@@ -130,7 +125,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
         # number of functions that also have to be constructed
         n_remaining_fcts = (n_functions - i) - 1
         while a == 0:  # must not be zero otherwise whole function is zero
-            a = get_a_or_b(max_a, a_prob_smaller_one)
+            a = get_a_or_b(max_a)
         while b == 0:  # must not be zero otherwise function has constant value
             # ...compute the maximum possible frequency (for each remaining
             # function at least one extreme must remain; division by 2 to
@@ -146,7 +141,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
                 print("frequency reached but still functions that have to be created")
                 sys.exit()
             else:
-                b = get_a_or_b(curr_max_b, b_prob_smaller_one)
+                b = get_a_or_b(curr_max_b)
 
         # horizontal movement
         c = np.random.uniform(min_c, max_c)
@@ -166,18 +161,25 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
                                            y_movement_idx)
 
     #============================================
+
     # test number data
     assert len(final_vals) == n_data, "len(final_vals):" + \
         str(len(final_vals)) + " n_data: " + str(n_data)
+
     # test range
     assert np.min(final_vals) >= l_bound, "min: " + str(np.min(final_vals))
     assert np.max(final_vals) <= u_bound, "max: " + str(np.max(final_vals))
 
     # test curviness
-    min_vel, max_vel, med_vel, _ = compute_velocity_analytically(final_vals)
     final_base_vals = final_vals[:n_base_time_points]
     curr_curv = compute_curviness_analytically(final_base_vals)
     assert desired_curv == curr_curv, "curv: " + str(curr_curv)
+
+    # test velocity
+    min_vel, max_vel, med_vel, _ = compute_velocity_analytically(final_vals)
+    assert med_vel == desired_med_vel, "med_vel: " + str(med_vel)
+
+    #============================================
 
     if do_print:
         import matplotlib.pyplot as plt
@@ -201,25 +203,14 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     return final_vals, final_fcts, step_size
 
 
-def get_a_or_b(max_val, perc_smaller_one):
+def get_a_or_b(max_val):
     '''
-    Choose random value for parameter (a or b). 
+    Choose random value for parameter (a or b) within 0 and max_val.
 
-    @param perc_smaller_one: percentage with that a value in [0,1) should be 
-    returned. With probability 1-perc_smaller_one the value is in [1,max_val).
+    @param max_val
     '''
     min = 0  # neither a nor b should be smaller than 0
-    if False:  # TODO
-        # if max_val > 1:
-        if np.random.rand() < perc_smaller_one:
-            # param in [0,1)
-            return np.random.rand()
-        else:
-            min_val = 1
-            return np.random.uniform(min_val, max_val + 1)
-
-    else:
-        return np.random.rand() * (max_val - min) + min
+    return np.random.rand() * (max_val - min) + min
 
 
 def compute_single_curviness(a, b, c, time, n_base_time_points):
@@ -410,14 +401,16 @@ def start_generation():
     seed = 4  # None  # 53
     dims = 2
     n_data = math.ceil(2 * math.pi * 10 * 100)
-    # 10 extremes in base interval [0, pi], ten in [0,2pi]
+    # number sampling points in base interval [0,2pi)
+    n_base_time_points = 100
+    # number extremes in base interval [0, pi] that is devided into 100 points
     desired_curv = 10
     desired_med_vel = 0.5
     l_bound = 0
     u_bound = 100
     max_n_functions = 4
 
-    _, _, _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed,
+    _, _, _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed, n_base_time_points,
                                                          l_bound, u_bound, desired_curv,
                                                          desired_med_vel, max_n_functions)
 
