@@ -54,7 +54,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
 
     # number of functions to multiply
     min_n_functions = 1
-    max_n_functions = 10  # TODO (exe) adapt if desired
+    max_n_functions = 9  # TODO (exe) adapt if desired
     n_functions = np.random.randint(min_n_functions, max_n_functions)
     print("n_functions: ", n_functions)
     assert max_n_functions < desired_curv
@@ -97,7 +97,6 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
 
     # define sampling points
     max_time_point = math.ceil(n_data * step_size)
-    print("max_time_point: ", max_time_point)
     time = np.arange(0, max_time_point, step_size)
     time = time[:n_data]
 
@@ -117,6 +116,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
     overall_scale = 1  # default; will be updated in correct_velocity
     summed_real_curv = 0
     for i in range(n_functions):
+        print("\n function: ", i)
         a = 0
         b = 0
         # number of functions that also have to be constructed
@@ -130,7 +130,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
             # function at least one extreme must remain; division by 2 to
             # convert curviness to frequency)
             curr_max_b = max_b - n_remaining_fcts / 2 - summed_real_curv / 2
-            assert curr_max_b >= 0
+            assert curr_max_b >= 0, "curr_max_b: " + str(curr_max_b)
             if i == n_functions - 1:
                 # last time; b must be chosen so that requirements are
                 # fulfilled
@@ -141,11 +141,6 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv,
                 sys.exit()
             else:
                 b = get_a_or_b(curr_max_b, b_prob_smaller_one)
-            if do_print:
-                print("summed_frequency: ", summed_frequency)
-                print("summed_real_curv----: ", summed_real_curv)
-                print("curr_max_b: ", curr_max_b)
-                print("chosen b: ", b)
 
         # horizontal movement
         c = np.random.uniform(min_c, max_c)
@@ -345,55 +340,97 @@ def correct_range(fcts, time, l_bound, u_bound, y_movement_idx):
 def correct_frequency(a, b, c, fcts, time, n_base_time_points, summed_real_curv,
                       desired_curv, n_remaining_fcts, a_idx, b_idx, c_idx, do_print):
     '''
-    Corrects frequency of last generated single function if the curviness of
+    Corrects frequency of first generated single function if the curviness of
     the composition function of all functions generated so far is too large.
     Also it is corrected when the last single function was generated but the 
     curviness is still too small.
     '''
-
-    single_curv = compute_single_curviness(a, b, c, time, n_base_time_points)
+    f_idx = 0
+    # compute curviness of single function
+    last_single_curv = compute_single_curviness(
+        a, b, c, time, n_base_time_points)
+    summed_real_curv += last_single_curv
+    first_single_curv = compute_single_curviness(
+        fcts[f_idx][a_idx], fcts[f_idx][b_idx], fcts[f_idx][c_idx], time, n_base_time_points)
 
     # compute curviness of composition function
     compos_curv = compute_composition_curviness(fcts, time, n_base_time_points)
+    if len(fcts) > 1:
+        compos_curv_wo_last = compute_composition_curviness(
+            fcts[:-1], time, n_base_time_points)
+    else:
+        compos_curv_wo_last = -1
+    compos_curv_2 = np.sum(fcts, axis=0)[b_idx] * 2
 
     if do_print:
         print("a, b, c: ", a, ", ", b, ", ", c)
-        print("single_curv: ", single_curv)
+        print("last_single_curv: ", last_single_curv)
+        print("first_single_curv:", first_single_curv)
         import matplotlib.pyplot as plt
         # plt.plot(single_base_vals)
         # plt.show()
         print("summed_real_curv: ", summed_real_curv)
         print("compos_curv:", compos_curv)
+        print("compos_curv_wo_last: ", compos_curv_wo_last)
+        print("compos_curv_2:", compos_curv_2)
+    #compos_curv = compos_curv_2
 
+    old_b = fcts[f_idx][b_idx]
     # correct b if curvature of composition function already is too large
-    if compos_curv > desired_curv or (n_remaining_fcts == 0 and compos_curv < desired_curv):
+    n_loops = 0
+    while compos_curv > desired_curv or (n_remaining_fcts == 0 and compos_curv < desired_curv):
+        if compos_curv > desired_curv:
+            print("first case. compos_curv: ", compos_curv)
+        elif (n_remaining_fcts == 0 and compos_curv < desired_curv):
+            print("second case. compos_curv: ", compos_curv)
         # division by 2 to convert curvature into frequency
-        correction_term_b = (
-            (compos_curv + n_remaining_fcts) - desired_curv) / 2
-        print("b: ", b, ", ", fcts[-1][b_idx])
+        correction_term_b = (desired_curv -
+                             (compos_curv + n_remaining_fcts)) / 2
+        print("b: ", fcts[f_idx][b_idx])
         print("correction: ", correction_term_b)
         if correction_term_b != 0:
-            fcts[-1][b_idx] = b - correction_term_b
-            print("new b: ", fcts[-1][b_idx])
-
+            tmp_fcts = np.array(fcts)
+            if correction_term_b < 0:
+                f_idxs = np.argwhere(
+                    tmp_fcts[:, b_idx] > abs(correction_term_b))
+                # take fist one (arbitrarily)
+                f_idx = f_idxs[0, np.random.randint(len(f_idxs[0]))]
+            else:
+                f_idx = np.random.randint(len(fcts))
+            print("fidx: ", f_idx)
+            fcts[f_idx][b_idx] += correction_term_b
+            print("new b: ", fcts[f_idx][b_idx])
+        assert fcts[f_idx][b_idx] > 0
+        compos_curv = compute_composition_curviness(
+            fcts, time, n_base_time_points)
+        n_loops += 1
+        if n_loops > 20:
+            print("sine_generator.correct_frequency(): DSB seems not be able to" +
+                  " correct the frequency. Therefore the process is terminated.")
+            sys.exit()
+    new_b = fcts[f_idx][b_idx]
+    # else:
+    #    return summed_real_curv + single_curv, fcts
     # re-compute single curviness
     new_single_curv = compute_single_curviness(
-        fcts[-1][a_idx], fcts[-1][b_idx], fcts[-1][c_idx], time, n_base_time_points)
+        fcts[f_idx][a_idx], fcts[f_idx][b_idx], fcts[f_idx][c_idx], time, n_base_time_points)
     new_compos_curv = compute_composition_curviness(
         fcts, time, n_base_time_points)
+    new_compos_curv_2 = np.sum(fcts, axis=0)[b_idx] * 2
     # sum up curviness of all single functions so far
-    summed_real_curv += new_single_curv
+    summed_real_curv += new_b - old_b
 
     if do_print:
         print("new_single_curv: ", new_single_curv)
         print("new_compos_curv: ", new_compos_curv)
+        print("new_compos_curv_2: ", new_compos_curv_2)
 
     return summed_real_curv, fcts
 
 
 def start_generation():
     seed = 4  # None  # 53
-    dims = 10
+    dims = 13
     n_data = math.ceil(2 * math.pi * 10 * 100)
     # 10 extremes in base interval [0, pi], ten in [0,2pi]
     desired_curv = 15
