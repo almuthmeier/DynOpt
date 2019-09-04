@@ -62,6 +62,27 @@ class Test(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             reproduced_positions, global_opt_pos_per_chgperiod)
 
+    def testGenerating(self):
+        '''
+        Tests many DSB configurations to examine whether there are bugs.
+        '''
+        n_chg_periods = 1000
+        seed = 252
+        n_base_time_points = 100
+        dims = 5
+        max_n_functions = 2
+        desired_curv = 3
+        desired_med_vel = 2.0
+        l_bound = -300
+        u_bound = 10000
+        for max_n_functions in range(2, 20):
+            for desired_curv in range(max_n_functions + 1, 16):
+                print("max_n_functions: ", max_n_functions)
+                print("desired_curv: ", desired_curv)
+                _, _, _ = generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed, n_base_time_points,
+                                                                     l_bound, u_bound, desired_curv,
+                                                                     desired_med_vel, max_n_functions)
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testParamsReproducible']
