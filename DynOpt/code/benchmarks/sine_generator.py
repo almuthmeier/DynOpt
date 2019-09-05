@@ -128,7 +128,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     fcts[:, a_idx] = get_a_or_b(max_a, n_functions)
 
     # frequencies
-    fcts[:, b_idx] = get_a_or_b(max_a, n_functions)  # too large
+    fcts[:, b_idx] = get_a_or_b(max_b, n_functions)  # too large
     # correct frequencies so that their sum realizes the desired curviness
     fcts[:, b_idx] /= np.sum(fcts[:, b_idx])  # sum is 1
     fcts[:, b_idx] *= (desired_curv / 2)  # sum is desired_curv/2
