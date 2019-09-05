@@ -64,7 +64,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     # number of functions to multiply
     min_n_functions = 1
     n_functions = np.random.randint(min_n_functions, max_n_functions + 1)
-    n_functions = 4
+    n_functions = 4  # TODO
     print("n_functions: ", n_functions)
     assert max_n_functions < desired_curv
 
@@ -83,19 +83,10 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
 
     #============================================
     # equidistant points
-    step_size = (2 * math.pi) / n_base_time_points
-    # according to Shannon-Nyquist
-    max_possible_b = 1 / (2 * step_size)
-    max_possible_curv = 2 * max_possible_b
-    max_b = desired_curv / 2  # according to desired curvature
+    step_size = 1  # arbitrary value, has only marginal influence on functions due to numerical? reasons
+    # according to Shannon-Nyquist (b should be LESS than this border)
+    max_b = 1 / (2 * step_size)
     print("max_b: ", max_b)
-    assert max_b < max_possible_b, " max_b: " + \
-        str(max_b) + " max_possible_b: " + str(max_possible_b) + \
-        " \n                 max_possible_curv: " + \
-        str(max_possible_curv) + " desired_curv: " + str(desired_curv)
-    # max number extremes in an interval with length 2pi
-    max_possible_curv = 2 * max_possible_b
-    assert desired_curv < max_possible_curv
     if desired_curv == 0:
         # TODO implement this case
         print("case desired_curv==0 not yet implemented")
