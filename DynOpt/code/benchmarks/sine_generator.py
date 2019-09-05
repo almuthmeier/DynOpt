@@ -63,8 +63,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
 
     # number of functions to multiply
     min_n_functions = 1
-    max_n_functions = max_n_functions
-    n_functions = np.random.randint(min_n_functions, max_n_functions)
+    n_functions = np.random.randint(min_n_functions, max_n_functions + 1)
+    n_functions = 4
     print("n_functions: ", n_functions)
     assert max_n_functions < desired_curv
 
@@ -74,9 +74,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     print("max_a: ", max_a)
 
     # horizontal movement only positive, since positive and negative values
-    # have the same effect
+    # have the same effect; max_c is determined separately for each function
     min_c = 0
-    max_c = 2 * math.pi
 
     # y-movement for the composed function (not for the single ones)
     # will be set in correct_range()
@@ -87,10 +86,13 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     step_size = (2 * math.pi) / n_base_time_points
     # according to Shannon-Nyquist
     max_possible_b = 1 / (2 * step_size)
+    max_possible_curv = 2 * max_possible_b
     max_b = desired_curv / 2  # according to desired curvature
     print("max_b: ", max_b)
     assert max_b < max_possible_b, " max_b: " + \
-        str(max_b) + " max_possible_b: " + str(max_possible_b)
+        str(max_b) + " max_possible_b: " + str(max_possible_b) + \
+        " \n                 max_possible_curv: " + \
+        str(max_possible_curv) + " desired_curv: " + str(desired_curv)
     # max number extremes in an interval with length 2pi
     max_possible_curv = 2 * max_possible_b
     assert desired_curv < max_possible_curv
@@ -132,7 +134,10 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     fcts[:, b_idx] *= (desired_curv / 2)  # sum is desired_curv/2
 
     # horizontal movement
-    fcts[:, c_idx] = np.random.uniform(min_c, max_c, size=n_functions)
+    for f in fcts:
+        # max_c equals period length. Period = 2pi/frequency
+        max_c = (2 * math.pi) / f[b_idx]
+        f[c_idx] = np.random.uniform(min_c, max_c)
 
     # preliminary y_movement and scaling
     fcts[:, y_movement_idx] = y_movement
@@ -175,6 +180,14 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
 
     if do_print:
         import matplotlib.pyplot as plt
+        # plot component functions
+        for f in fcts:
+            vs = f[a_idx] * \
+                np.sin(f[b_idx] * time[:n_base_time_points] + f[c_idx])
+            plt.plot(vs)
+            plt.title("component function within base interval")
+            plt.show()
+
         print()
         # curviness
         print("curr_curv: ", curr_curv)
@@ -370,17 +383,17 @@ def start_generation():
     do_print = True
 
     seed = 252  # 4  # None  # 53
-    dims = 3  # 2
+    dims = 1  # 2
     n_data = math.ceil(2 * math.pi * 10 * 100)
+    #n_data = 200
     # number sampling points in base interval [0,2pi)
     n_base_time_points = 100
-    # number extremes in base interval [0, pi] that is devided into 100
-    # points
-    desired_curv = 10
-    desired_med_vel = 2.0  # 0.5
-    l_bound = -300  # 0
-    u_bound = 1000  # 100
-    max_n_functions = 9
+    # number extremes in base interval [0, pi]
+    desired_curv = 5
+    desired_med_vel = 0.5  # 0.5
+    l_bound = 0  # 0
+    u_bound = 200  # 100
+    max_n_functions = 4
 
     _, _, _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed, n_base_time_points,
                                                          l_bound, u_bound, desired_curv,
