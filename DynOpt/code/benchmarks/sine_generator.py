@@ -64,9 +64,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     # number of functions to multiply
     min_n_functions = 1
     n_functions = np.random.randint(min_n_functions, max_n_functions + 1)
-    n_functions = 4  # TODO
     print("n_functions: ", n_functions)
-    assert max_n_functions < desired_curv
 
     # maximum amplitude must match value range (apply root to compute max_a)
     value_range = u_bound - l_bound
@@ -175,9 +173,9 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
         for f in fcts:
             vs = f[a_idx] * \
                 np.sin(f[b_idx] * time[:n_base_time_points] + f[c_idx])
-            plt.plot(vs)
-            plt.title("component function within base interval")
-            plt.show()
+            # plt.plot(vs)
+            #plt.title("component function within base interval")
+            # plt.show()
 
         print()
         # curviness
@@ -380,11 +378,11 @@ def start_generation():
     # number sampling points in base interval [0,2pi)
     n_base_time_points = 100
     # number extremes in base interval [0, pi]
-    desired_curv = 5
+    desired_curv = 15
     desired_med_vel = 0.5  # 0.5
     l_bound = 0  # 0
-    u_bound = 200  # 100
-    max_n_functions = 4
+    u_bound = 250000  # 100
+    max_n_functions = 30
 
     _, _, _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed, n_base_time_points,
                                                          l_bound, u_bound, desired_curv,
