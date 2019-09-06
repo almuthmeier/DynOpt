@@ -11,7 +11,9 @@ Created on Jan 10, 2019
 @author: ameier
 '''
 import math
+import random
 import sys
+import warnings
 
 import numpy as np
 
@@ -119,8 +121,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     # frequencies
     fcts[:, b_idx] = get_a_or_b(max_b, n_functions)  # too large
     # correct frequencies so that their sum realizes the desired curviness
-    fcts[:, b_idx] /= np.sum(fcts[:, b_idx])  # sum is 1
-    fcts[:, b_idx] *= (desired_curv / 2)  # sum is desired_curv/2
+    # fcts[:, b_idx] /= np.sum(fcts[:, b_idx])  # sum is 1
+    # fcts[:, b_idx] *= (desired_curv / 2)  # sum is desired_curv/2
 
     # horizontal movement
     for f in fcts:
@@ -137,7 +139,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     if compos_curv != desired_curv:
         compos_curv, fcts = correct_frequency(fcts, time, n_base_time_points,
                                               desired_curv, compos_curv,
-                                              b_idx, do_print)
+                                              b_idx, do_print, max_b)
     # correct velocity
     _, vel_fcts = correct_velocity(fcts, time, desired_med_vel, scaling_idx)
     # correct range
@@ -331,11 +333,12 @@ def correct_range(fcts, time, l_bound, u_bound, y_movement_idx):
 
 
 def correct_frequency(fcts, time, n_base_time_points, desired_curv, compos_curv,
-                      b_idx, do_print):
+                      b_idx, do_print, max_b):
     '''
     Corrects frequencies of the generated single functions if the curviness of
     the composition function comprising all functions generated so far is too large.
     '''
+    n_fcts = len(fcts)
     n_loops = 0
     while compos_curv != desired_curv:
         # ratio to correct the frequency
@@ -346,25 +349,40 @@ def correct_frequency(fcts, time, n_base_time_points, desired_curv, compos_curv,
                   ", desired_curv: ", desired_curv)
             print("ratio: ", ratio)
 
-        # If the correction got stuck correct only some functions. Mathematically
+        # determine function indices where the frequency remains in allowed
+        # range after change
+        idcs = np.argwhere(fcts[:, b_idx] * ratio < max_b)
+        if len(idcs) == 0:
+            # select all functions, since no one would retain correct frequency
+            idcs = np.arange(n_fcts)
+
+        # If the correction got stuck correct only 60% functions. Mathematically
         # this is not exact, but possibly this helps finding a correction.
         if n_loops >= 6 and n_loops < 18:
-            rnd_fcts = np.random.randint(
-                0, len(fcts), size=(math.floor(len(fcts) * 0.6)))
+            # draw a subset of idcs
+            n_samples = min(len(idcs), math.floor(n_fcts * 0.6))
+            rnd_fcts = random.sample(list(idcs), n_samples)
+            # and change the frequencies
             fcts[rnd_fcts, b_idx] *= ratio
-        else:  # normal case: change frequency of all functions
-            fcts[:, b_idx] *= ratio
+        else:  # normal case: change frequency of all selected functions
+            fcts[idcs, b_idx] *= ratio
 
         # re-compute curviness
         compos_curv = compute_composition_curviness(
             fcts, time, n_base_time_points)
         n_loops += 1
         if n_loops > 30:
-            print("sine_generator.correct_frequency(): DSB seems not be able to" +
-                  " correct the frequency. Therefore the process is terminated.")
+            warnings.warn("sine_generator.correct_frequency(): DSB seems not be able to" +
+                          " correct the frequency. Therefore the process is terminated.")
             sys.exit()
     assert compos_curv == desired_curv, "compos_curv: " + str(compos_curv)
-
+    # check whether all b's are within the allowed range (0,max_b)
+    b_in_range = np.all(fcts[:, b_idx] < max_b)
+    if not b_in_range:
+        # warning since not all parts of the function might be sampled
+        warnings.warn(
+            "Some frequencies are outside the allowed range (0, max_b). That"
+            + " might lead to poor sampling of the respective component functions.")
     return compos_curv, fcts
 
 
@@ -378,11 +396,11 @@ def start_generation():
     # number sampling points in base interval [0,2pi)
     n_base_time_points = 100
     # number extremes in base interval [0, pi]
-    desired_curv = 15
+    desired_curv = 50
     desired_med_vel = 0.5  # 0.5
     l_bound = 0  # 0
-    u_bound = 250000  # 100
-    max_n_functions = 30
+    u_bound = 200  # 100
+    max_n_functions = 4
 
     _, _, _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed, n_base_time_points,
                                                          l_bound, u_bound, desired_curv,
