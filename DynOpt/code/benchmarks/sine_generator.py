@@ -33,6 +33,7 @@ def generate_sine_fcts_for_multiple_dimensions(dims, n_chg_periods, seed, n_base
             scalar: step_size
     '''
     np.random.seed(seed)
+    random.seed(seed)
 
     values_per_dim = []
     fcts_params_per_dim = []
@@ -119,15 +120,14 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     fcts[:, a_idx] = get_a_or_b(max_a, n_functions)
 
     # frequencies
-    fcts[:, b_idx] = get_a_or_b(max_b, n_functions)  # too large
-    # correct frequencies so that their sum realizes the desired curviness
-    # fcts[:, b_idx] /= np.sum(fcts[:, b_idx])  # sum is 1
-    # fcts[:, b_idx] *= (desired_curv / 2)  # sum is desired_curv/2
+    fcts[:, b_idx] = get_a_or_b(max_b, n_functions)
+    signs = np.random.choice([-1, 1], n_functions)  # signs
+    fcts[:, b_idx] *= signs
 
     # horizontal movement
     for f in fcts:
         # max_c equals period length. Period = 2pi/frequency
-        max_c = (2 * math.pi) / f[b_idx]
+        max_c = (2 * math.pi) / abs(f[b_idx])
         f[c_idx] = np.random.uniform(min_c, max_c)
 
     # preliminary y_movement and scaling
@@ -351,7 +351,7 @@ def correct_frequency(fcts, time, n_base_time_points, desired_curv, compos_curv,
 
         # determine function indices where the frequency remains in allowed
         # range after change
-        idcs = np.argwhere(fcts[:, b_idx] * ratio < max_b)
+        idcs = np.argwhere(abs(fcts[:, b_idx]) * ratio < max_b)
         if len(idcs) == 0:
             # select all functions, since no one would retain correct frequency
             idcs = np.arange(n_fcts)
@@ -377,7 +377,7 @@ def correct_frequency(fcts, time, n_base_time_points, desired_curv, compos_curv,
             sys.exit()
     assert compos_curv == desired_curv, "compos_curv: " + str(compos_curv)
     # check whether all b's are within the allowed range (0,max_b)
-    b_in_range = np.all(fcts[:, b_idx] < max_b)
+    b_in_range = np.all(abs(fcts[:, b_idx]) < max_b)
     if not b_in_range:
         # warning since not all parts of the function might be sampled
         warnings.warn(
