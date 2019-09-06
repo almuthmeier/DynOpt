@@ -121,8 +121,6 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
 
     # frequencies
     fcts[:, b_idx] = get_a_or_b(max_b, n_functions)
-    signs = np.random.choice([-1, 1], n_functions)  # signs
-    fcts[:, b_idx] *= signs
 
     # horizontal movement
     for f in fcts:
@@ -208,7 +206,12 @@ def get_a_or_b(max_val, n_vals):
     is returned
     '''
     min = 0  # neither a nor b should be smaller than 0
-    return np.random.rand(n_vals) * (max_val - min) + min
+    result = 0
+    while np.any(result == 0):
+        result = np.random.rand(n_vals) * (max_val - min) + min
+    signs = np.random.choice([-1, 1], n_vals)  # signs
+    result *= signs
+    return result
 
 
 def compute_single_curviness(a, b, c, time, n_base_time_points):
@@ -396,7 +399,7 @@ def start_generation():
     # number sampling points in base interval [0,2pi)
     n_base_time_points = 100
     # number extremes in base interval [0, pi]
-    desired_curv = 50
+    desired_curv = 15
     desired_med_vel = 0.5  # 0.5
     l_bound = 0  # 0
     u_bound = 200  # 100
