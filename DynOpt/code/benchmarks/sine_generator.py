@@ -140,7 +140,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
         compos_curv, fcts = correct_frequency(fcts, time, n_base_time_points,
                                               desired_curv, compos_curv,
                                               b_idx, do_print, max_b)
-    # correct velocity
+    # correct velocity (should be done after correction of curviness, otherwise
+    # the velocity could be changed again)
     _, vel_fcts = correct_velocity(fcts, time, desired_med_vel, scaling_idx)
     # correct range
     final_vals, final_fcts = correct_range(vel_fcts, time, l_bound, u_bound,
