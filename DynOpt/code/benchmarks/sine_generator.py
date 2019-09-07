@@ -64,6 +64,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     #============================================
     assert l_bound < u_bound
     assert desired_curv > 0
+    # impossible to achieve more extremes than samples
+    assert desired_curv < n_base_time_points
     # check whether curv is integer; necessary since the curv computed from
     # function values always is integer, i.e., it is only possible to generate
     # integer curviness
@@ -89,7 +91,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
 
     #============================================
     # equidistant points
-    step_size = 1  # arbitrary value, has only marginal influence on functions due to numerical? reasons
+    step_size = 1  # arbitrary value
     # according to Shannon-Nyquist (b should be LESS than this border)
     max_b = 1 / (2 * step_size)
     print("max_b: ", max_b)
