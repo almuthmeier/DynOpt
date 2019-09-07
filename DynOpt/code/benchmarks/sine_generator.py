@@ -172,7 +172,7 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     if do_print:
         import matplotlib.pyplot as plt
         # plot component functions
-        for f in fcts:
+        for f in final_fcts:
             vs = f[a_idx] * \
                 np.sin(f[b_idx] * time[:n_base_time_points] + f[c_idx])
             # plt.plot(vs)
@@ -399,13 +399,13 @@ def start_generation():
     n_data = math.ceil(2 * math.pi * 10 * 100)
     #n_data = 200
     # number sampling points in base interval [0,2pi)
-    n_base_time_points = 500
+    n_base_time_points = 100
     # number extremes in base interval [0, pi]
-    desired_curv = 2
+    desired_curv = 5
     desired_med_vel = 0.5  # 0.5
     l_bound = 0  # 0
     u_bound = 200  # 100
-    max_n_functions = 1
+    max_n_functions = 4
 
     _, _, _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed, n_base_time_points,
                                                          l_bound, u_bound, desired_curv,
