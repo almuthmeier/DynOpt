@@ -63,6 +63,11 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
 
     #============================================
     assert l_bound < u_bound
+    assert desired_curv > 0
+    # check whether curv is integer; necessary since the curv computed from
+    # function values always is integer, i.e., it is only possible to generate
+    # integer curviness
+    assert isinstance(desired_curv, int)
 
     # number of functions to multiply
     min_n_functions = 1
@@ -88,10 +93,6 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
     # according to Shannon-Nyquist (b should be LESS than this border)
     max_b = 1 / (2 * step_size)
     print("max_b: ", max_b)
-    if desired_curv == 0:
-        # TODO implement this case
-        print("case desired_curv==0 not yet implemented")
-        sys.exit()
 
     # define sampling points
     max_time_point = math.ceil(n_data * step_size)
@@ -128,7 +129,8 @@ def generate_sine_fcts_for_one_dimension(n_data, desired_curv, desired_med_vel,
         max_c = (2 * math.pi) / abs(f[b_idx])
         f[c_idx] = np.random.uniform(min_c, max_c)
 
-    # preliminary y_movement and scaling
+    # preliminary y_movement and scaling, are corrected in correct_range() and
+    # correct_velocity(), respectively
     fcts[:, y_movement_idx] = y_movement
     fcts[:, scaling_idx] = overall_scale
 
@@ -361,7 +363,7 @@ def correct_frequency(fcts, time, n_base_time_points, desired_curv, compos_curv,
 
         # If the correction got stuck correct only 60% functions. Mathematically
         # this is not exact, but possibly this helps finding a correction.
-        if n_loops >= 6 and n_loops < 18:
+        if n_loops % 5 == 0:  # check each 5th iteration whether got stuck
             # draw a subset of idcs
             n_samples = min(len(idcs), math.floor(n_fcts * 0.6))
             rnd_fcts = random.sample(list(idcs), n_samples)
@@ -397,13 +399,13 @@ def start_generation():
     n_data = math.ceil(2 * math.pi * 10 * 100)
     #n_data = 200
     # number sampling points in base interval [0,2pi)
-    n_base_time_points = 100
+    n_base_time_points = 500
     # number extremes in base interval [0, pi]
-    desired_curv = 15
+    desired_curv = 2
     desired_med_vel = 0.5  # 0.5
     l_bound = 0  # 0
     u_bound = 200  # 100
-    max_n_functions = 4
+    max_n_functions = 1
 
     _, _, _ = generate_sine_fcts_for_multiple_dimensions(dims, n_data, seed, n_base_time_points,
                                                          l_bound, u_bound, desired_curv,
