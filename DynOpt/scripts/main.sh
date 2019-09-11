@@ -16,7 +16,7 @@ cmavariant1="predcma_internal"
 cmavariant2="predcma_internal"
 
 predvariant1="branke"
-predvariant2="hdwom"
+predvariant2="hd"
 							
 useuncs1="False"
 useuncs2="False"
