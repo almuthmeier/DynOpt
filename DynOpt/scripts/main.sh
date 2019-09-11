@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dims=(2 20)
+dims=(2) #20)
 #dims=(5 10)
 
 
