@@ -13,10 +13,10 @@ pred1="no"
 pred2="no"
 
 cmavariant1="predcma_internal"
-cmavariant2="resetcma"
+cmavariant2="predcma_internal"
 
 predvariant1="branke"
-predvariant2="None"
+predvariant2="hdwom"
 							
 useuncs1="False"
 useuncs2="False"
