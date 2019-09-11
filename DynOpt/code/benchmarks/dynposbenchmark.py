@@ -199,7 +199,7 @@ def create_problems(output_parent_dir_path=None):
                     elif conference == "EvoStar_2020":
                         seed = np_rand_gen.randint(4)
                         desired_curv = 10
-                        desired_med_vel = 1.0
+                        desired_med_vel = 5.0
                         max_n_functions = 4
                         n_base_time_points = 100
                     opts, fcts_params_per_dim, step_size = generate_sine_fcts_for_multiple_dimensions(dim, n_chg_periods, seed,
