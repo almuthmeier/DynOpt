@@ -349,6 +349,11 @@ def correct_frequency(fcts, time, n_base_time_points, desired_curv, compos_curv,
     n_fcts = len(fcts)
     n_loops = 0
     while compos_curv != desired_curv:
+        if compos_curv == 0:
+            # can occur e.g. if there is only one function and its frequency
+            # has been chosen near zero. Then, we set it to a small value larger
+            # zero to prevent division by zero.
+            compos_curv = 0.1
         # ratio to correct the frequency
         ratio = desired_curv / compos_curv
 
