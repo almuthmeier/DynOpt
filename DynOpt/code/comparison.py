@@ -214,7 +214,9 @@ class PredictorComparator(object):
                  stddev_among_runs_per_chgp=alg.stddev_among_runs_per_chgp,
                  mean_among_runs_per_chgp=alg.mean_among_runs_per_chgp,
                  pred_unc_per_chgperiod=alg.pred_unc_per_chgperiod,
-                 aleat_unc_per_chgperiod=alg.aleat_unc_per_chgperiod)
+                 aleat_unc_per_chgperiod=alg.aleat_unc_per_chgperiod,
+                 # only for CMA-ES
+                 sig_per_gen=alg.sig_per_gen, m_per_gen=alg.m_per_gen)
 
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):
         '''

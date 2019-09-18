@@ -191,6 +191,10 @@ class DynamicCMAES(object):
         # global optimum
         self.glob_opt_per_gen = []
 
+        # sigma and mean
+        self.sig_per_gen = []
+        self.m_per_gen = []
+
         # ---------------------------------------------------------------------
         # for EA (evaluation of variance) (repetitions of change periods)
         # not used for CMA-ES, only for similar output files like EA
@@ -464,6 +468,8 @@ class DynamicCMAES(object):
             # self.p_c_per_gen.append(self.p_c)
             # self.p_sig_pred_per_gen.append(self.p_sig_pred_per_gen)
             # self.m_per_gen.append(self.m)
+            self.sig_per_gen.append(self.sig)
+            self.m_per_gen.append(self.m)
 
             # ---------------------------------------------------------------------
             # set variables for next generation
