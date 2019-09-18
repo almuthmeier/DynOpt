@@ -592,7 +592,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     # convert predicted difference into position (tcn has already re-scaled and
     # added the values in the sub-functions)
     # TODO (dev) add possibly predictor type
-    if predict_diffs and mode != "tcn":
+    if predict_diffs and mode != "tcn" and mode != "truepred":
         prediction = np.add(best_found_pos_per_chgperiod[-1], prediction)
     return prediction, train_error, train_err_per_epoch, pred_unc, avg_al_unc, ar_predictor
 
