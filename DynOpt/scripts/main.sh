@@ -10,16 +10,16 @@ dims=(2 5 10 20)
 #predictor
 
 pred1="no"
-pred2="truepred"
+pred2="no"
 
-cmavariant1="predcma_internal"
-cmavariant2="predcma_external"
+cmavariant1="resetcma"
+cmavariant2="predcma_internal"
 
-predvariant1="branke"
-predvariant2="a"
+predvariant1="None"
+predvariant2="hdwom"
 							
 useuncs1="False"
-useuncs2="True"
+useuncs2="False"
 
 
 algnameaddition1="_$predvariant1"
