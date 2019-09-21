@@ -9,7 +9,7 @@
 #SBATCH --error="slurm_benchmarks.%j.err"
 
 
-benchmarkfunctionfolderpath="/raid/almuth/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-5.0"
+benchmarkfunctionfolderpath="/raid/almuth/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-10.0"
 
 
 # -----------------------------------------------------------------------------
