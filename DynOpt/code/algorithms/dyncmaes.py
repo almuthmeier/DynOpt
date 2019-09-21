@@ -195,6 +195,8 @@ class DynamicCMAES(object):
         self.sig_per_gen = []
         self.m_per_gen = []
 
+        self.p_sig_pred_per_chgp = []
+
         # ---------------------------------------------------------------------
         # for EA (evaluation of variance) (repetitions of change periods)
         # not used for CMA-ES, only for similar output files like EA
@@ -249,6 +251,7 @@ class DynamicCMAES(object):
         if my_pred_mode == "no" and self.predictor_name != "no":
             # there are not yet enough training data -> reset sigma
             self.sig = 1
+            self.p_sig_pred_per_chgp.append(self.p_sig_pred)
             return
 
         # get prediction&uncertainty if available
@@ -338,6 +341,7 @@ class DynamicCMAES(object):
             else:
                 sys.exit("Error: unknown cma_variant: " + self.cma_variant)
 
+        self.p_sig_pred_per_chgp.append(self.p_sig_pred)
     # =============================================================================
 
     def optimize(self):
