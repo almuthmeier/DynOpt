@@ -54,7 +54,7 @@ def create_problems(output_parent_dir_path=None):
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "EvoStar_2020"
     lbound = 0
-    ubound = 100
+    ubound = 900
     fcts_params_per_dim = None  # only used for sine_generator
     step_size = None  # only used for sine_generator
     # -------------------------------------------------------------------------
