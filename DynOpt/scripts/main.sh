@@ -11,11 +11,11 @@ dims=(2 5 10 20)
 pred1="no"
 pred2="no"
 
-cmavariant1="predcma_internal"
+cmavariant1="resetcma"
 cmavariant2="predcma_internal"
 
-predvariant1="hd"
-predvariant2="hdwom"
+predvariant1="None"
+predvariant2="branke"
 							
 useuncs1="False"
 useuncs2="False"
