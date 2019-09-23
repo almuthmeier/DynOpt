@@ -242,8 +242,9 @@ class DynamicCMAES(object):
     def get_new_pred_path(self, diff_elem_0, diff_elem_1):
         diff_vector = np.linalg.norm(diff_elem_0 - diff_elem_1) / 2
 
-        new_p_sig = (1 - self.c_sig) * self.p_sig_pred + \
-            sqrt(self.c_sig * (2 - self.c_sig)) * sqrt(self.mu_w) * diff_vector
+        # new_p_sig = (1 - self.c_sig) * self.p_sig_pred + \
+        #    sqrt(self.c_sig * (2 - self.c_sig)) * sqrt(self.mu_w) * diff_vector
+        new_p_sig = 0.5 * self.p_sig_pred + 0.5 * diff_vector
         assert new_p_sig.shape == (self.dim,)
         return new_p_sig
 
