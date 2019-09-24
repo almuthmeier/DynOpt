@@ -10,6 +10,7 @@ Created on May 15, 2018
 import os
 from os.path import isdir, join
 from posix import listdir
+import warnings
 
 from metrics.metrics_dynea import best_error_before_change, arr,\
     rel_conv_speed, avg_bog_for_one_run, rmse
@@ -44,7 +45,10 @@ class MetricCalculator():
                                       [:-1]) + "/output/"
             self.output_dir_path = path_to_output + \
                 "GECCO_2019/"
+            self.output_dir_path = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/output_2019-09-11_DSB_vel-0.5/tests_for_examination/"
+            self.output_dir_path = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/output_2019-09-11_DSB_vel-0.5/"
             self.benchmark_folder_path = path_to_datasets + "GECCO_2019/"
+            self.benchmark_folder_path = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/data_2019-09-11_newDSB/vel-0.5/"
             # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy,griewank
             self.benchmarkfunctions = ["sphere"]
             # ["linear", "sine", "circle"]
@@ -52,7 +56,7 @@ class MetricCalculator():
             self.fitchgtypes = ["none"]
             self.dims = [2]
             self.noises = [0.0]
-            self.path_addition = ""
+            self.path_addition = "architecture/"
             self.metric_filename = "metric_db.csv"
             self.only_for_preds = True
 
@@ -373,4 +377,5 @@ def start_computing_metrics(benchmarkfunctionfolderpath=None, outputpath=None,
 
 
 if __name__ == '__main__':
+    warnings.simplefilter("always")  # prints every warning
     start_computing_metrics()

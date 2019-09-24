@@ -30,9 +30,9 @@ class StatisticalTestsCalculator():
         #self.metric_file_path = self.metric_path + "metric_db_sigmas_2019-01-22.csv"
         #self.stattest_dir_path = self.metric_path + "stattests/"
 
-        self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/output_2019-04-23_alle_DSB/"
+        self.metric_path = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/output_2019-09-23_vel-0.1/"
         self.metric_file_path = self.metric_path + \
-            "output_2019-04-23_alle_DSB.csv"
+            "output_2019-09-23_mit-Ros.csv"
         self.stattest_dir_path = self.metric_path + "stattests/"
 
     def select_rows_for_alg(self, df, alg, exp):
@@ -225,6 +225,7 @@ if __name__ == "__main__":
             "dynea_no"
             ]
 
+    # for Uncertainty (ICANN 2019)
     algs = ["dynea_no_noRND",
             "dynea_no_noVAR",
             "dynea_no_noPRE",
@@ -240,6 +241,16 @@ if __name__ == "__main__":
             "dynea_tcn_auto_predDEV",
             "dynea_tcn_auto_predUNC",
             "dynea_tcn_auto_predKAL"
+            ]
+
+    # for DynCMA (EvoStar2020)
+    algs = ["dyncma_no_None",
+            "dyncma_no_branke",
+            "dyncma_no_hdwom",
+            "dyncma_no_hd",
+            "dyncma_tcn_c",
+            "dyncma_tcn_a",
+            "dyncma_truepred_a"
             ]
     col_algs = [a for a in algs[1:]]
     row_algs = [a for a in algs[:-1]]
