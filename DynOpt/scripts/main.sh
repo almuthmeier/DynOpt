@@ -8,13 +8,13 @@ dims=(2 5 10 20)
 
 #predictor
 
-pred1="truepred"
+pred1="tcn"
 pred2="no"
 
 cmavariant1="predcma_external"
 cmavariant2="predcma_internal"
 
-predvariant1="a"
+predvariant1="d"
 predvariant2="branke"
 							
 useuncs1="True"
