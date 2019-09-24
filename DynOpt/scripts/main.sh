@@ -8,20 +8,20 @@ dims=(2 5 10 20)
 
 #predictor
 
-pred1="tcn"
+pred1="no"
 pred2="no"
 
-cmavariant1="predcma_external"
+cmavariant1="static"
 cmavariant2="predcma_internal"
 
-predvariant1="d"
+predvariant1="None"
 predvariant2="branke"
 							
-useuncs1="True"
+useuncs1="False"
 useuncs2="False"
 
 
-algnameaddition1="_$predvariant1"
+algnameaddition1="_static_$predvariant1"
 algnameaddition2="_$predvariant2"
 
 # ----------------------------------------------------------------------------
