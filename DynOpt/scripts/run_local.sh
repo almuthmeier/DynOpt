@@ -64,7 +64,7 @@ reinitializationmode="no-RND" # mode for re-initialization of the population: "n
 sigmafactors=0.01,0.1		# list of floats, factors for the sigma environment for random population re-initialization
 
 # CMA-ES
-cmavariant="predcma_internal" # variant how CMA-ES includes prediction or path estimation for dynamic: "resetcma" "predcma_internal" "predcma_external"
+cmavariant="predcma_internal" # variant how CMA-ES includes prediction or path estimation for dynamic: "static" "resetcma" "predcma_internal" "predcma_external"
 predvariant="hd"				# variant how to calculate sig/m after a change: "simplest", "a", "b", "c", "d", "g" ,"branke", "f", "ha", "hb", "hd", "hawom", "hbwom", "hdwom"
 
 # predictor

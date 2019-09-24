@@ -204,17 +204,17 @@ def initialize_comparator_manually(comparator):
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
     # CMA
     elif comparator.algorithm == "dyncma":
-        # "resetcma" "predcma_internal" "predcma_external"
-        comparator.cmavariant = "predcma_external"
+        # "static" "resetcma" "predcma_internal" "predcma_external"
+        comparator.cmavariant = "static"
         # "simplest", "a", "b", "c", "d", "g" ,"branke", "f", "ha", "hb", "hd",
         # "hawom", "hbwom", "hdwom", "None"
         # TODO (ist "simplest" ueberhaupt noch moeglich?)
-        comparator.predvariant = "a"
+        comparator.predvariant = "None"
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
     # "truepred" (true prediction, disturbed with known noise)
-    comparator.predictor = "truepred"
+    comparator.predictor = "no"
     # known prediction noise (standard deviation) of predition "truepred"
     comparator.trueprednoise = 0.1
     comparator.timesteps = 4
