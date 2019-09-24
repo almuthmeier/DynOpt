@@ -160,14 +160,14 @@ def initialize_comparator_manually(comparator):
     comparator.algorithm = "dyncma"  # "dyncma"  # "dynea"
     comparator.repetitions = 1
     comparator.chgperiodrepetitions = 1
-    comparator.chgperiods = 50
+    comparator.chgperiods = 90
     comparator.lenchgperiod = 10
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     #comparator.benchmarkfunctionfolderpath = path_to_dynoptim + "/DynOpt/datasets/" + "GECCO_2019/"
-    comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/data_2019-01-19_final/"
+    comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/data_2019-09-11_newDSB/vel-0.5/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_no/"
+    comparator.outputdirectory = "ersterTest/cma_truepred/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "EvoStar_2020/" + "sphere/"
     comparator.lbound = 0
@@ -177,7 +177,7 @@ def initialize_comparator_manually(comparator):
     # ["linear", "sine", "circle", "mixture"])
     comparator.poschgtypes = np.array(["sinefreq"])
     comparator.fitchgtypes = np.array(["none"])
-    comparator.dims = np.array([2])
+    comparator.dims = np.array([10])
     # TODO must not be a list (otherwise: log-file name is wrong)
     comparator.noises = np.array([0.0])
 
@@ -205,22 +205,23 @@ def initialize_comparator_manually(comparator):
     # CMA
     elif comparator.algorithm == "dyncma":
         # "resetcma" "predcma_internal" "predcma_external"
-        comparator.cmavariant = "predcma_internal"
+        comparator.cmavariant = "predcma_external"
         # "simplest", "a", "b", "c", "d", "g" ,"branke", "f", "ha", "hb", "hd",
-        # "hawom", "hbwom", "hdwom"
-        comparator.predvariant = "hd"
+        # "hawom", "hbwom", "hdwom", "None"
+        # TODO (ist "simplest" ueberhaupt noch moeglich?)
+        comparator.predvariant = "a"
 
     # for predictor
     # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
     # "truepred" (true prediction, disturbed with known noise)
     comparator.predictor = "truepred"
     # known prediction noise (standard deviation) of predition "truepred"
-    comparator.trueprednoise = 0.0
+    comparator.trueprednoise = 0.1
     comparator.timesteps = 4
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 5
     comparator.nrequiredtraindata = 10
-    comparator.useuncs = False
+    comparator.useuncs = True
     comparator.trainmcruns = 5 if comparator.useuncs else 0
     comparator.testmcruns = 5 if comparator.useuncs else 0
     comparator.traindropout = 0.1
@@ -454,6 +455,7 @@ if __name__ == '__main__':
 
     np.random.seed(7)
     random.seed(98)
+    warnings.simplefilter("always")  # prints every warning
 
     # this import has to be done before imports of own packages
     import multiprocessing as mp
