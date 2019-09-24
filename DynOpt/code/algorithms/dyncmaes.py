@@ -232,9 +232,9 @@ class DynamicCMAES(object):
 
         # ---------------------------------------------------------------------
 
-        assert pred_variant in ["simplest", "a", "b", "c", "d", "g"] and cma_variant == "predcma_external" or \
-            (pred_variant in ["branke", "f"] or pred_variant.startswith("h")) and cma_variant == "predcma_internal" or \
-            pred_variant == "None" and cma_variant in ["resetcma"]
+        assert (pred_variant in ["simplest", "a", "b", "c", "d", "g"] and cma_variant == "predcma_external") or \
+            ((pred_variant in ["branke", "f"] or pred_variant.startswith("h")) and cma_variant == "predcma_internal") or \
+            pred_variant == "None" and cma_variant in ["static", "resetcma"]
 
     # =============================================================================
     # for dynamic CMA-ES
@@ -335,6 +335,8 @@ class DynamicCMAES(object):
                 self.sig = s / 2
             else:
                 sys.exit("Error: unknown pred_variant: " + self.pred_variant)
+        elif self.cma_variant == "static":
+            pass
         else:
             if self.cma_variant in ["resetcma", "predcma_internal", "predcma_external"]:
                 # is the case e.g. when not yet enough predictions were made
