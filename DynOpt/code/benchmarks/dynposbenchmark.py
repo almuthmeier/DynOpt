@@ -54,7 +54,7 @@ def create_problems(output_parent_dir_path=None):
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
     conference = "EvoStar_2020"
     lbound = 0
-    ubound = 900
+    ubound = 15000
     fcts_params_per_dim = None  # only used for sine_generator
     step_size = None  # only used for sine_generator
     # -------------------------------------------------------------------------
@@ -199,7 +199,7 @@ def create_problems(output_parent_dir_path=None):
                     elif conference == "EvoStar_2020":
                         seed = np_rand_gen.randint(4)
                         desired_curv = 10
-                        desired_med_vel = 10.0
+                        desired_med_vel = 100.0
                         max_n_functions = 4
                         n_base_time_points = 100
                     opts, fcts_params_per_dim, step_size = generate_sine_fcts_for_multiple_dimensions(dim, n_chg_periods, seed,
