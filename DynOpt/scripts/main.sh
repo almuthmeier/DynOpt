@@ -20,7 +20,7 @@ predvariant2="c"
 useuncs1="True"
 useuncs2="True"
 
-algnameaddition1="_static_$predvariant1"
+algnameaddition1="_$predvariant1" #"_static_$predvariant1"
 algnameaddition2="_$predvariant2"
 
 # ----------------------------------------------------------------------------
