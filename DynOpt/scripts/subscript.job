@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#SBATCH --gres=gpu:0
 #SBATCH --ntasks=4
 #SBATCH --time=3-00:00
 
