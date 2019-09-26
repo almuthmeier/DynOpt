@@ -19,8 +19,7 @@ import pandas as pd
 from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
 from utils.utils_files import get_array_names_for_ks_and_filters
 from utils.utils_files import select_experiment_files,\
-    get_sorted_array_file_names_for_experiment_file_name, \
-    get_info_from_array_file_name, get_run_number_from_array_file_name
+    get_sorted_array_file_names_for_experiment_file_name
 from utils.utils_prediction import get_first_chgp_idx_with_pred
 from utils.utils_prediction import get_first_generation_idx_with_pred
 
@@ -208,6 +207,50 @@ class MetricCalculator():
         # save data frame into file (index=False --> no row indices)
         df.to_csv(self.output_dir_path + self.metric_filename, index=False)
 
+    def get_experiment_metadata(self, alg_types, subdir_path, exp_file_name, ks, filters):
+        '''
+        Checks whether there is one algorithm that has employed a prediction.
+        Based on this, for all algorithms the same values for
+        first_chgp_idx_with_pred and first_gen_idx_with_pred are determined.
+        '''
+        n_preds = 0
+        for alg in alg_types:
+            # read all array files for the runs of the experiment
+            arrays_path = subdir_path + alg + "/arrays/"
+            array_names = get_sorted_array_file_names_for_experiment_file_name(exp_file_name,
+                                                                               arrays_path)
+            if ks is not None and filters is not None:
+                array_names = get_array_names_for_ks_and_filters(
+                    array_names, ks, filters)
+            #print("                array_names: ", array_names, flush=True)
+            first_arr_name = array_names[0]
+
+            # load first array file
+            file = np.load(arrays_path + first_arr_name)
+            real_chgperiods_for_gens = file['real_chgperiods_for_gens']
+            pred_opt_pos_per_chgperiod = file['pred_opt_pos_per_chgperiod']
+            best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
+            file.close()
+
+            # check whether
+            if len(pred_opt_pos_per_chgperiod) != 0:
+                n_preds = len(pred_opt_pos_per_chgperiod)
+                break  # exit loop
+        # if n_preds == 0:
+        #    pass
+        #    #     keine Vorhersagealgorithmus dabei gewesen
+
+        gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
+            real_chgperiods_for_gens)
+
+        n_chgps = len(best_found_pos_per_chgperiod)
+        first_chgp_idx_with_pred = get_first_chgp_idx_with_pred(
+            n_chgps, n_preds)
+        first_gen_idx_with_pred = get_first_generation_idx_with_pred(
+            n_chgps, n_preds, gens_of_chgperiods)
+
+        return gens_of_chgperiods, first_chgp_idx_with_pred, first_gen_idx_with_pred
+
     def evaluate_subdirs(self, subdir, output_dir_for_benchmark_funct, df,
                          exp_file_name, benchmarkfunction, dim,
                          global_opt_fit_per_chgperiod, global_opt_pos_per_chgperiod,
@@ -269,14 +312,8 @@ class MetricCalculator():
                 best_found_fit_per_chgperiod = file['best_found_fit_per_chgperiod']
                 file.close()
 
-                gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
-                    real_chgperiods_for_gens)
-                n_preds = len(pred_opt_pos_per_chgperiod)
-                n_chgps = len(best_found_pos_per_chgperiod)
-                first_chgp_idx_with_pred = get_first_chgp_idx_with_pred(
-                    n_chgps, n_preds)
-                first_gen_idx_with_pred = get_first_generation_idx_with_pred(
-                    n_chgps, n_preds, gens_of_chgperiods)
+                gens_of_chgperiods, first_chgp_idx_with_pred, first_gen_idx_with_pred = self.get_experiment_metadata(
+                    alg_types, subdir_path, exp_file_name, ks, filters)
 
                 # arr, bebc
                 (bebc, arr_value,
