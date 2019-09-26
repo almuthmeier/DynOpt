@@ -17,7 +17,8 @@ from metrics.metrics_dynea import best_error_before_change, arr,\
 import numpy as np
 import pandas as pd
 from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
-from utils.utils_files import get_array_names_for_ks_and_filters
+from utils.utils_files import get_array_names_for_ks_and_filters,\
+    get_info_from_array_file_name
 from utils.utils_files import select_experiment_files,\
     get_sorted_array_file_names_for_experiment_file_name
 from utils.utils_prediction import get_first_chgp_idx_with_pred
