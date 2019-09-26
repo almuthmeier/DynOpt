@@ -9,8 +9,8 @@
 #SBATCH --error="slurm_metrics.%j.err"
 
 
-benchmarkfunctionfolderpath="/raid/almuth/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.5/"
-outputpath="/raid/almuth/DynCMA/Ausgaben/output_2019-09-25_alle-Varianten_vel-0.5/"
+benchmarkfunctionfolderpath="/raid/almuth/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.1/"
+outputpath="/raid/almuth/DynCMA/Ausgaben/output_2019-09-24_alle-Varianten_vel-0.1/"
 benchmarkfunctions=sphere,rastrigin,rosenbrock #mpbcorr
 poschgtypes=sinefreq #none
 fitchgtypes=none
