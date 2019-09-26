@@ -276,6 +276,9 @@ class MetricCalculator():
         print("        alg_types: ", alg_types, flush=True)
 
         # algorithms with predictor types, e.g. "ea_no"
+        gens_of_chgperiods, first_chgp_idx_with_pred, first_gen_idx_with_pred = self.get_experiment_metadata(
+            alg_types, subdir_path, exp_file_name, ks, filters)
+
         for alg in alg_types:
             print("            \n\nalg: ", alg, flush=True)
             # read all array files for the runs of the experiment
@@ -312,9 +315,6 @@ class MetricCalculator():
                 best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
                 best_found_fit_per_chgperiod = file['best_found_fit_per_chgperiod']
                 file.close()
-
-                gens_of_chgperiods, first_chgp_idx_with_pred, first_gen_idx_with_pred = self.get_experiment_metadata(
-                    alg_types, subdir_path, exp_file_name, ks, filters)
 
                 # arr, bebc
                 (bebc, arr_value,
