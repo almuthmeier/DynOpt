@@ -9,6 +9,7 @@ import copy
 from math import floor, log, sqrt
 import sys
 
+from code.utils.utils_cmaes import get_new_p_sig_twofold
 import numpy as np
 from utils import utils_dynopt
 from utils.utils_cmaes import get_best_fit_and_ind_so_far
@@ -232,7 +233,7 @@ class DynamicCMAES(object):
 
         # ---------------------------------------------------------------------
 
-        assert (pred_variant in ["simplest", "a", "b", "c", "d", "g", "p"] and cma_variant == "predcma_external") or \
+        assert (pred_variant in ["simplest", "a", "b", "c", "d", "g", "p", "pwm"] and cma_variant == "predcma_external") or \
             ((pred_variant in ["branke", "f"] or pred_variant.startswith("h")) and cma_variant == "predcma_internal") or \
             pred_variant == "None" and cma_variant in ["static", "resetcma"]
 
@@ -300,7 +301,11 @@ class DynamicCMAES(object):
                 self.sig = get_new_sig(
                     sig_begin_gen, self.c_sig, self.d_sig, self.p_sig, self.E)
             elif self.pred_variant == "pwm":
-                pass
+                self.p_sig = get_new_p_sig_twofold(
+                    self.dim, self.c_sig, p_sig_begin_gen, self.mu_w, m_begin_gen,
+                    self.m, pred, sig_begin_gen, inv_squareroot_C_begin_gen)
+                self.sig = get_new_sig(
+                    sig_begin_gen, self.c_sig, self.d_sig, self.p_sig, self.E)
             else:
                 sys.exit("Error: unknown pred_variant: " + self.pred_variant)
 

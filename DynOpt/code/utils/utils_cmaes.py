@@ -146,6 +146,21 @@ def get_new_p_sig(n, c_sig, p_sig, mu_w, m, m_new, sig, inv_squareroot_C):
     return new_p_sig
 
 
+def get_new_p_sig_twofold(n, c_sig, p_sig, mu_w, m, m_new, pred, sig, inv_squareroot_C):
+    diff_vector = m_new - m
+    succ_mutation_steps = diff_vector / sig
+    tmp = np.matmul(inv_squareroot_C, succ_mutation_steps)
+
+    step_to_opt = (pred - m_new) / sig
+    tmp2 = np.matmul(inv_squareroot_C, step_to_opt)
+
+    half_second_factor = 0.5 * (sqrt(c_sig * (2 - c_sig)) * sqrt(mu_w))
+    new_p_sig = (1 - c_sig) * p_sig + \
+        half_second_factor * tmp + half_second_factor * tmp2
+    assert new_p_sig.shape == (n,)
+    return new_p_sig
+
+
 def get_h_sig(p_sig_new, c_sig, t, n, E):
     right_side = sqrt(1 - (1 - c_sig)**(2 * (t + 1))) * (1.4 + 2 / (n + 1)) * E
     cond = npla.norm(p_sig_new) < right_side
