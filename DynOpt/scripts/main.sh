@@ -1,7 +1,7 @@
 #!/bin/bash
 
 dims=(2 5 10 20)
-dims=(20)
+#dims=(20)
 
 # ----------------------------------------------------------------------------
 
@@ -19,6 +19,7 @@ pred8="tcn"
 pred9="truepred"
 pred10="truepred"
 pred11="truepred"
+pred12="truepred"
 
 cmavariant1="static"
 cmavariant2="resetcma"
@@ -31,6 +32,7 @@ cmavariant8="predcma_external"
 cmavariant9="predcma_external"
 cmavariant10="predcma_external"
 cmavariant11="predcma_external"
+cmavariant12="predcma_external"
 
 predvariant1="None"
 predvariant2="None"
@@ -43,6 +45,7 @@ predvariant8="a"
 predvariant9="a"
 predvariant10="c"
 predvariant11="d"
+predvariant12="p"
 							
 useuncs1="False"
 useuncs2="False"
@@ -55,6 +58,7 @@ useuncs8="True"
 useuncs9="True"
 useuncs10="True"
 useuncs11="True"
+useuncs12="True"
 
 
 algnameaddition1="_static_$predvariant1"
@@ -68,6 +72,7 @@ algnameaddition8="_$predvariant8"
 algnameaddition9="_$predvariant9"
 algnameaddition10="_$predvariant10"
 algnameaddition11="_$predvariant11"
+algnameaddition12="_$predvariant12"
 
 # ----------------------------------------------------------------------------
 # no, ar (Vegas)
@@ -133,7 +138,8 @@ do
 	#	sbatch --mem=16G --gres=gpu:1 --job-name="d$d-$predvariant8" --output="slurm_d$d-$predvariant8.%j.out" --error="slurm_d$d-$predvariant8.%j.err" subscript.job "$pred8" "$algnameaddition8" "$useuncs8" "$cmavariant8" "$predvariant8" "$d" &
 	#	sbatch --mem=16G --gres=gpu:0 --job-name="d$d-$predvariant9" --output="slurm_d$d-$predvariant9.%j.out" --error="slurm_d$d-$predvariant9.%j.err" subscript.job "$pred9" "$algnameaddition9" "$useuncs9" "$cmavariant9" "$predvariant9" "$d" &
 	#	sbatch --mem=16G --gres=gpu:0 --job-name="d$d-$predvariant10" --output="slurm_d$d-$predvariant10.%j.out" --error="slurm_d$d-$predvariant10.%j.err" subscript.job "$pred10" "$algnameaddition10" "$useuncs10" "$cmavariant10" "$predvariant10" "$d" &
-		sbatch --mem=16G --gres=gpu:0 --job-name="d$d-$predvariant11" --output="slurm_d$d-$predvariant11.%j.out" --error="slurm_d$d-$predvariant11.%j.err" subscript.job "$pred11" "$algnameaddition11" "$useuncs11" "$cmavariant11" "$predvariant11" "$d" &		
+	#	sbatch --mem=16G --gres=gpu:0 --job-name="d$d-$predvariant11" --output="slurm_d$d-$predvariant11.%j.out" --error="slurm_d$d-$predvariant11.%j.err" subscript.job "$pred11" "$algnameaddition11" "$useuncs11" "$cmavariant11" "$predvariant11" "$d" &		
+		sbatch --mem=16G --gres=gpu:0 --job-name="d$d-$predvariant12" --output="slurm_d$d-$predvariant12.%j.out" --error="slurm_d$d-$predvariant12.%j.err" subscript.job "$pred12" "$algnameaddition12" "$useuncs12" "$cmavariant12" "$predvariant12" "$d" &
 done
 
 
