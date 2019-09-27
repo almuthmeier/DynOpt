@@ -9,10 +9,10 @@ import copy
 from math import floor, log, sqrt
 import sys
 
-from code.utils.utils_cmaes import get_new_p_sig_twofold
 import numpy as np
 from utils import utils_dynopt
 from utils.utils_cmaes import get_best_fit_and_ind_so_far
+from utils.utils_cmaes import get_new_p_sig_twofold
 from utils.utils_cmaes import get_new_sig, get_mue_best_individuals,\
     get_weighted_avg, get_inverse_sqroot, get_new_p_sig, get_offsprings, \
     get_h_sig, get_new_p_c, visualize_dominant_eigvector, get_C_mu, get_new_C
