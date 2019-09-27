@@ -1,7 +1,7 @@
 #!/bin/bash
 
 dims=(2 5 10 20)
-#dims=(10)
+dims=(20)
 
 # ----------------------------------------------------------------------------
 
@@ -132,7 +132,7 @@ do
 	#	sbatch --mem=16G --gres=gpu:1 --job-name="d$d-$predvariant7" --output="slurm_d$d-$predvariant7.%j.out" --error="slurm_d$d-$predvariant7.%j.err" subscript.job "$pred7" "$algnameaddition7" "$useuncs7" "$cmavariant7" "$predvariant7" "$d" &
 	#	sbatch --mem=16G --gres=gpu:1 --job-name="d$d-$predvariant8" --output="slurm_d$d-$predvariant8.%j.out" --error="slurm_d$d-$predvariant8.%j.err" subscript.job "$pred8" "$algnameaddition8" "$useuncs8" "$cmavariant8" "$predvariant8" "$d" &
 	#	sbatch --mem=16G --gres=gpu:0 --job-name="d$d-$predvariant9" --output="slurm_d$d-$predvariant9.%j.out" --error="slurm_d$d-$predvariant9.%j.err" subscript.job "$pred9" "$algnameaddition9" "$useuncs9" "$cmavariant9" "$predvariant9" "$d" &
-		sbatch --mem=16G --gres=gpu:0 --job-name="d$d-$predvariant10" --output="slurm_d$d-$predvariant10.%j.out" --error="slurm_d$d-$predvariant10.%j.err" subscript.job "$pred10" "$algnameaddition10" "$useuncs10" "$cmavariant10" "$predvariant10" "$d" &
+	#	sbatch --mem=16G --gres=gpu:0 --job-name="d$d-$predvariant10" --output="slurm_d$d-$predvariant10.%j.out" --error="slurm_d$d-$predvariant10.%j.err" subscript.job "$pred10" "$algnameaddition10" "$useuncs10" "$cmavariant10" "$predvariant10" "$d" &
 		sbatch --mem=16G --gres=gpu:0 --job-name="d$d-$predvariant11" --output="slurm_d$d-$predvariant11.%j.out" --error="slurm_d$d-$predvariant11.%j.err" subscript.job "$pred11" "$algnameaddition11" "$useuncs11" "$cmavariant11" "$predvariant11" "$d" &		
 done
 
