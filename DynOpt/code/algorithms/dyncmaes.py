@@ -232,7 +232,7 @@ class DynamicCMAES(object):
 
         # ---------------------------------------------------------------------
 
-        assert (pred_variant in ["simplest", "a", "b", "c", "d", "g"] and cma_variant == "predcma_external") or \
+        assert (pred_variant in ["simplest", "a", "b", "c", "d", "g", "p"] and cma_variant == "predcma_external") or \
             ((pred_variant in ["branke", "f"] or pred_variant.startswith("h")) and cma_variant == "predcma_internal") or \
             pred_variant == "None" and cma_variant in ["static", "resetcma"]
 
@@ -248,7 +248,9 @@ class DynamicCMAES(object):
         assert new_p_sig.shape == (self.dim,)
         return new_p_sig
 
-    def update_sig_and_m_after_chage(self, m_old, my_pred_mode):
+    def update_sig_and_m_after_chage(self, m_old, my_pred_mode, m_begin_gen,
+                                     sig_begin_gen, p_sig_begin_gen,
+                                     inv_squareroot_C_begin_gen):
         if my_pred_mode == "no" and self.predictor_name != "no":
             # there are not yet enough training data -> reset sigma
             self.sig = 1
@@ -292,6 +294,13 @@ class DynamicCMAES(object):
             elif self.pred_variant == "g":
                 self.sig = np.linalg.norm(
                     self.pred_opt_pos_per_chgperiod[-1] - self.best_found_pos_per_chgperiod[-1]) / 2
+            elif self.pred_variant == "p":
+                self.p_sig = get_new_p_sig(
+                    self.dim, self.c_sig, p_sig_begin_gen, self.mu_w, self.m, pred, sig_begin_gen, inv_squareroot_C_begin_gen)
+                self.sig = get_new_sig(
+                    sig_begin_gen, self.c_sig, self.d_sig, self.p_sig, self.E)
+            elif self.pred_variant == "pwm":
+                pass
             else:
                 sys.exit("Error: unknown pred_variant: " + self.pred_variant)
 
@@ -380,6 +389,10 @@ class DynamicCMAES(object):
         # best individual/fitness in change period so far, is reset after chgp
         so_far_best_fit = sys.float_info.max
         so_far_best_ind = None
+        m_begin_gen = None
+        sig_begin_gen = None
+        p_sig_begin_gen = None
+        inv_squareroot_C = None
 
         for t in range(self.n_generations):
             glob_opt = self.experiment_data['global_opt_pos_per_gen'][t]
@@ -428,11 +441,16 @@ class DynamicCMAES(object):
                     predictor = ar_predictor
 
                 # (re-)set variables
-                self.update_sig_and_m_after_chage(m_begin_chgp, my_pred_mode)
+                self.update_sig_and_m_after_chage(m_begin_chgp, my_pred_mode,
+                                                  m_begin_gen, sig_begin_gen,
+                                                  p_sig_begin_gen, inv_squareroot_C)
                 self.p_sig = np.zeros(self.dim)
                 self.p_c = np.zeros(self.dim)
                 self.C = np.identity(self.dim)
 
+            m_begin_gen = self.m
+            sig_begin_gen = self.sig
+            p_sig_begin_gen = self.p_sig
             # ---------------------------------------------------------------------
             # eigenvalue decomposition
 
