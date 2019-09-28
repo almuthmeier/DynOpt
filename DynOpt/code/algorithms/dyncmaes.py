@@ -300,8 +300,11 @@ class DynamicCMAES(object):
                 #    self.dim, self.c_sig, p_sig_begin_gen, self.mu_w, self.m, pred, sig_begin_gen, inv_squareroot_C_begin_gen)
                 # self.sig = get_new_sig(
                 #    sig_begin_gen, self.c_sig, self.d_sig, self.p_sig, self.E)
-                self.sig = np.linalg.norm(pred - self.m) / 2
-                #self.m = pred
+
+                #self.sig = np.linalg.norm(pred - self.m) / 2
+
+                self.m = pred
+                self.sig = 1
 
             elif self.pred_variant == "pwm":
                 # self.p_sig = get_new_p_sig_twofold(
@@ -309,7 +312,11 @@ class DynamicCMAES(object):
                 #    self.m, pred, sig_begin_gen, inv_squareroot_C_begin_gen)
                 # self.sig = get_new_sig(
                 #    sig_begin_gen, self.c_sig, self.d_sig, self.p_sig, self.E)
-                self.sig = np.linalg.norm(pred - self.m) / 2
+
+                #self.sig = np.linalg.norm(pred - self.m) / 2
+
+                self.m = pred
+                self.sig = 1
             else:
                 sys.exit("Error: unknown pred_variant: " + self.pred_variant)
 
