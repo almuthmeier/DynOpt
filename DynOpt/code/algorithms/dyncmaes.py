@@ -481,12 +481,12 @@ class DynamicCMAES(object):
             m_new = get_weighted_avg(self.dim, self.w, mu_best_individuals)
             if self.pred_variant == "p" and len(self.pred_opt_pos_per_chgperiod) > 1:
                 p_sig_new = get_new_p_sig(
-                    self.dim, self.c_sig, self.p_sig, self.mu_w, self.m,
+                    self.dim, self.c_sig, self.p_sig, self.mu_w, m_new,
                     self.pred_opt_pos_per_chgperiod[-1], self.sig, inv_squareroot_C)
             elif self.pred_variant == "pwm" and len(self.pred_opt_pos_per_chgperiod) > 1:
                 p_sig_new = get_new_p_sig_twofold(
-                    self.dim, self.c_sig, self.p_sig, self.mu_w, m_begin_gen,
-                    self.m, self.pred_opt_pos_per_chgperiod[-1], self.sig, inv_squareroot_C)
+                    self.dim, self.c_sig, self.p_sig, self.mu_w, self.m, m_new,
+                    self.pred_opt_pos_per_chgperiod[-1], self.sig, inv_squareroot_C)
             else:
                 p_sig_new = get_new_p_sig(
                     self.dim, self.c_sig, self.p_sig, self.mu_w, self.m, m_new, self.sig, inv_squareroot_C)
