@@ -304,11 +304,12 @@ class DynamicCMAES(object):
                 #self.m = pred
 
             elif self.pred_variant == "pwm":
-                self.p_sig = get_new_p_sig_twofold(
-                    self.dim, self.c_sig, p_sig_begin_gen, self.mu_w, m_begin_gen,
-                    self.m, pred, sig_begin_gen, inv_squareroot_C_begin_gen)
-                self.sig = get_new_sig(
-                    sig_begin_gen, self.c_sig, self.d_sig, self.p_sig, self.E)
+                # self.p_sig = get_new_p_sig_twofold(
+                #    self.dim, self.c_sig, p_sig_begin_gen, self.mu_w, m_begin_gen,
+                #    self.m, pred, sig_begin_gen, inv_squareroot_C_begin_gen)
+                # self.sig = get_new_sig(
+                #    sig_begin_gen, self.c_sig, self.d_sig, self.p_sig, self.E)
+                self.sig = np.linalg.norm(pred - self.m) / 2
             else:
                 sys.exit("Error: unknown pred_variant: " + self.pred_variant)
 
@@ -482,6 +483,10 @@ class DynamicCMAES(object):
                 p_sig_new = get_new_p_sig(
                     self.dim, self.c_sig, self.p_sig, self.mu_w, self.m,
                     self.pred_opt_pos_per_chgperiod[-1], self.sig, inv_squareroot_C)
+            elif self.pred_variant == "pwm" and len(self.pred_opt_pos_per_chgperiod) > 1:
+                p_sig_new = get_new_p_sig_twofold(
+                    self.dim, self.c_sig, self.p_sig, self.mu_w, m_begin_gen,
+                    self.m, self.pred_opt_pos_per_chgperiod[-1], self.sig, inv_squareroot_C)
             else:
                 p_sig_new = get_new_p_sig(
                     self.dim, self.c_sig, self.p_sig, self.mu_w, self.m, m_new, self.sig, inv_squareroot_C)
