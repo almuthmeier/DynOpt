@@ -11,7 +11,7 @@
 
 benchmarkfunctionfolderpath="/raid/almuth/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.1/"
 benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/"
-outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-04-23_alle_MPB/"
+outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-04-23_alle_dim/"
 benchmarkfunctions=sphere,rastrigin,rosenbrock #mpbcorr
 poschgtypes=sinefreq #none
 fitchgtypes=none
