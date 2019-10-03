@@ -12,11 +12,11 @@
 benchmarkfunctionfolderpath="/raid/almuth/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.1/"
 benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/"
 outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-04-23_alle_dim/"
-benchmarkfunctions=sphere,rastrigin,rosenbrock #mpbcorr
+benchmarkfunctions=sphere #,rastrigin,rosenbrock #mpbcorr
 poschgtypes=sinefreq #none
 fitchgtypes=none
-#dims=2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
-dims=2,5,10,20
+dims=2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
+#dims=2,5,10,20
 noises=0.00 #,0.01,0.05
 pathaddition="architecture/"
 metricfilename="output_2019-10-03.csv"
