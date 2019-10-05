@@ -63,13 +63,19 @@ algnameaddition2="_$predvariant2"
 algnameaddition3="_$predvariant3"
 algnameaddition4="_$predvariant4"
 
+#window size
+ws1=7
+ws2=7
+ws3=7
+ws4=50
+
 # ----------------------------------------------------------------------------
 # no, ar (Vegas)
 
 
-#./run_server.sh "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$d" "$f" "$poschgt" "$n" & 
-#./run_server.sh "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$d" "$f" "$poschgt" "$n" & 
-./run_server.sh "$pred3" "$algnameaddition3" "$useuncs3" "$reinimode3" "$d" "$f" "$poschgt" "$n" & 
-./run_server.sh "$pred4" "$algnameaddition4" "$useuncs4" "$reinimode4" "$d" "$f" "$poschgt" "$n" & 
+#./run_server.sh "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$d" "$f" "$poschgt" "$n" "$ws1" & 
+#./run_server.sh "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$d" "$f" "$poschgt" "$n" "$ws2" & 
+./run_server.sh "$pred3" "$algnameaddition3" "$useuncs3" "$reinimode3" "$d" "$f" "$poschgt" "$n" "$ws3" & 
+./run_server.sh "$pred4" "$algnameaddition4" "$useuncs4" "$reinimode4" "$d" "$f" "$poschgt" "$n" "$ws4" & 
 
 wait
