@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --ntasks=2
-#SBATCH --time=3-00:00
-#SBATCH --job-name="rnn-tcn" 
-#SBATCH --output="slurm_rnn-tcn.%j.out" 
-#SBATCH --error="slurm_rnn-tcn.%j.err"
+#SBATCH --time=5-00:00
+#SBATCH --job-name="no-ar" 
+#SBATCH --output="slurm_no-ar.%j.out" 
+#SBATCH --error="slurm_no-ar.%j.err"
 #SBATCH --mem=8G 
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:0
 
 # input parameters:
 #  $1 -> predictor type
@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------------
 # sphere, rastrigin, rosenbrock
 
-f="sphere"
+f=(sphere)
 d=20
 poschgt="sinefreq"
 n=0.00
@@ -73,9 +73,9 @@ ws4=50
 # no, ar (Vegas)
 
 
-#./run_server.sh "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$d" "$f" "$poschgt" "$n" "$ws1" & 
-#./run_server.sh "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$d" "$f" "$poschgt" "$n" "$ws2" & 
-./run_server.sh "$pred3" "$algnameaddition3" "$useuncs3" "$reinimode3" "$d" "$f" "$poschgt" "$n" "$ws3" & 
-./run_server.sh "$pred4" "$algnameaddition4" "$useuncs4" "$reinimode4" "$d" "$f" "$poschgt" "$n" "$ws4" & 
+./run_server.sh "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$d" "$f" "$poschgt" "$n" "$ws1" & 
+./run_server.sh "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$d" "$f" "$poschgt" "$n" "$ws2" & 
+#./run_server.sh "$pred3" "$algnameaddition3" "$useuncs3" "$reinimode3" "$d" "$f" "$poschgt" "$n" "$ws3" & 
+#./run_server.sh "$pred4" "$algnameaddition4" "$useuncs4" "$reinimode4" "$d" "$f" "$poschgt" "$n" "$ws4" & 
 
 wait
