@@ -32,7 +32,7 @@ lenchgperiod=20				# number of generations per change period; has to be
 ischgperiodrandom="False"	# True if the change occurs at a random time point.
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
-benchmarkfunctionfolderpath="/raid/almuth/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.5.0/"		 	# parent directory path of the benchmark functions
+benchmarkfunctionfolderpath="/raid/almuth/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.5/"		 	# parent directory path of the benchmark functions
 		   																				 	# and child directory of the datasets folder of this project
 #benchmarkfunctionfolderpath="/home/almuth/Documents/Promotion/Ausgaben/DynCMA/data_2019-09-21_rangeDSB/vel-100.0/" 
 lbound=0					# minimum bound of the benchmark's range							   				 
