@@ -7,7 +7,7 @@ name="no-ar"
 #SBATCH --job-name="$name" 
 #SBATCH --output="slurm_$name.%j.out" 
 #SBATCH --error="slurm_$name.%j.err"
-#SBATCH --mem=16G 
+#SBATCH --mem=8G 
 #SBATCH --gres=gpu:0
 
 # input parameters:
