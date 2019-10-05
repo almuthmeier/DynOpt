@@ -130,9 +130,12 @@ class PredictorComparator(object):
         dimensionality = len(self.experiment_data['orig_global_opt_pos'])
         assert dimensionality == self.dims
         n_generations = self.get_n_generations()
-        if self.predictor in ["no", "autoregressive", "tfrnn", "rnn", "tcn",
+        if self.predictor in ["no", "autoregressive", "tfrnn", "tcn",
                               "kalman", "truepred"]:
             n_neurons = None
+            full_tl_model_name = None
+        elif self.predictor in ["rnn"]:
+            n_neurons = get_n_neurons(self.neuronstype, dimensionality)
             full_tl_model_name = None
         else:
             n_neurons = get_n_neurons(self.neuronstype, dimensionality)

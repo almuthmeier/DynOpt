@@ -385,7 +385,7 @@ class DynamicCMAES(object):
                                     self.kernel_size, self.n_kernels, self.lr)
         ar_predictor = None
         sess = None  # necessary since is assigned anew after each training
-        if self.predictor_name in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
+        if self.predictor_name in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
             import tensorflow as tf
             # if transfer learning then load weights
 
@@ -550,8 +550,7 @@ class DynamicCMAES(object):
             # print(str(t) + ": best: ", self.population_fitness[min_fitness_index],
             #      "[", self.population[min_fitness_index], "]")
 
-        if self.predictor_name in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
-            # TODO why not for "rnn"?
+        if self.predictor_name in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
             sess.close()
             tf.reset_default_graph()
 

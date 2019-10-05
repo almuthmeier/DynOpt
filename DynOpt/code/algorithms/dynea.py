@@ -472,7 +472,7 @@ class DynamicEA():
                                     self.kernel_size, self.n_kernels, self.lr)
         ar_predictor = None
         sess = None  # necessary since is assigned anew after each training
-        if self.predictor_name in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
+        if self.predictor_name in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
             import tensorflow as tf
             # if transfer learning then load weights
             if self.apply_tl:
@@ -623,7 +623,8 @@ class DynamicEA():
             print("best: ", self.population_fitness[min_fitness_index],
                   "[", self.population[min_fitness_index], "]")
         if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
-                self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn":
+                self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn" or \
+                self.predictor_name == "rnn":
             sess.close()
             tf.reset_default_graph()
 
