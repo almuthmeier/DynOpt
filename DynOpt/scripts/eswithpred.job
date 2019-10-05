@@ -1,14 +1,12 @@
 #!/bin/bash
 
-name="no-ar"
-
 #SBATCH --ntasks=2
 #SBATCH --time=3-00:00
-#SBATCH --job-name="$name" 
-#SBATCH --output="slurm_$name.%j.out" 
-#SBATCH --error="slurm_$name.%j.err"
+#SBATCH --job-name="rnn-tcn" 
+#SBATCH --output="slurm_rnn-tcn.%j.out" 
+#SBATCH --error="slurm_rnn-tcn.%j.err"
 #SBATCH --mem=8G 
-#SBATCH --gres=gpu:0
+#SBATCH --gres=gpu:1
 
 # input parameters:
 #  $1 -> predictor type
@@ -69,9 +67,9 @@ algnameaddition4="_$predvariant4"
 # no, ar (Vegas)
 
 
-./run_server.sh "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$d" "$f" "$poschgt" "$n" & 
-./run_server.sh "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$d" "$f" "$poschgt" "$n" & 
-#./run_server.sh "$pred3" "$algnameaddition3" "$useuncs3" "$reinimode3" "$d" "$f" "$poschgt" "$n" & 
-#./run_server.sh "$pred4" "$algnameaddition4" "$useuncs4" "$reinimode4" "$d" "$f" "$poschgt" "$n" & 
+#./run_server.sh "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$d" "$f" "$poschgt" "$n" & 
+#./run_server.sh "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$d" "$f" "$poschgt" "$n" & 
+./run_server.sh "$pred3" "$algnameaddition3" "$useuncs3" "$reinimode3" "$d" "$f" "$poschgt" "$n" & 
+./run_server.sh "$pred4" "$algnameaddition4" "$useuncs4" "$reinimode4" "$d" "$f" "$poschgt" "$n" & 
 
 wait
