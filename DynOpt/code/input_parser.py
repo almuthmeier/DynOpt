@@ -157,19 +157,19 @@ def initialize_comparator_manually(comparator):
     path_to_dynoptim = '/'.join(os.path.abspath(os.pardir).split('/')[:])
 
     # benchmark problem
-    comparator.algorithm = "dyncma"  # "dyncma"  # "dynea"
+    comparator.algorithm = "dynea"  # "dyncma"  # "dynea"
     comparator.repetitions = 1
     comparator.chgperiodrepetitions = 1
-    comparator.chgperiods = 90
-    comparator.lenchgperiod = 10
+    comparator.chgperiods = 200
+    comparator.lenchgperiod = 30
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     #comparator.benchmarkfunctionfolderpath = path_to_dynoptim + "/DynOpt/datasets/" + "GECCO_2019/"
-    comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/data_2019-09-11_newDSB/vel-0.5/"
+    comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-1.0/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/cma_truepred/"
+    comparator.outputdirectory = "ersterTest/ea_long/"
     comparator.outputdirectorypath = path_to_dynoptim + \
-        "/DynOpt/output/" + "EvoStar_2020/" + "sphere/"
+        "/DynOpt/output/" + "Diss/" + "sphere/"
     comparator.lbound = 0
     comparator.ubound = 100
 
@@ -177,7 +177,7 @@ def initialize_comparator_manually(comparator):
     # ["linear", "sine", "circle", "mixture"])
     comparator.poschgtypes = np.array(["sinefreq"])
     comparator.fitchgtypes = np.array(["none"])
-    comparator.dims = np.array([10])
+    comparator.dims = np.array([20])
     # TODO must not be a list (otherwise: log-file name is wrong)
     comparator.noises = np.array([0.0])
 
@@ -200,28 +200,28 @@ def initialize_comparator_manually(comparator):
         comparator.trechenberg = 5
         comparator.tau = 0.5
         # "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
-        comparator.reinitializationmode = "no-PRE"  # "no-PRE"
+        comparator.reinitializationmode = "pred-RND"  # "no-PRE"
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
     # CMA
     elif comparator.algorithm == "dyncma":
         # "static" "resetcma" "predcma_internal" "predcma_external"
-        comparator.cmavariant = "static"
+        comparator.cmavariant = "predcma_external"
         # "simplest", "a", "b", "c", "d", "g" ,"branke", "f", "ha", "hb", "hd",
-        # "hawom", "hbwom", "hdwom", "None"
+        # "hawom", "hbwom", "hdwom", "None", "p", "pwm"
         # TODO (ist "simplest" ueberhaupt noch moeglich?)
-        comparator.predvariant = "None"
+        comparator.predvariant = "a"
 
     # for predictor
-    # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
+    # "rnn" "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
     # "truepred" (true prediction, disturbed with known noise)
-    comparator.predictor = "no"
+    comparator.predictor = "rnn"
     # known prediction noise (standard deviation) of predition "truepred"
     comparator.trueprednoise = 0.1
-    comparator.timesteps = 4
+    comparator.timesteps = 50
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
-    comparator.traininterval = 5
-    comparator.nrequiredtraindata = 10
-    comparator.useuncs = True
+    comparator.traininterval = 75
+    comparator.nrequiredtraindata = 128
+    comparator.useuncs = False
     comparator.trainmcruns = 5 if comparator.useuncs else 0
     comparator.testmcruns = 5 if comparator.useuncs else 0
     comparator.traindropout = 0.1
@@ -233,7 +233,7 @@ def initialize_comparator_manually(comparator):
     # for ANN predictor
     if comparator.predictor in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
         # (not everything is necessary for every predictor)
-        comparator.neuronstype = "fixed20"
+        comparator.neuronstype = "dyn1.3"  # "fixed20"
         comparator.epochs = 80
         comparator.batchsize = 8
         comparator.n_layers = 1
@@ -434,8 +434,8 @@ def run_parser():
     orig_stderr = sys.stderr
     f = open(
         log_file_name, 'w')
-    sys.stdout = f  # TODO(exe) in-comment this
-    sys.stderr = f
+   # sys.stdout = f  # TODO(exe) in-comment this
+    #sys.stderr = f
     #
     # =======================================================================
     # run experiments
