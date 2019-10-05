@@ -58,10 +58,10 @@ reinimode3="pred-RND"
 reinimode4="pred-RND"
 
 
-algnameaddition1="_$predvariant1"
-algnameaddition2="_$predvariant2"
-algnameaddition3="_$predvariant3"
-algnameaddition4="_$predvariant4"
+algnameaddition1="_$reinimode1"
+algnameaddition2="_$reinimode2"
+algnameaddition3="_$reinimode3"
+algnameaddition4="_$reinimode4"
 
 #window size
 ws1=7
