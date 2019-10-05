@@ -20,7 +20,7 @@
 # sphere, rastrigin, rosenbrock
 
 f=(sphere)
-d=20
+d=(20)
 poschgt="sinefreq"
 n=0.00
 
