@@ -434,8 +434,8 @@ def run_parser():
     orig_stderr = sys.stderr
     f = open(
         log_file_name, 'w')
-   # sys.stdout = f  # TODO(exe) in-comment this
-    #sys.stderr = f
+    sys.stdout = f  # TODO(exe) in-comment this
+    sys.stderr = f
     #
     # =======================================================================
     # run experiments
