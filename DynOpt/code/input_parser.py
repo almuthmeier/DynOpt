@@ -231,11 +231,14 @@ def initialize_comparator_manually(comparator):
     comparator.lr = 0.002
 
     # for ANN predictor
+    if comparator.predictor == "rnn":
+        comparator.batchsize = 1
+    elif comparator.predictor in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
+        comparator.batchsize = 8
     if comparator.predictor in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
         # (not everything is necessary for every predictor)
         comparator.neuronstype = "dyn1.3"  # "fixed20"
         comparator.epochs = 80
-        comparator.batchsize = 8
         comparator.n_layers = 1
         # apply transfer learning only for tftlrnn
         comparator.apply_tl = comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense"
@@ -252,6 +255,8 @@ def initialize_comparator_manually(comparator):
     # assertions
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
+    if comparator.predictor == "no":
+        assert not comparator.reinitializationmode.startswith("pred-")
     if not comparator.useuncs and comparator.algorithm == "dynea":
         assert (comparator.reinitializationmode !=
                 "pred-UNC" and comparator.reinitializationmode != "pred-KAL")
@@ -335,12 +340,15 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.lr = args.lr
 
     # for ANN predictor
+    if args.predictor == "rnn":
+        comparator.batchsize = 1
+    elif args.predictor in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
+        comparator.batchsize = args.batchsize
     if (args.predictor == "rnn" or args.predictor == "tfrnn" or
             args.predictor == "tftlrnn" or args.predictor == "tftlrnndense" or
             args.predictor == "tcn"):
         comparator.neuronstype = args.neuronstype
         comparator.epochs = args.epochs
-        comparator.batchsize = args.batchsize
         comparator.n_layers = args.nlayers
         # apply transfer learning only for tftlrnn
         comparator.apply_tl = args.predictor == 'tftlrnn' or args.predictor == "tftlrnndense"
