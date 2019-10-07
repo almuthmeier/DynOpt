@@ -311,7 +311,7 @@ def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_
 
 
 def predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
-                       n_features, scaler, predictor, returnseq, shuffle, pred_np_rnd_generator):
+                       n_features, scaler, predictor, returnseq, shuffle, pred_np_rnd_generator, do_training):
     '''
     Predicts next optimum position with a tensorflow recurrent neural network.
     @param new_train_data: [n_chgperiods, dims] (if differences are predicted 
@@ -340,10 +340,11 @@ def predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size,
     #========================
     # train regressor
     # TODO save model? report training error?
-    keep_prob = 0.95
-    train_error, _, _, train_err_per_epoch, _ = predictor.train(sess, train_in_data, train_out_data, pred_np_rnd_generator, in_keep_prob=keep_prob, out_keep_prob=keep_prob, st_keep_prob=keep_prob,
-                                                                shuffle_between_epochs=True, saver=None, saver_path=None, model_name=None,
-                                                                do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None)
+    if do_training:
+        keep_prob = 0.95
+        train_error, _, _, train_err_per_epoch, _ = predictor.train(sess, train_in_data, train_out_data, pred_np_rnd_generator, in_keep_prob=keep_prob, out_keep_prob=keep_prob, st_keep_prob=keep_prob,
+                                                                    shuffle_between_epochs=True, saver=None, saver_path=None, model_name=None,
+                                                                    do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None)
 
     #========================
     # prediction for next step (with n_time_steps)
@@ -573,7 +574,7 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     elif mode == "tfrnn" or mode == "tftlrnn" or mode == "tftlrnndense":
         prediction, train_error, train_err_per_epoch = predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
                                                                           n_features, scaler, predictor, returnseq, shuffle,
-                                                                          pred_np_rnd_generator)
+                                                                          pred_np_rnd_generator, do_training)
     elif mode == "tcn":
         prediction, pred_unc, avg_al_unc = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
                                                             n_time_steps, n_features, scaler, predictor,
@@ -766,7 +767,6 @@ def prepare_data_train_and_predict(sess, gen_idx, n_features, predictor,
         # train the model only when train_interval new data are available
         do_training = n_new_train_data >= train_interval
         if do_training:
-            print("do training", flush=True)
             n_new_train_data = 0
         # predict next optimum position or difference (and re-scale value)
         (prediction, train_error, train_err_per_epoch,
