@@ -262,7 +262,7 @@ def predict_with_kalman(new_train_data, scaler, predictor,  do_training):
 
 
 def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
-                     n_features, scaler, predictor):
+                     n_features, scaler, predictor, shuffle, pred_np_rnd_generator, do_training):
     '''
     Predicts next optimum position with a recurrent neural network.
     '''
@@ -275,29 +275,22 @@ def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_
     if noisy_series is not None:
         pass  # TODO implement
 
-    # separate input series (first values) and prediction value (last value)
-    train_in_data, train_out_data = train_samples[:, :-1], train_samples[:, -1]
-
-    # define constants from data
-    n_train_samples = train_in_data.shape[0]
-    #n_features = train_out_data.shape[1]
-
-    # Samples/TimeSteps/Features format, for example:
-    train_in_data = train_in_data.reshape(
-        n_train_samples, n_time_steps, n_features)
-
+    # separate input series (first values) and prediction value (last
+    # value)
+    train_in_data, train_out_data = shuffle_split_output(train_samples, False,
+                                                         n_time_steps, n_features, shuffle, pred_np_rnd_generator)
     #========================
     # train regressor
-
-    for i in range(n_epochs):
-        hist = predictor.fit(train_in_data, train_out_data, epochs=1,
-                             batch_size=batch_size,  verbose=0, shuffle=False)  # TODO shuffle should be True
-        # print("epoch ", i, "/", n_epochs, ": loss ",
-        #      hist.history['loss'], flush=True)
-        predictor.reset_states()
-        # states usually are reset after epochs:
-        # https://stackoverflow.com/questions/45623480/stateful-lstm-when-to-reset-states
-        # https://machinelearningmastery.com/time-series-forecasting-long-short-term-memory-network-python/
+    if do_training:
+        for i in range(n_epochs):
+            hist = predictor.fit(train_in_data, train_out_data, epochs=1,
+                                 batch_size=batch_size,  verbose=0, shuffle=shuffle)  # TODO shuffle should be True
+            # print("epoch ", i, "/", n_epochs, ": loss ",
+            #      hist.history['loss'], flush=True)
+            predictor.reset_states()
+            # states usually are reset after epochs:
+            # https://stackoverflow.com/questions/45623480/stateful-lstm-when-to-reset-states
+            # https://machinelearningmastery.com/time-series-forecasting-long-short-term-memory-network-python/
 
     # predict on training set to set state for prediction on test set
     #train_prediction = predictor.predict(train_in_data, batch_size=batch_size)
@@ -306,7 +299,7 @@ def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_
     # prediction for next step (with n_time_steps)
     prediction_series = np.array(new_train_data[-n_time_steps:])
 
-    n_sampl = 1  # should be 1
+    n_sampl = 1  # must equal batch size (for RNN)
     reshaped_sample_x = prediction_series.reshape(
         n_sampl, n_time_steps, n_features)
     sample_y_hat = predictor.predict(
@@ -544,7 +537,8 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     '''
     @param mode: the desired predictor
     @param new_train_data: 2d numpy array: contains time series of 
-    (n_time_steps+1) previous found solutions
+    (n_time_steps+1) previous found solutions (they are already differences if
+    predict_diffs is True)
     @param n_epochs: number training epochs for RNN 
     @param batch_size: batch size for RNN
     @param n_time_steps: number of previous solutions to use for the prediction
@@ -563,7 +557,8 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     ar_predictor = None
     if mode == "rnn":
         prediction = predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size,
-                                      n_time_steps, n_features, scaler, predictor)
+                                      n_time_steps, n_features, scaler, predictor, shuffle,
+                                      pred_np_rnd_generator, do_training)
     elif mode == "autoregressive":
         try:
             prediction, ar_predictor = predict_with_autoregressive(
@@ -771,6 +766,7 @@ def prepare_data_train_and_predict(sess, gen_idx, n_features, predictor,
         # train the model only when train_interval new data are available
         do_training = n_new_train_data >= train_interval
         if do_training:
+            print("do training", flush=True)
             n_new_train_data = 0
         # predict next optimum position or difference (and re-scale value)
         (prediction, train_error, train_err_per_epoch,
