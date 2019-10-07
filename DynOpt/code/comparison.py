@@ -196,6 +196,11 @@ class PredictorComparator(object):
             self.ischgperiodrandom, self.kernelsize, self.nkernels, self.lr,
             self.epochs, self.batchsize, self.traindropout, self.testdropout)
 
+        if self.algorithm == "dynea":
+            alg.sig_per_gen = None
+            alg.m_per_gen = None
+            alg.p_sig_pred_per_chgp = None
+
         # TODO(dev) extend if necessary, e.g, for computing prediction quality
         # (what if an algorithm doesn't provide one of the variables? (e.g.
         # because it doesn't have change detection?)
