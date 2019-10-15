@@ -228,7 +228,7 @@ def best_error_before_change(generations_of_chgperiods, global_opt_fit_per_chgpe
 
 
 def rel_conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen_and_alg,
-                   only_for_preds, first_chgp_idx_with_pred):
+                   only_for_preds, first_chgp_idx_with_pred_per_alg):
     '''
     Measure of relative convergence speed of algorithms for one run of a 
     specific problem. Depends on the worst fitness value any algorithm achieved.
@@ -276,8 +276,10 @@ def rel_conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best
     #    str(len(global_opt_fit_per_chgperiod)) + " len-worst: " + \
     #    str(len(list(worst_fit_per_chgperiod.values())))
     try:
+        all_idcs = np.arange(n_chgperiods)
+        bools = np.array(global_opt_fit_per_chgperiod)[all_idcs]
         assert np.all(list(worst_fit_per_chgperiod.values(
-        )) >= global_opt_fit_per_chgperiod[range(n_chgperiods)]), "global fitness worse than worst fitness"
+        )) >= bools), "global fitness worse than worst fitness"
     except Exception as e:
         print(e, flush=True)
         print("worst-fit-per-change-period: ")
@@ -296,7 +298,7 @@ def rel_conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best
                                                    global_opt_fit_per_chgperiod,
                                                    best_found_fit_per_gen_and_alg[alg],
                                                    worst_fit_per_chgperiod,
-                                                   only_for_preds, first_chgp_idx_with_pred)
+                                                   only_for_preds, first_chgp_idx_with_pred_per_alg[alg])
     return speed_per_alg
 
 

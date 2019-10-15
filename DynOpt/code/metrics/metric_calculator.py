@@ -113,7 +113,7 @@ class MetricCalculator():
                         best_found_pos_per_chgperiod, best_found_fit_per_chgperiod,
                         first_chgp_idx_with_pred):
         '''
-        Computes BEBC and ARR
+        Computes BEBC and ARR and RMSEs
         '''
         # bebc
         bebc = best_error_before_change(gens_of_chgperiods, global_opt_fit_per_chgperiod,
@@ -210,23 +210,27 @@ class MetricCalculator():
 
     def get_experiment_metadata(self, alg_types, subdir_path, exp_file_name, ks, filters):
         '''
-        Checks whether there is one algorithm that has employed a prediction.
-        Based on this, for all algorithms the same values for
-        first_chgp_idx_with_pred and first_gen_idx_with_pred are determined.
+        For each algorithm it is examined whether a prediction was employed. 
+        Based on this, for all algorithms values for
+        first_chgp_idx_with_pred_per_alg and first_gen_idx_with_pred_per_alg
+        are determined. Algorithms without prediction get the lowest value 
+        any other algorithm has for these values.
         '''
+        first_chgp_idx_with_pred_per_alg = {}
+        first_gen_idx_with_pred_per_alg = {}
         n_preds = 0
         for alg in alg_types:
             # read all array files for the runs of the experiment
             arrays_path = subdir_path + alg + "/arrays/"
             array_names = get_sorted_array_file_names_for_experiment_file_name(exp_file_name,
                                                                                arrays_path)
-            if ks is not None and filters is not None:
+            if ks is not None and filters is not None:  # for TCNs
                 array_names = get_array_names_for_ks_and_filters(
                     array_names, ks, filters)
             #print("                array_names: ", array_names, flush=True)
-            first_arr_name = array_names[0]
 
             # load first array file
+            first_arr_name = array_names[0]
             file = np.load(arrays_path + first_arr_name)
             real_chgperiods_for_gens = file['real_chgperiods_for_gens']
             pred_opt_pos_per_chgperiod = file['pred_opt_pos_per_chgperiod']
@@ -234,23 +238,44 @@ class MetricCalculator():
             file.close()
 
             # check whether
-            if len(pred_opt_pos_per_chgperiod) != 0:
-                n_preds = len(pred_opt_pos_per_chgperiod)
-                break  # exit loop
+            # if len(pred_opt_pos_per_chgperiod) != 0:
+            n_preds = len(pred_opt_pos_per_chgperiod)
+            n_chgps = len(best_found_pos_per_chgperiod)
+            # break  # exit loop
         # if n_preds == 0:
         #    pass
         #    #     keine Vorhersagealgorithmus dabei gewesen
 
-        gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
-            real_chgperiods_for_gens)
+            gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
+                real_chgperiods_for_gens)
 
-        n_chgps = len(best_found_pos_per_chgperiod)
-        first_chgp_idx_with_pred = get_first_chgp_idx_with_pred(
-            n_chgps, n_preds)
-        first_gen_idx_with_pred = get_first_generation_idx_with_pred(
-            n_chgps, n_preds, gens_of_chgperiods)
+            first_chgp_idx_with_pred_per_alg[alg] = get_first_chgp_idx_with_pred(
+                n_chgps, n_preds)
+            first_gen_idx_with_pred_per_alg[alg] = get_first_generation_idx_with_pred(
+                n_chgps, n_preds, gens_of_chgperiods)
 
-        return gens_of_chgperiods, first_chgp_idx_with_pred, first_gen_idx_with_pred
+        # for algorithms without prediction: take the first change period
+        # with prediction that any other algorithm has (the first change period
+        # with prediction depends on the employed window size)
+        arr_first_chgp_idx = np.array(
+            list(first_chgp_idx_with_pred_per_alg.values()))  # convert to arr.
+        arr_first_gen_idx = np.array(
+            list(first_gen_idx_with_pred_per_alg.values()))  # convert to arr.
+
+        min_first_chgp_idx_w_p = np.min(
+            arr_first_chgp_idx[np.where(arr_first_chgp_idx > 0)])
+        min_first_gen_idx_w_p = np.min(
+            arr_first_gen_idx[np.where(arr_first_gen_idx > 0)])
+
+        for alg in alg_types:
+            if first_chgp_idx_with_pred_per_alg[alg] == 0:
+                first_chgp_idx_with_pred_per_alg[alg] = min_first_chgp_idx_w_p
+            if first_gen_idx_with_pred_per_alg[alg] == 0:
+                first_gen_idx_with_pred_per_alg[alg] = min_first_gen_idx_w_p
+
+        # gens_of_chgperiods: the same for all (since all algorithms have same
+        # change frequency), therefore only done for data of last algorithm
+        return gens_of_chgperiods, first_chgp_idx_with_pred_per_alg, first_gen_idx_with_pred_per_alg
 
     def evaluate_subdirs(self, subdir, output_dir_for_benchmark_funct, df,
                          exp_file_name, benchmarkfunction, dim,
@@ -276,7 +301,7 @@ class MetricCalculator():
         print("        alg_types: ", alg_types, flush=True)
 
         # algorithms with predictor types, e.g. "ea_no"
-        gens_of_chgperiods, first_chgp_idx_with_pred, first_gen_idx_with_pred = self.get_experiment_metadata(
+        gens_of_chgperiods, first_chgp_idx_with_pred_per_alg, first_gen_idx_with_pred_per_alg = self.get_experiment_metadata(
             alg_types, subdir_path, exp_file_name, ks, filters)
 
         for alg in alg_types:
@@ -327,13 +352,13 @@ class MetricCalculator():
                                                                                             pred_opt_fit_per_chgperiod,
                                                                                             best_found_pos_per_chgperiod,
                                                                                             best_found_fit_per_chgperiod,
-                                                                                            first_chgp_idx_with_pred)
+                                                                                            first_chgp_idx_with_pred_per_alg[alg])
                 # averaged bog for this run (not the average bog as
                 # defined) (should not be used other than as average
                 # over all runs)
                 bog_for_run = avg_bog_for_one_run(best_found_fit_per_gen,
                                                   self.only_for_preds,
-                                                  first_gen_idx_with_pred)
+                                                  first_gen_idx_with_pred_per_alg)
                 data = {'expfilename': exp_file_name,
                         'arrayfilename': array_file_name,
                         'function': benchmarkfunction, 'predictor': predictor,
@@ -384,7 +409,7 @@ class MetricCalculator():
                     # this algorithm needs not to be considered for RCS
             rcs_per_alg = rel_conv_speed(
                 gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict,
-                self.only_for_preds, first_chgp_idx_with_pred)
+                self.only_for_preds, first_chgp_idx_with_pred_per_alg)
             print("                    rcs_per_alg ", rcs_per_alg, flush=True)
 
             # store RCS data
