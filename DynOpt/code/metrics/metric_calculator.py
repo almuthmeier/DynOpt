@@ -237,14 +237,8 @@ class MetricCalculator():
             best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
             file.close()
 
-            # check whether
-            # if len(pred_opt_pos_per_chgperiod) != 0:
             n_preds = len(pred_opt_pos_per_chgperiod)
             n_chgps = len(best_found_pos_per_chgperiod)
-            # break  # exit loop
-        # if n_preds == 0:
-        #    pass
-        #    #     keine Vorhersagealgorithmus dabei gewesen
 
             gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
                 real_chgperiods_for_gens)
@@ -254,24 +248,30 @@ class MetricCalculator():
             first_gen_idx_with_pred_per_alg[alg] = get_first_generation_idx_with_pred(
                 n_chgps, n_preds, gens_of_chgperiods)
 
-        # for algorithms without prediction: take the first change period
-        # with prediction that any other algorithm has (the first change period
-        # with prediction depends on the employed window size)
+        # all "starting indices" of all algorithms in one array
         arr_first_chgp_idx = np.array(
             list(first_chgp_idx_with_pred_per_alg.values()))  # convert to arr.
         arr_first_gen_idx = np.array(
             list(first_gen_idx_with_pred_per_alg.values()))  # convert to arr.
 
-        min_first_chgp_idx_w_p = np.min(
-            arr_first_chgp_idx[np.where(arr_first_chgp_idx > 0)])
-        min_first_gen_idx_w_p = np.min(
-            arr_first_gen_idx[np.where(arr_first_gen_idx > 0)])
+        if len(np.argwhere(arr_first_chgp_idx > 0)) != 0 and len(np.argwhere(arr_first_gen_idx > 0)) != 0:
+            # lowest change period index where any algorithm starts prediction
+            min_first_chgp_idx_w_p = np.min(
+                np.argwhere(arr_first_chgp_idx > 0))
+            min_first_gen_idx_w_p = np.min(np.argwhere(arr_first_chgp_idx > 0))
 
-        for alg in alg_types:
-            if first_chgp_idx_with_pred_per_alg[alg] == 0:
-                first_chgp_idx_with_pred_per_alg[alg] = min_first_chgp_idx_w_p
-            if first_gen_idx_with_pred_per_alg[alg] == 0:
-                first_gen_idx_with_pred_per_alg[alg] = min_first_gen_idx_w_p
+            # for algorithms without prediction: take the first change period
+            # with prediction that any other algorithm has (the first change period
+            # with prediction depends on the employed window size)
+            for alg in alg_types:
+                if first_chgp_idx_with_pred_per_alg[alg] == 0:
+                    first_chgp_idx_with_pred_per_alg[alg] = min_first_chgp_idx_w_p
+                if first_gen_idx_with_pred_per_alg[alg] == 0:
+                    first_gen_idx_with_pred_per_alg[alg] = min_first_gen_idx_w_p
+        else:
+            # there was no prediction done for any algorithm; in this case
+            # all indices are zero -> compute metrics over all generations
+            pass
 
         # gens_of_chgperiods: the same for all (since all algorithms have same
         # change frequency), therefore only done for data of last algorithm
