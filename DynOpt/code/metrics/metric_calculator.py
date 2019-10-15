@@ -358,7 +358,7 @@ class MetricCalculator():
                 # over all runs)
                 bog_for_run = avg_bog_for_one_run(best_found_fit_per_gen,
                                                   self.only_for_preds,
-                                                  first_gen_idx_with_pred_per_alg)
+                                                  first_gen_idx_with_pred_per_alg[alg])
                 data = {'expfilename': exp_file_name,
                         'arrayfilename': array_file_name,
                         'function': benchmarkfunction, 'predictor': predictor,
