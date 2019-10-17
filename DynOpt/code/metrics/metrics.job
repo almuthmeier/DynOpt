@@ -10,18 +10,19 @@
 
 
 benchmarkfunctionfolderpath="/raid/almuth/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.1/"
-benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/"
-benchmarkfunctionfolderpath="/raid/almuth/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.5/"
-outputpath="/raid/almuth/Diss/Ausgaben/output_EWwithPred_long-run_2019-10-05/"
-benchmarkfunctions=sphere #,rastrigin,rosenbrock #mpbcorr
+#benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/"
+
+#outputpath="/raid/almuth/Diss/Ausgaben/output_EWwithPred_long-run_2019-10-05/"
+outputpath="/raid/almuth/DynCMA/Ausgaben/output_2019-09-24_alle-Varianten_vel-0.1/"
+
+benchmarkfunctions=sphere,rastrigin,rosenbrock #mpbcorr
 poschgtypes=sinefreq #none
 fitchgtypes=none
 #dims=2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
-#dims=2,5,10,20
-dims=20
+dims=2,5,10,20
 noises=0.00 #,0.01,0.05
 pathaddition="architecture/"
-metricfilename="output_2019-10-14.csv"
+metricfilename="output_2019-10-17.csv"
 onlyforpreds="True"			# True if metrics should be computed only over change periods where a prediction was made
 
 # -----------------------------------------------------------------------------
