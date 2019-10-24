@@ -7,16 +7,16 @@ zfactors=0.01,0.1,1.0,10.0
 # ----------------------------------------------------------------------------
 
 
-#pred1="kalman"
-#pred2="kalman"
-#algnameaddition1="_predKAL" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
-#algnameaddition2="_predUNC"
+pred1="kalman"
+pred2="kalman"
+algnameaddition1="_wurz_predKAL" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
+algnameaddition2="_wurz_predUNC"
 
 
-pred1="tcn"
-pred2="tcn"
-algnameaddition1="_auto_predKAL" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
-algnameaddition2="_auto_predUNC" 								
+#pred1="tcn"
+#pred2="tcn"
+#algnameaddition1="_wurz_auto_predKAL" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
+#algnameaddition2="_wurz_auto_predUNC" 								
 
 
  								
@@ -80,9 +80,9 @@ for d in "${dims[@]}"
 do
 	#./subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
 	#./subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
-	% SRR
+	# SRR
 	sbatch --mem=16G --job-name="d$d-srrkal" --output="slurm_d$d-srrkal.%j.out" --error="slurm_d$d-srrkal.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
-	#sbatch --mem=16G --job-name="d$d-srrunc" --output="slurm_d$d-srrunc.%j.out" --error="slurm_d$d-srrunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
+	sbatch --mem=16G --job-name="d$d-srrunc" --output="slurm_d$d-srrunc.%j.out" --error="slurm_d$d-srrunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
 	# MPB?	
 	#sbatch --mem=16G --job-name="d$d-mpbkal" --output="slurm_d$d-mpbkal.%j.out" --error="slurm_d$d-mpbkal.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
 	#sbatch --mem=16G --job-name="d$d-mpbunc" --output="slurm_d$d-mpbunc.%j.out" --error="slurm_d$d-mpbunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
