@@ -7,16 +7,16 @@ zfactors=0.01,0.1,1.0,10.0
 # ----------------------------------------------------------------------------
 
 
-pred1="kalman"
-pred2="kalman"
-algnameaddition1="_wurz_predKAL" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
-algnameaddition2="_wurz_predUNC"
+#pred1="kalman"
+#pred2="kalman"
+#algnameaddition1="_wurz_predKAL" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
+#algnameaddition2="_wurz_predUNC"
 
 
-#pred1="tcn"
-#pred2="tcn"
-#algnameaddition1="_wurz_auto_predKAL" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
-#algnameaddition2="_wurz_auto_predUNC" 								
+pred1="tcn"
+pred2="tcn"
+algnameaddition1="_wurz_auto_predKAL" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
+algnameaddition2="_wurz_auto_predUNC" 								
 
 
  								
