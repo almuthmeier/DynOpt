@@ -280,10 +280,6 @@ class DynamicEA():
             # predictive variance for re-initialization
             # -> different variance for each dimension
             covariance = self.pred_unc_per_chgperiod[-1]
-            # better results with standard deviation than with covariance
-            # therefore square root is done
-            # TODO delete following line
-            covariance = np.sqrt(covariance)
             assert len(covariance) == self.dim
         elif self.reinitialization_mode == "pred-DEV":
             # -> one variance for all dimensions
@@ -310,8 +306,6 @@ class DynamicEA():
             # using Kalman-Based predictions"
             c = 0.1  # seemed to be good setting in the paper
             covariance = self.pred_unc_per_chgperiod[-1]
-            # TODO delete following line
-            covariance = np.sqrt(covariance)
             max_variance = np.max(covariance)
             max_sigma = np.sqrt(max_variance)
             g = c / (1 + max_sigma)
