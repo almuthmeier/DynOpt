@@ -16,7 +16,8 @@
 # ----------------------------------------------------------------------------
 # sphere, rastrigin, rosenbrock
 
-functions=(sphere rastrigin rosenbrock)
+#functions=(sphere rastrigin rosenbrock)
+f=sphere
 poschgt="sinefreq"
 n=0.00
 #for f in "${functions[@]}"
@@ -33,6 +34,11 @@ n=0.00
 
 # ----------------------------------------------------------------------------
 
+dims=(3 4 6 7 8 9 11 12 13 14 15 16 17 18 19)
+for d in "${dims[@]}"
+do
+	./run_server.sh "$1" "$2" "$3" "$4" "$5" "$d" "$f" "$poschgt" "$n" &    # $d instead of $6
+done
 
 for f in "${functions[@]}"
 do
