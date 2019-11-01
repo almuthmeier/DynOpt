@@ -70,4 +70,8 @@ In the ICANN 2019 paper we propose a new benchmark generator for dynamic optimiz
 
 - "truepred" ist noch nicht in Re-initialisierungsstrategien eingebaut (25.7.19)
 	-> compute_noisy_opt_positions() in dynea.py
-- epist_unc_per_chgperiod und kal_variance_per_chgperiod durch pred_unc_per_chgperiod ersetzt; wird also von allen Vorhersagemethoden, die eine Unsicherheitsschätzung haben, verwendet. aleat_unc_per_chgperiod ist weiterhin nur für TCN 
+- epist_unc_per_chgperiod und kal_variance_per_chgperiod durch pred_unc_per_chgperiod ersetzt; wird also von allen Vorhersagemethoden, die eine Unsicherheitsschätzung haben, verwendet. aleat_unc_per_chgperiod ist weiterhin nur für TCN
+
+### November 2019
+- integreated hybrid predictor (hybrid-autoregressive-rnn): cannot be combined with uncertainty-based re-initialization (pUNC, pKAL). Only with pRND, pDEV, nRND, nDEV, nVAR. This is because if e.g. an ensemble of unc and ar is used, it is not guaranteed that for each change period with prediction an uncertainty estimate is given since the prediction of either ar or unc is employed/stored. 
+Vice versa has this the effect that uncertainty-based re-initialization must not be combined with hybrid prediction approaches.

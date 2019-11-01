@@ -8,7 +8,7 @@ Created on Jan 18, 2018
 
 @author: ameier
 '''
-
+from _collections import OrderedDict
 import copy
 import math
 import warnings
@@ -86,6 +86,32 @@ def shuffle_split_output(samples, returnseq, ntimesteps, n_features, shuffle,
     return np.float32(in_data), np.float32(out_data)
 
 
+def build_all_predictors(mode, n_time_steps, n_features, batch_size, n_neurons,
+                         returnseq, apply_tl, n_overall_layers, epochs, rnn_type,
+                         ntllayers, with_dense_first, tl_learn_rate, use_uncs,
+                         train_mc_runs, train_dropout, test_dropout, kernel_size,
+                         nhid, lr):
+    '''
+    @return: dictionary containing for each single predictor the respective
+    model
+    '''
+    if "hybrid-" in mode:
+        # e.g. "hybrid-autoregressive-rnn"
+        parts = mode.split("-")
+        predictor_names = parts[1:]  # first entry is "hybrid"
+    else:
+        predictor_names = [mode]
+
+    predictors = OrderedDict()
+    for name in predictor_names:
+        predictors[name] = build_predictor(name, n_time_steps, n_features, batch_size, n_neurons,
+                                           returnseq, apply_tl, n_overall_layers, epochs, rnn_type,
+                                           ntllayers, with_dense_first, tl_learn_rate, use_uncs,
+                                           train_mc_runs, train_dropout, test_dropout, kernel_size,
+                                           nhid, lr)
+    return predictors
+
+
 def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                     returnseq, apply_tl, n_overall_layers, epochs, rnn_type,
                     ntllayers, with_dense_first, tl_learn_rate, use_uncs,
@@ -93,7 +119,9 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                     nhid, lr):
     '''
     Creates the desired prediction model.
-    @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense, tcn, kalman
+    @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense, tcn, kalman;
+    no hybrid predictor names allowed (e.g. hybrid-autoregressive-rnn) 
+    because they are decomposed in their single predictors before
     @param batch_size: batch size for the RNN
     @param n_time_steps: number of time steps to use for prediction/training
     @param n_features: dimensionality of the solution space
@@ -699,7 +727,7 @@ def calculate_n_required_chgps_from_n_train_samples(n_train_samples, pred_diffs,
         return n_train_samples + n_time_steps
 
 
-def prepare_data_train_and_predict(sess, gen_idx, n_features, predictor,
+def prepare_data_train_and_predict(sess, gen_idx, n_features, predictors,
                                    experiment_data, n_epochs, batch_size,
                                    return_seq, shuffle_train_data, n_new_train_data,
                                    best_found_pos_per_chgperiod, train_interval,
@@ -715,7 +743,6 @@ def prepare_data_train_and_predict(sess, gen_idx, n_features, predictor,
     '''
     TODO use this function in dynpso
     '''
-    ar_predictor = None
     n_past_chgps = len(best_found_pos_per_chgperiod)
     # number of train data that can be produced from the last chg. periods
     overall_n_train_data = calculate_n_train_samples(
@@ -769,17 +796,48 @@ def prepare_data_train_and_predict(sess, gen_idx, n_features, predictor,
         if do_training:
             n_new_train_data = 0
         # predict next optimum position or difference (and re-scale value)
-        (prediction, train_error, train_err_per_epoch,
-         pred_unc, avg_al_unc, ar_predictor) = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
-                                                                             n_epochs, batch_size,
-                                                                             n_time_steps, n_features,
-                                                                             scaler, predictor, return_seq, shuffle_train_data,
-                                                                             do_training, best_found_pos_per_chgperiod,
-                                                                             predict_diffs, test_mc_runs, n_new_train_data,
-                                                                             glob_opt, trueprednoise, pred_np_rnd_generator)
+
+        prdctns = []
+        prdctns_fit = []
+        pred_unc_per_predictor = []
+        avg_al_unc_per_predictor = []
+        train_error_per_predictor = []
+        train_err_per_epoch_per_predictor = []
+        prdct_nms = []
+        for prdctr_name in predictors.keys():
+            # make prediction with each single predictor
+            (prdctn, train_error, train_err_per_epoch,
+             pred_unc, avg_al_unc, ar_predictor) = predict_next_optimum_position(prdctr_name, sess, train_data, noisy_series,
+                                                                                 n_epochs, batch_size,
+                                                                                 n_time_steps, n_features,
+                                                                                 scaler, predictors[
+                                                                                     prdctr_name], return_seq, shuffle_train_data,
+                                                                                 do_training, best_found_pos_per_chgperiod,
+                                                                                 predict_diffs, test_mc_runs, n_new_train_data,
+                                                                                 glob_opt, trueprednoise, pred_np_rnd_generator)
+            prdctns.append(prdctn)
+            prdctns_fit.append(utils_dynopt.fitness(
+                benchmarkfunction, prdctn, gen_idx, experiment_data))
+            pred_unc_per_predictor.append(pred_unc)
+            avg_al_unc_per_predictor.append(avg_al_unc)
+            train_error_per_predictor.append(train_error)
+            train_err_per_epoch_per_predictor.append(train_err_per_epoch)
+            prdct_nms.append(prdctr_name)
+            if prdctr_name == "autoregressive":
+                predictors[prdctr_name] = ar_predictor
+            
+        # index of best prediction
+        min_idx = np.argmin(prdctns_fit)
+        prediction = prdctns[min_idx]
+        prediction_fit = prdctns_fit[min_idx]
+        pred_unc = pred_unc_per_predictor[min_idx]
+        avg_al_unc = avg_al_unc_per_predictor[min_idx]
+        train_error = train_error_per_predictor[min_idx]
+        train_err_per_epoch = train_err_per_epoch_per_predictor[min_idx]
+
+        # store results
         pred_opt_pos_per_chgperiod.append(copy.copy(prediction))
-        pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
-            benchmarkfunction, prediction, gen_idx, experiment_data))
+        pred_opt_fit_per_chgperiod.append(prediction_fit)
         if pred_unc is not None and use_uncs:
             pred_unc_per_chgperiod.append(copy.copy(pred_unc))
         if avg_al_unc is not None and use_uncs:
@@ -787,4 +845,4 @@ def prepare_data_train_and_predict(sess, gen_idx, n_features, predictor,
         train_error_per_chgperiod.append(train_error)
         train_error_for_epochs_per_chgperiod.append(
             train_err_per_epoch)
-    return my_pred_mode, ar_predictor, n_new_train_data
+    return my_pred_mode, predictors, n_new_train_data

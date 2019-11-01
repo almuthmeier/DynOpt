@@ -79,7 +79,7 @@ def define_parser_arguments():
     parser.add_argument("-predvariant", type=str)
 
     # for predictor
-    # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, kalman
+    # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, kalman, hybrid-autoregressive-rnn
     parser.add_argument("-predictor", type=str)
     parser.add_argument("-trueprednoise", type=float)
     parser.add_argument("-timesteps", type=int)
@@ -160,14 +160,14 @@ def initialize_comparator_manually(comparator):
     comparator.algorithm = "dynea"  # "dyncma"  # "dynea"
     comparator.repetitions = 1
     comparator.chgperiodrepetitions = 1
-    comparator.chgperiods = 200
-    comparator.lenchgperiod = 30
+    comparator.chgperiods = 500
+    comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     #comparator.benchmarkfunctionfolderpath = path_to_dynoptim + "/DynOpt/datasets/" + "GECCO_2019/"
-    comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-1.0/"
+    comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.5/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_long/"
+    comparator.outputdirectory = "ersterTest/ea_hybrid/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "Diss/" + "sphere/"
     comparator.lbound = 0
@@ -177,7 +177,7 @@ def initialize_comparator_manually(comparator):
     # ["linear", "sine", "circle", "mixture"])
     comparator.poschgtypes = np.array(["sinefreq"])
     comparator.fitchgtypes = np.array(["none"])
-    comparator.dims = np.array([20])
+    comparator.dims = np.array([2])
     # TODO must not be a list (otherwise: log-file name is wrong)
     comparator.noises = np.array([0.0])
 
@@ -200,7 +200,7 @@ def initialize_comparator_manually(comparator):
         comparator.trechenberg = 5
         comparator.tau = 0.5
         # "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
-        comparator.reinitializationmode = "pred-RND"  # "no-PRE"
+        comparator.reinitializationmode = "pred-UNC"  # "no-PRE"
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
     # CMA
     elif comparator.algorithm == "dyncma":
@@ -214,14 +214,15 @@ def initialize_comparator_manually(comparator):
     # for predictor
     # "rnn" "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
     # "truepred" (true prediction, disturbed with known noise)
-    comparator.predictor = "rnn"
+    # "hybrid-autoregressive-rnn"
+    comparator.predictor = "kalman"
     # known prediction noise (standard deviation) of predition "truepred"
     comparator.trueprednoise = 0.1
-    comparator.timesteps = 50
+    comparator.timesteps = 10
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
-    comparator.traininterval = 75
-    comparator.nrequiredtraindata = 128
-    comparator.useuncs = False
+    comparator.traininterval = 5
+    comparator.nrequiredtraindata = 3
+    comparator.useuncs = True
     comparator.trainmcruns = 5 if comparator.useuncs else 0
     comparator.testmcruns = 5 if comparator.useuncs else 0
     comparator.traindropout = 0.1
@@ -231,11 +232,11 @@ def initialize_comparator_manually(comparator):
     comparator.lr = 0.002
 
     # for ANN predictor
-    if comparator.predictor == "rnn":
+    if comparator.predictor in ["rnn", "hybrid-autoregressive-rnn"]:
         comparator.batchsize = 1
     elif comparator.predictor in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
         comparator.batchsize = 8
-    if comparator.predictor in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
+    if comparator.predictor in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn", "hybrid-autoregressive-rnn"]:
         # (not everything is necessary for every predictor)
         comparator.neuronstype = "dyn1.3"  # "fixed20"
         comparator.epochs = 80

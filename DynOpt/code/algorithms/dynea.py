@@ -14,7 +14,7 @@ from utils import utils_dynopt
 from utils.utils_dynopt import environment_changed
 from utils.utils_ea import dominant_recombination, gaussian_mutation,\
     mu_plus_lambda_selection, adapt_sigma
-from utils.utils_prediction import build_predictor
+from utils.utils_prediction import build_all_predictors
 from utils.utils_prediction import prepare_data_train_and_predict
 from utils.utils_transferlearning import get_variables_and_names
 from utils.utils_values import make_values_feasible_for_square
@@ -401,7 +401,8 @@ class DynamicEA():
                               self.reinitialization_mode)
 
         elif my_pred_mode in ["rnn", "autoregressive", "tfrnn", "tftlrnn",
-                              "tftlrnndense", "tcn", "kalman", "truepred"]:
+                              "tftlrnndense", "tcn", "kalman", "truepred",
+                              "hybrid-autoregressive-rnn"]:
             # last predicted optimum
             pred_optimum_position = self.pred_opt_pos_per_chgperiod[-1]
             # insert predicted optimum into immigrants
@@ -463,16 +464,16 @@ class DynamicEA():
         # ---------------------------------------------------------------------
         # local variables for predictor
         # ---------------------------------------------------------------------
-        predictor = build_predictor(self.predictor_name, self.n_time_steps,
-                                    self.dim, self.batch_size, self.n_neurons,
-                                    self.return_seq, self.apply_tl, self.n_layers,
-                                    self.n_epochs, self.tl_rnn_type, self.n_tllayers,
-                                    self.with_dense_first, self.tl_learn_rate, self.use_uncs,
-                                    self.train_mc_runs, self.train_dropout, self.test_dropout,
-                                    self.kernel_size, self.n_kernels, self.lr)
-        ar_predictor = None
+        predictors = build_all_predictors(self.predictor_name, self.n_time_steps,
+                                          self.dim, self.batch_size, self.n_neurons,
+                                          self.return_seq, self.apply_tl, self.n_layers,
+                                          self.n_epochs, self.tl_rnn_type, self.n_tllayers,
+                                          self.with_dense_first, self.tl_learn_rate, self.use_uncs,
+                                          self.train_mc_runs, self.train_dropout, self.test_dropout,
+                                          self.kernel_size, self.n_kernels, self.lr)
         sess = None  # necessary since is assigned anew after each training
-        if self.predictor_name in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
+        if self.predictor_name in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn",
+                                   "hybrid-autoregressive-rnn"]:
             import tensorflow as tf
             # if transfer learning then load weights
             if self.apply_tl:
@@ -557,8 +558,8 @@ class DynamicEA():
 
                 # prepare data and predict optimum
                 (my_pred_mode,
-                 ar_predictor,
-                 self.n_new_train_data) = prepare_data_train_and_predict(sess, i, self.dim, predictor,
+                 updated_predictors,
+                 self.n_new_train_data) = prepare_data_train_and_predict(sess, i, self.dim, predictors,
                                                                          self.experiment_data, self.n_epochs, self.batch_size,
                                                                          self.return_seq, self.shuffle_train_data, self.n_new_train_data,
                                                                          self.best_found_pos_per_chgperiod, self.train_interval,
@@ -571,8 +572,7 @@ class DynamicEA():
                                                                          self.train_error_per_chgperiod,
                                                                          self.train_error_for_epochs_per_chgperiod,
                                                                          glob_opt, self.trueprednoise, self.pred_np_rnd_generator)
-                if not ar_predictor is None:
-                    predictor = ar_predictor
+                predictors = updated_predictors
 
                 # adapt population to environment change
                 self.adapt_population(i, my_pred_mode)
@@ -622,9 +622,8 @@ class DynamicEA():
                 self.population[min_fitness_index])
             # print("best: ", self.population_fitness[min_fitness_index],
             #      "[", self.population[min_fitness_index], "]")
-        if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
-                self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn" or \
-                self.predictor_name == "rnn":
+        if self.predictor_name in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn", "rnn",
+                                  "hybrid-autoregressive-rnn"]:
             sess.close()
             tf.reset_default_graph()
 

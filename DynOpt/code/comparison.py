@@ -134,7 +134,7 @@ class PredictorComparator(object):
                               "kalman", "truepred"]:
             n_neurons = None
             full_tl_model_name = None
-        elif self.predictor in ["rnn"]:
+        elif self.predictor in ["rnn", "hybrid-autoregressive-rnn"]:
             n_neurons = get_n_neurons(self.neuronstype, dimensionality)
             full_tl_model_name = None
         else:
