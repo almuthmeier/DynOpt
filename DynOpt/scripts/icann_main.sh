@@ -7,16 +7,16 @@ zfactors=0.1,0.5,1.0,2.0
 # ----------------------------------------------------------------------------
 
 
-#pred1="kalman"
-#pred2="kalman"
-#algnameaddition1="_predRND" 
-#algnameaddition2="_predUNC"
+pred1="kalman"
+pred2="kalman"
+algnameaddition1="_predRND" 
+algnameaddition2="_predUNC"
 
 
-pred1="tcn"
-pred2="tcn"
-algnameaddition1="_auto_predRND" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
-algnameaddition2="_auto_predUNC" 								
+#pred1="tcn"
+#pred2="tcn"
+#algnameaddition1="_auto_predRND" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
+#algnameaddition2="_auto_predUNC" 								
 
 #pred1="tcn"
 #pred2="tcn"
@@ -101,7 +101,7 @@ reinimode2="pred-UNC"
 #./subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
 #./subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
 
-sbatch --mem=32G --job-name="d$d-krnd" --output="slurm_d$d-krnd.%j.out" --error="slurm_d$d-krnd.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
-sbatch --mem=32G --job-name="d$d-kunc" --output="slurm_d$d-kunc.%j.out" --error="slurm_d$d-kunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
+sbatch --mem=32G --job-name="d$d-klrnd" --output="slurm_d$d-klrnd.%j.out" --error="slurm_d$d-klrnd.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
+sbatch --mem=32G --job-name="d$d-klunc" --output="slurm_d$d-klunc.%j.out" --error="slurm_d$d-klunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
 	
 wait
