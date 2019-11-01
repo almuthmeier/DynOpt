@@ -17,7 +17,7 @@ from utils.utils_cmaes import get_new_sig, get_mue_best_individuals,\
     get_weighted_avg, get_inverse_sqroot, get_new_p_sig, get_offsprings, \
     get_h_sig, get_new_p_c, visualize_dominant_eigvector, get_C_mu, get_new_C
 from utils.utils_dynopt import environment_changed
-from utils.utils_prediction import build_predictor
+from utils.utils_prediction import build_all_predictors
 from utils.utils_prediction import prepare_data_train_and_predict
 
 
@@ -376,16 +376,17 @@ class DynamicCMAES(object):
         # ---------------------------------------------------------------------
         # local variables for predictor
         # ---------------------------------------------------------------------
-        predictor = build_predictor(self.predictor_name, self.n_time_steps,
-                                    self.dim, self.batch_size, self.n_neurons,
-                                    self.return_seq, False, self.n_layers,
-                                    self.n_epochs, None, None,
-                                    None, None, self.use_uncs,
-                                    self.train_mc_runs, self.train_dropout, self.test_dropout,
-                                    self.kernel_size, self.n_kernels, self.lr)
+        predictors = build_all_predictors(self.predictor_name, self.n_time_steps,
+                                          self.dim, self.batch_size, self.n_neurons,
+                                          self.return_seq, False, self.n_layers,
+                                          self.n_epochs, None, None,
+                                          None, None, self.use_uncs,
+                                          self.train_mc_runs, self.train_dropout, self.test_dropout,
+                                          self.kernel_size, self.n_kernels, self.lr)
         ar_predictor = None
         sess = None  # necessary since is assigned anew after each training
-        if self.predictor_name in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
+        if self.predictor_name in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn",
+                                   "hybrid-autoregressive-rnn"]:
             import tensorflow as tf
             # if transfer learning then load weights
 
@@ -438,8 +439,8 @@ class DynamicCMAES(object):
 
                 # prepare data and predict optimum
                 (my_pred_mode,
-                 ar_predictor,
-                 self.n_new_train_data) = prepare_data_train_and_predict(sess, t, self.dim, predictor,
+                 updated_predictors,
+                 self.n_new_train_data) = prepare_data_train_and_predict(sess, t, self.dim, predictors,
                                                                          self.experiment_data, self.n_epochs, self.batch_size,
                                                                          self.return_seq, self.shuffle_train_data, self.n_new_train_data,
                                                                          self.best_found_pos_per_chgperiod, self.train_interval,
@@ -453,8 +454,7 @@ class DynamicCMAES(object):
                                                                          self.train_error_for_epochs_per_chgperiod,
                                                                          glob_opt, self.trueprednoise, self.pred_np_rnd_generator)
 
-                if not ar_predictor is None:
-                    predictor = ar_predictor
+                predictors = updated_predictors
 
                 # (re-)set variables
                 self.update_sig_and_m_after_chage(m_begin_chgp, my_pred_mode,
@@ -550,10 +550,32 @@ class DynamicCMAES(object):
             # print(str(t) + ": best: ", self.population_fitness[min_fitness_index],
             #      "[", self.population[min_fitness_index], "]")
 
-        if self.predictor_name in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
+        if self.predictor_name in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn",
+                                   "hybrid-autoregressive-rnn"]:
             sess.close()
             tf.reset_default_graph()
 
         # save results for last change period
         self.best_found_pos_per_chgperiod.append(copy.copy(so_far_best_ind))
         self.best_found_fit_per_chgperiod.append(copy.copy(so_far_best_fit))
+
+        # Make all entries of lists equally-dimensional (otherwise exception
+        # when they are stored in comparison.py)
+        # sig is in the beginning only a scalar. In case of kalman or tcn
+        # prediction with uncertainty it becomes multi-dimensional
+        # Therefore single scalars are repeated for all dimensions, so that
+        # each entry has the same dimensionality.
+        new_sig_per_gen = []
+        new_p_sig_pred_per_chgp = []
+        for sig_entry, p_sig_pred_entry in zip(self.sig_per_gen, self.p_sig_pred_per_chgp):
+            if np.isscalar(sig_entry):
+                new_sig_per_gen.append([sig_entry] * self.dim)
+            else:
+                new_sig_per_gen.append(sig_entry)
+
+            if np.isscalar(p_sig_pred_entry):
+                new_p_sig_pred_per_chgp.append([p_sig_pred_entry] * self.dim)
+            else:
+                new_p_sig_pred_per_chgp.append(p_sig_pred_entry)
+        self.sig_per_gen = new_sig_per_gen
+        self.p_sig_pred_per_chgp = new_p_sig_pred_per_chgp
