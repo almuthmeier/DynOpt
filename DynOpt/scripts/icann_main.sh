@@ -18,11 +18,15 @@ zfactors=0.1,0.5,1.0,2.0
 #algnameaddition1="_auto_predRND" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
 #algnameaddition2="_auto_predUNC" 								
 
-pred1="tcn"
-pred2="tcn"
+#pred1="tcn"
+#pred2="tcn"
+#algnameaddition1="_predRND" 
+#algnameaddition2="_predDEV"
+
+pred1="autoregressive"
+pred2="autoregressive"
 algnameaddition1="_predRND" 
 algnameaddition2="_predDEV"
-
 
  								
 useuncs1="False"
