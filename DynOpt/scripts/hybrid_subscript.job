@@ -37,7 +37,7 @@ n=0.00
 
 for f in "${functions[@]}"
 do
-	./icann_run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$f" "$poschgt" "$n" & 
+	./hybrid_run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$f" "$poschgt" "$n" & 
 done
 
 wait
