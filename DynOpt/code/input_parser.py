@@ -35,7 +35,7 @@ def define_parser_arguments():
     # true, if changes occur at random time points
     parser.add_argument("-ischgperiodrandom", type=str)
     # "mpb" or "sphere-rastrigin-rosenbrock" (alt)
-    # sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (neu), mpbcorr
+    # sphere, rosenbrock, rastrigin, mpbnoisy, mpbrand (neu), mpbcorr
     # defines the benchmark function, must be located in the datasets folder of
     # this project
     parser.add_argument("-benchmarkfunction", type=str)
@@ -165,17 +165,18 @@ def initialize_comparator_manually(comparator):
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
     #comparator.benchmarkfunctionfolderpath = path_to_dynoptim + "/DynOpt/datasets/" + "GECCO_2019/"
-    comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.5/"
+    #comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.5/"
+    comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/GITs/datasets/Predictorvergleich/EvoStar_2018/structured-for-diss/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_hybrid/"
+    comparator.outputdirectory = "ersterTest/ea_hybrid_neu/"
     comparator.outputdirectorypath = path_to_dynoptim + \
         "/DynOpt/output/" + "Diss/" + "sphere/"
     comparator.lbound = 0
     comparator.ubound = 100
 
     # run only some experiments of all for the benchmark problem
-    # ["linear", "sine", "circle", "mixture"])
-    comparator.poschgtypes = np.array(["sinefreq"])
+    # ["linear", "sine", "circle", "mixture" "sinefreq"])
+    comparator.poschgtypes = np.array(["linear"])
     comparator.fitchgtypes = np.array(["none"])
     comparator.dims = np.array([2])
     # TODO must not be a list (otherwise: log-file name is wrong)
@@ -200,7 +201,7 @@ def initialize_comparator_manually(comparator):
         comparator.trechenberg = 5
         comparator.tau = 0.5
         # "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
-        comparator.reinitializationmode = "pred-UNC"  # "no-PRE"
+        comparator.reinitializationmode = "pred-RND"  # "no-PRE"
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
     # CMA
     elif comparator.algorithm == "dyncma":
@@ -209,20 +210,20 @@ def initialize_comparator_manually(comparator):
         # "simplest", "a", "b", "c", "d", "g" ,"branke", "f", "ha", "hb", "hd",
         # "hawom", "hbwom", "hdwom", "None", "p", "pwm"
         # TODO (ist "simplest" ueberhaupt noch moeglich?)
-        comparator.predvariant = "a"
+        comparator.predvariant = "c"
 
     # for predictor
     # "rnn" "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
     # "truepred" (true prediction, disturbed with known noise)
     # "hybrid-autoregressive-rnn"
-    comparator.predictor = "kalman"
+    comparator.predictor = "hybrid-autoregressive-rnn"
     # known prediction noise (standard deviation) of predition "truepred"
     comparator.trueprednoise = 0.1
     comparator.timesteps = 10
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 5
     comparator.nrequiredtraindata = 3
-    comparator.useuncs = True
+    comparator.useuncs = False
     comparator.trainmcruns = 5 if comparator.useuncs else 0
     comparator.testmcruns = 5 if comparator.useuncs else 0
     comparator.traindropout = 0.1
@@ -256,7 +257,7 @@ def initialize_comparator_manually(comparator):
     # assertions
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
-    if comparator.predictor == "no":
+    if comparator.predictor == "no" and comparator.algorithm == "dynea":
         assert not comparator.reinitializationmode.startswith("pred-")
     if not comparator.useuncs and comparator.algorithm == "dynea":
         assert (comparator.reinitializationmode !=
@@ -341,13 +342,12 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.lr = args.lr
 
     # for ANN predictor
-    if args.predictor == "rnn":
+    if args.predictor in ["rnn", "hybrid-autoregressive-rnn"]:
         comparator.batchsize = 1
     elif args.predictor in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
         comparator.batchsize = args.batchsize
-    if (args.predictor == "rnn" or args.predictor == "tfrnn" or
-            args.predictor == "tftlrnn" or args.predictor == "tftlrnndense" or
-            args.predictor == "tcn"):
+    if (args.predictor in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn",
+                           "hybrid-autoregressive-rnn"]):
         comparator.neuronstype = args.neuronstype
         comparator.epochs = args.epochs
         comparator.n_layers = args.nlayers
