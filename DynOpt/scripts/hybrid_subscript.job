@@ -16,9 +16,9 @@
 # ----------------------------------------------------------------------------
 # sphere, rastrigin, rosenbrock
 
-functions=(sphere rastrigin rosenbrock)
-functions=(sphere)
-#f=sphere
+#functions=(sphere rastrigin rosenbrock)
+#functions=(sphere)
+f=sphere
 poschgt=("sine" "linear")
 n=0.00
 #for f in "${functions[@]}"
