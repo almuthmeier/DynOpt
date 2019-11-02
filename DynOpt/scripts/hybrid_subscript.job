@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --gres=gpu:1
-#SBATCH --ntasks=4
+#SBATCH --ntasks=6
 #SBATCH --time=3-00:00
 
 
@@ -23,6 +23,8 @@ poschgt=("sine" "linear")
 n=0.00
 #for f in "${functions[@]}"
 
+dims=(2 5 10 20 50 100)
+
 # ----------------------------------------------------------------------------
 # MPB
 
@@ -34,10 +36,15 @@ n=0.00
 
 
 # ----------------------------------------------------------------------------
-
-for f in "${functions[@]}"
+for d in "${dims[@]}" 
 do
-	./hybrid_run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$f" "$poschgt" "$n" & 
+	./hybrid_run_server.sh "$1" "$2" "$3" "$4" "$5" "$d" "$f" "$poschgt" "$n" &
 done
+
+
+#for f in "${functions[@]}"
+#do
+#	./hybrid_run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$f" "$poschgt" "$n" & 
+#done
 
 wait

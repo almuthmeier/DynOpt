@@ -78,8 +78,8 @@ nkernels=27					# number of kernels for TCN (same in every layer)
 lr=0.001					# leanring rate of TCN
 
 # ANN predictor
-neuronstype=dyn1.3			# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
-epochs=100					# number of training epochs for the RNN prediction model
+neuronstype="dyn1.3"		# fixed20, dyn1.3; defines the number of neurons in the RNN prediction model (only for "rnn", not for "tfrnn")
+epochs=20					# number of training epochs for the RNN prediction model
 batchsize=32				# batch size for TCN model
 nlayers=2					# overall number of layers (incl. tl layers)
 tlmodelpath="/raid/almuth/TransferLearning/Ausgaben/EAwithPred/models_2018-11-19/"	# path to the pre-trained transfer learning model
@@ -114,7 +114,7 @@ predictor=$1				# no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, ka
 
 algnameaddition=$2
 outputdirectory="$pathadditions/$algorithm""_""$predictor""$algnameaddition/"						# name of the output directory. Necessary to separate results for different algorithm settings.				
-outputdirectorypath="/raid/almuth/Diss/Ausgaben/output_ESwithPred_hybrid_2019-11-02/$benchmarkfunction/"		# path to output folder
+outputdirectorypath="/raid/almuth/Diss/Ausgaben/output_ESwithPred_hybrid_2019-11-02_neu/$benchmarkfunction/"		# path to output folder
 #outputdirectorypath="/home/almuth/Documents/Promotion/Ausgaben/Uncertainty/output_2019-04-15/$benchmarkfunction/"
 #------------------------------------------------------------------------------
 

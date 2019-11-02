@@ -85,25 +85,23 @@ reinimode2="pred-RND"
 # ----------------------------------------------------------------------------
 
 
-for d in "${dims[@]}" 
-do
+#for d in "${dims[@]}" 
+#do
 	#./subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
 	#./subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
 	# SRR
 	# sbatch --mem=16G --job-name="d$d-rnd" --output="slurm_d$d-rnd.%j.out" --error="slurm_d$d-rnd.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
 	# sbatch --mem=16G --job-name="d$d-unc" --output="slurm_d$d-unc.%j.out" --error="slurm_d$d-unc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
-	sbatch --mem=16G --job-name="d$d-hybr" --output="slurm_d$d-hybr.%j.out" --error="slurm_d$d-hybr.%j.err" hybrid_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
-	sbatch --mem=16G --job-name="d$d-rnn" --output="slurm_d$d-rnn.%j.out" --error="slurm_d$d-rnn.%j.err" hybrid_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
 	# MPB?	
 	#sbatch --mem=16G --job-name="d$d-mpbkal" --output="slurm_d$d-mpbkal.%j.out" --error="slurm_d$d-mpbkal.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
 	#sbatch --mem=16G --job-name="d$d-mpbunc" --output="slurm_d$d-mpbunc.%j.out" --error="slurm_d$d-mpbunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
-done
+#done
 
 
 #./subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
 #./subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
 
-#sbatch --mem=16G --job-name="d$d-hybr" --output="slurm_d$d-hybr.%j.out" --error="slurm_d$d-hybr.%j.err" hybrid_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
-#sbatch --mem=16G --job-name="d$d-rnn" --output="slurm_d$d-rnn.%j.out" --error="slurm_d$d-rnn.%j.err" hybrid_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
+sbatch --mem=32G --job-name="d$d-hybr" --output="slurm_d$d-hybr.%j.out" --error="slurm_d$d-hybr.%j.err" hybrid_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
+sbatch --mem=32G --job-name="d$d-rnn" --output="slurm_d$d-rnn.%j.out" --error="slurm_d$d-rnn.%j.err" hybrid_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
 	
 wait
