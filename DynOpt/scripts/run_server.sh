@@ -103,7 +103,7 @@ pathadditions="$pathaddition"
 # ==================================================================================================================================================
 # ==================================================================================================================================================
 # Set 1
-benchmarkfunction=$7	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+benchmarkfunction=$7	# sphere, griewank, rosenbrock, rastrigin, mpbnoisy, mpbrand, mpbcorr
 poschgtypes=$8			# linear,sine,circle,mixture,sinefreq position change type; comma-separated integers
 noises=${9}			# noise, required only for mpb-benchmarks; comma-separated floats
 # ==================================================================================================================================================

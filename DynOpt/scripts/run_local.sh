@@ -28,7 +28,7 @@ lenchgperiod=10				# number of generations per change period; has to be
 							# because lenchgperiod*chgperiods is the number of 
 							# generations. 
 ischgperiodrandom="False"	# True if the change occurs at a random time point.
-benchmarkfunction=sphere	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom, mpbcorr
+benchmarkfunction=sphere	# sphere, rosenbrock, rastrigin, mpbnoisy, mpbrand, mpbcorr
 							# defines the benchmark function, must be located 
 							# in the datasets/ folder of this project
 benchmarkfunctionfolderpath="/home/ameier/Documents/Promotion/Ausgaben/Uncertainty/Ausgaben/data_2019-01-19_final/" # parent directory path of the benchmark functions
