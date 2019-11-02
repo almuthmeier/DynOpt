@@ -101,7 +101,7 @@ reinimode2="pred-UNC"
 #./subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
 #./subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
 
-sbatch --mem=32G --job-name="d$d-klrnd" --output="slurm_d$d-klrnd.%j.out" --error="slurm_d$d-klrnd.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
-sbatch --mem=32G --job-name="d$d-klunc" --output="slurm_d$d-klunc.%j.out" --error="slurm_d$d-klunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
+sbatch --mem=64G --job-name="d$d-trnd" --output="slurm_d$d-trnd.%j.out" --error="slurm_d$d-trnd.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
+sbatch --mem=64G --job-name="d$d-tunc" --output="slurm_d$d-tunc.%j.out" --error="slurm_d$d-tunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
 	
 wait
