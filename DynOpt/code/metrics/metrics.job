@@ -10,21 +10,21 @@
 
 
 #benchmarkfunctionfolderpath="/raid/almuth/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-10.0/"
-#benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/"
-benchmarkfunctionfolderpath="/raid/almuth/Diss/Ausgaben/EvoStar2018_structured-for-diss/"
+benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-01-19_final/"
+#benchmarkfunctionfolderpath="/raid/almuth/Diss/Ausgaben/EvoStar2018_structured-for-diss/"
 
 #outputpath="/raid/almuth/Diss/Ausgaben/output_EWwithPred_long-run_2019-10-05/"
 #outputpath="/raid/almuth/DynCMA/Ausgaben/output_2019-09-24_alle-Varianten_vel-10.0/"
-#outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-10-31_newz_alle_DSB/"
-outputpath="/raid/almuth/Diss/Ausgaben/output_ESwithPred_hybrid_2019-11-02_neu/"
+outputpath="/raid/almuth/Uncertainty/Ausgaben/output_2019-10-31_newz_dims/"
+#outputpath="/raid/almuth/Diss/Ausgaben/output_ESwithPred_hybrid_2019-11-02_neu/"
 
 
 benchmarkfunctions=sphere #,rastrigin,rosenbrock #mpbcorr
-poschgtypes=sine #sinefreq #none
+poschgtypes=sinefreq #sine #sinefreq #none
 fitchgtypes=none
-#dims=2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
-dims=2,5,10,20
-dims=2,5,10,20,50,100
+dims=2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
+#dims=2,5,10,20
+#dims=2,5,10,20,50,100
 noises=0.00 #,0.01,0.05
 pathaddition="architecture/"
 metricfilename="output_2019-11-04.csv"
