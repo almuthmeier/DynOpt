@@ -101,7 +101,7 @@ reinimode2="pred-RND"
 #./subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
 #./subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
 
-sbatch --mem=32G --job-name="d$d-no" --output="slurm_d$d-no.%j.out" --error="slurm_d$d-no.%j.err" hybrid_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
-sbatch --mem=32G --job-name="d$d-ar" --output="slurm_d$d-ar.%j.out" --error="slurm_d$d-ar.%j.err" hybrid_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
+sbatch --mem=32G --job-name="d$d-hyb" --output="slurm_d$d-hyb.%j.out" --error="slurm_d$d-hyb.%j.err" hybrid_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
+sbatch --mem=32G --job-name="d$d-rnn" --output="slurm_d$d-rnn.%j.out" --error="slurm_d$d-rnn.%j.err" hybrid_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
 	
 wait
