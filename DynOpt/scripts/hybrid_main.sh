@@ -1,16 +1,16 @@
 #!/bin/bash
 
-dims=(2 5 10 20 50 100)
+#dims=(2 5 10 20 50 100)
 zfactors=0.01,0.1,1.0,10.0
 #zfactors=0.1,0.5,1.0,2.0
 
 # ----------------------------------------------------------------------------
 
 
-#pred1="hybrid-autoregressive-rnn"
-#pred2="rnn"
-#algnameaddition1="" 
-#algnameaddition2=""
+pred1="hybrid-autoregressive-rnn"
+pred2="rnn"
+algnameaddition1="" 
+algnameaddition2=""
 
 
 #pred1="tcn"
@@ -23,15 +23,15 @@ zfactors=0.01,0.1,1.0,10.0
 #algnameaddition1="_predRND" 
 #algnameaddition2="_predDEV"
 
-pred1="no"
-pred2="autoregressive"
-algnameaddition1="_noRND" 
-algnameaddition2="_predRND"
+#pred1="no"
+#pred2="autoregressive"
+#algnameaddition1="_noRND" 
+#algnameaddition2="_predRND"
 
  								
 useuncs1="False"
 useuncs2="False"
-reinimode1="no-RND"
+reinimode1="pred-RND"
 reinimode2="pred-RND"
 
 
