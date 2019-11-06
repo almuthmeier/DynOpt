@@ -18,15 +18,15 @@ zfactors=0.1,0.5,1.0,2.0
 #algnameaddition1="_auto_predDEV" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
 #algnameaddition2="_auto_predUNC" 								
 
-#pred1="tcn"
-#pred2="tcn"
-#algnameaddition1="_predRND" 
-#algnameaddition2="_predDEV"
-
-pred1="autoregressive"
-pred2="autoregressive"
+pred1="tcn"
+pred2="tcn"
 algnameaddition1="_predRND" 
 algnameaddition2="_predDEV"
+
+#pred1="autoregressive"
+#pred2="autoregressive"
+#algnameaddition1="_predRND" 
+#algnameaddition2="_predDEV"
 
  								
 useuncs1="False"
@@ -90,8 +90,8 @@ do
 	#./icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
 	#./icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
 	# SRR
-	sbatch --mem=8G --job-name="d$d-arnd" --output="slurm_d$d-arnd.%j.out" --error="slurm_d$d-arnd.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
-	sbatch --mem=8G --job-name="d$d-adev" --output="slurm_d$d-adev.%j.out" --error="slurm_d$d-adev.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
+	sbatch --mem=8G --job-name="d$d-rnd" --output="slurm_d$d-rnd.%j.out" --error="slurm_d$d-rnd.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
+	sbatch --mem=8G --job-name="d$d-dev" --output="slurm_d$d-dev.%j.out" --error="slurm_d$d-dev.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
 	# MPB?	
 	#sbatch --mem=16G --job-name="d$d-mpbkal" --output="slurm_d$d-mpbkal.%j.out" --error="slurm_d$d-mpbkal.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
 	#sbatch --mem=16G --job-name="d$d-mpbunc" --output="slurm_d$d-mpbunc.%j.out" --error="slurm_d$d-mpbunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
