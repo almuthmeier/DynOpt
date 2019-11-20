@@ -84,8 +84,8 @@ reinimode2="pred-DEV"
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-sbatch --mem=64G --job-name="d$d-ukal" --output="slurm_d$d-urnd.%j.out" --error="slurm_d$d-urnd.%j.err" icann_subscript_rnd.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
-sbatch --mem=64G --job-name="d$d-uunc" --output="slurm_d$d-udev.%j.out" --error="slurm_d$d-udev.%j.err" icann_subscript_dev.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
+sbatch --mem=64G --job-name="d$d-urnd" --output="slurm_d$d-urnd.%j.out" --error="slurm_d$d-urnd.%j.err" icann_subscript_unc.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
+sbatch --mem=64G --job-name="d$d-udev" --output="slurm_d$d-udev.%j.out" --error="slurm_d$d-udev.%j.err" icann_subscript_unc.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
 
 #for d in "${dims[@]}" 
 #do
