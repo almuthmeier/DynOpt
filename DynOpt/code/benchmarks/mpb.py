@@ -204,7 +204,6 @@ def __create_and_save_mpb_problem__(min_range, max_range,
     positions = np.array(positions)
     global_opt_fit = np.array(global_opt_fit)
     global_opt_pos = np.array(global_opt_pos)
-    return
     np.savez(path_to_file, heights=heights, widths=widths, positions=positions,
              global_opt_fit_per_chgperiod=global_opt_fit,
              global_opt_pos_per_chgperiod=global_opt_pos,
