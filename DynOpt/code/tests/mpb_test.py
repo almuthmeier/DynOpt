@@ -240,6 +240,28 @@ class Test(unittest.TestCase):
         plt.show()
         self.assertTrue(True)
 
+    def test_vector_length(self):
+        '''
+        Tests whether MPB formula really generates movement vector with length s
+        -> It doesn't do that!!
+        '''
+        if False:
+            b_init = np.array([3, -8])
+            eps = np.array([0.2, 0.6])
+            nu = 0.3
+            s = 5
+            b = s / np.linalg.norm(eps + b_init) * \
+                ((1 - nu) * eps + nu * b_init)
+            norm_b = np.linalg.norm(b)
+
+            b_modified = s / np.linalg.norm((1 - nu) * eps + nu * b_init) * \
+                ((1 - nu) * eps + nu * b_init)
+            norm_b_modified = np.linalg.norm(b_modified)
+            print("norm_b_modified: ", norm_b_modified)
+            self.assertAlmostEqual(s, norm_b_modified)
+            print("norm_b: ", norm_b)
+            self.assertAlmostEqual(s, norm_b)
+
 
         #fig.savefig('mpb.pdf', bbox_inches=0, transparent=True)
 if __name__ == "__main__":
