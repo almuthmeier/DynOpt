@@ -1,0 +1,57 @@
+#!/bin/bash
+
+#SBATCH --gres=gpu:1
+#SBATCH --ntasks=12
+#SBATCH --time=3-00:00
+
+
+# input parameters:
+#  $1 -> predictor type
+#  $2 -> algnameaddition
+#  $3 -> whether uncertainties are used
+#  $4 -> re-initialization mode
+#  $5 -> sigma factors
+#  $6 -> dimension
+
+# ----------------------------------------------------------------------------
+# sphere, rastrigin, rosenbrock
+
+#functions=(sphere rastrigin rosenbrock)
+#f=sphere
+#poschgt="sinefreq"
+#n=0.00
+#for f in "${functions[@]}"
+
+# ----------------------------------------------------------------------------
+# MPB
+
+f="mpbcorr"
+poschgt="none"
+noises=(0.00 0.01 0.05)
+#for n in "${noises[@]}"
+
+
+
+# ----------------------------------------------------------------------------
+
+#dims=(3 4 6 7 8 9 11 12 13 14 15 16 17 18 19)
+#for d in "${dims[@]}"
+#do
+#	./icann_run_server.sh "$1" "$2" "$3" "$4" "$5" "$d" "$f" "$poschgt" "$n" &    # $d instead of $6
+#done
+
+#for f in "${functions[@]}"
+#do
+#	./icann_run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$f" "$poschgt" "$n" & 
+#done
+
+for n in "${noises[@]}"
+do
+	./icann_run_server.sh "$1" "$2" "$3" "$4" "$5" 2 "$f" "$poschgt" "$n" &
+	./icann_run_server.sh "$1" "$2" "$3" "$4" "$5" 5 "$f" "$poschgt" "$n" &
+	./icann_run_server.sh "$1" "$2" "$3" "$4" "$5" 10 "$f" "$poschgt" "$n" &
+	./icann_run_server.sh "$1" "$2" "$3" "$4" "$5" 20 "$f" "$poschgt" "$n" &  
+done
+
+
+wait
