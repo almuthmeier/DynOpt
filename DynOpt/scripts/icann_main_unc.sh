@@ -15,8 +15,8 @@ zfactors=0.1,0.5,1.0,2.0
 
 pred1="tcn"
 pred2="tcn"
-algnameaddition1="_auto_predKAL" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
-algnameaddition2="_auto_predUNC" 								
+algnameaddition1="_auto_predRND" # for autoTCN: _auto_ ... !!! (that is TCN with uncertainty estimate
+algnameaddition2="_auto_predDEV" 								
 
 #pred1="tcn"
 #pred2="tcn"
@@ -29,10 +29,10 @@ algnameaddition2="_auto_predUNC"
 #algnameaddition2="_predDEV"
 
  								
-useuncs1="True"
-useuncs2="True"
-reinimode1="pred-KAL"
-reinimode2="pred-UNC"
+useuncs1="False"
+useuncs2="False"
+reinimode1="pred-RND"
+reinimode2="pred-DEV"
 
 
 # ----------------------------------------------------------------------------
@@ -84,8 +84,8 @@ reinimode2="pred-UNC"
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-sbatch --mem=64G --job-name="d$d-ukal" --output="slurm_d$d-ukal.%j.out" --error="slurm_d$d-ukal.%j.err" icann_subscript_unc.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
-sbatch --mem=64G --job-name="d$d-uunc" --output="slurm_d$d-uunc.%j.out" --error="slurm_d$d-uunc.%j.err" icann_subscript_unc.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
+sbatch --mem=64G --job-name="d$d-ukal" --output="slurm_d$d-urnd.%j.out" --error="slurm_d$d-urnd.%j.err" icann_subscript_rnd.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" &
+sbatch --mem=64G --job-name="d$d-uunc" --output="slurm_d$d-udev.%j.out" --error="slurm_d$d-udev.%j.err" icann_subscript_dev.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" &
 
 #for d in "${dims[@]}" 
 #do
