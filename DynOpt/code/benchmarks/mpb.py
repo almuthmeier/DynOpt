@@ -43,7 +43,7 @@ def __create_vector(dimensionality, len_vector, np_random_generator, noise=None,
     if use_correlation:  # and old_movement is not None:
         if old_movement is None:  # first time: completely random
             # the initial random vector
-            my_rnd_vec = np_random_generator.uniform(-1, 1, dimensionality)
+            my_rnd_vec = np_random_generator.normal(0, 1, dimensionality)
             my_initial_length = np.linalg.norm(my_rnd_vec)
             # the scaling factors
             #my_scale_f = np.array([my_initial_length])
@@ -64,7 +64,7 @@ def __create_vector(dimensionality, len_vector, np_random_generator, noise=None,
         # really has length "len_vector"
         correlation_factor = 1 - noise
         # the initial random vector
-        rnd_vec = np_random_generator.uniform(-1, 1, dimensionality)
+        rnd_vec = np_random_generator.normal(0, 1, dimensionality)
         denominator = np.linalg.norm(  # different from paper (-> my correction!)
             (1 - correlation_factor) * rnd_vec +
             correlation_factor * old_movement)
