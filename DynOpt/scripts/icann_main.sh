@@ -9,8 +9,8 @@ zfactors=0.1,0.5,1.0,2.0
 
 pred1="kalman"
 pred2="kalman"
-algnameaddition1="_predKAL" 
-algnameaddition2="_predUNC"
+algnameaddition1="_predRND" 
+algnameaddition2="_predDEV"
 
 
 #pred1="tcn"
@@ -29,10 +29,10 @@ algnameaddition2="_predUNC"
 #algnameaddition2="_predDEV"
 
  								
-useuncs1="True"
-useuncs2="True"
-reinimode1="pred-KAL"
-reinimode2="pred-UNC"
+useuncs1="False"
+useuncs2="False"
+reinimode1="pred-RND"
+reinimode2="pred-DEV"
 
 
 # ----------------------------------------------------------------------------
