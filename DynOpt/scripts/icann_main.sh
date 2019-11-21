@@ -1,7 +1,7 @@
 #!/bin/bash
 
 dims=(2 5 10 20)
-dims=(10)
+dims=(2,5)
 #zfactors=0.01,0.1,1.0,10.0
 zfactors=0.1,0.5,1.0,2.0
 
