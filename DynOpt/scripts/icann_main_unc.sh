@@ -29,8 +29,8 @@ algnameaddition2="_predDEV"
 #algnameaddition2="_predDEV"
 
  								
-useuncs1="True"
-useuncs2="True"
+useuncs1="False"
+useuncs2="False"
 reinimode1="pred-RND"
 reinimode2="pred-DEV"
 
