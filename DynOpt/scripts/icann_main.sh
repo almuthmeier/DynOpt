@@ -1,6 +1,7 @@
 #!/bin/bash
 
 dims=(2 5 10 20)
+dims=(20)
 #zfactors=0.01,0.1,1.0,10.0
 zfactors=0.1,0.5,1.0,2.0
 
@@ -90,8 +91,8 @@ do
 	#./icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
 	#./icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
 	# SRR
-	sbatch --mem=16G --job-name="d$d-kkal" --output="slurm_d$d-kkal.%j.out" --error="slurm_d$d-kkal.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
-	sbatch --mem=16G --job-name="d$d-kunc" --output="slurm_d$d-kunc.%j.out" --error="slurm_d$d-kunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
+	sbatch --mem=16G --job-name="d$d-krnd" --output="slurm_d$d-krnd.%j.out" --error="slurm_d$d-krnd.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
+	sbatch --mem=16G --job-name="d$d-kdev" --output="slurm_d$d-kdev.%j.out" --error="slurm_d$d-kdev.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
 	# MPB?	
 	#sbatch --mem=16G --job-name="d$d-mpbkal" --output="slurm_d$d-mpbkal.%j.out" --error="slurm_d$d-mpbkal.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
 	#sbatch --mem=16G --job-name="d$d-mpbunc" --output="slurm_d$d-mpbunc.%j.out" --error="slurm_d$d-mpbunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
