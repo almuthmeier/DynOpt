@@ -23,16 +23,21 @@ zfactors=0.1,0.5,1.0,2.0
 #algnameaddition1="_predRND" 
 #algnameaddition2="_predDEV"
 
-pred1="autoregressive"
-pred2="autoregressive"
-algnameaddition1="_predRND" 
-algnameaddition2="_predDEV"
+#pred1="autoregressive"
+#pred2="autoregressive"
+#algnameaddition1="_predRND" 
+#algnameaddition2="_predDEV"
+
+pred1="no"
+pred2="no"
+algnameaddition1="_noRND" 
+algnameaddition2="_noDEV"
 
  								
 useuncs1="False"
 useuncs2="False"
-reinimode1="pred-RND"
-reinimode2="pred-DEV"
+reinimode1="no-RND"
+reinimode2="no-DEV"
 
 
 # ----------------------------------------------------------------------------
@@ -90,8 +95,8 @@ do
 	#./icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
 	#./icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
 	# SRR
-	sbatch --mem=16G --job-name="d$d-arnd" --output="slurm_d$d-arnd.%j.out" --error="slurm_d$d-arnd.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
-	sbatch --mem=16G --job-name="d$d-adev" --output="slurm_d$d-adev.%j.out" --error="slurm_d$d-adev.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
+	sbatch --mem=16G --job-name="d$d-nrnd" --output="slurm_d$d-nrnd.%j.out" --error="slurm_d$d-nrnd.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
+	sbatch --mem=16G --job-name="d$d-ndev" --output="slurm_d$d-ndev.%j.out" --error="slurm_d$d-ndev.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
 	# MPB?	
 	#sbatch --mem=16G --job-name="d$d-mpbkal" --output="slurm_d$d-mpbkal.%j.out" --error="slurm_d$d-mpbkal.%j.err" icann_subscript.job "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$zfactors" "$d" &
 	#sbatch --mem=16G --job-name="d$d-mpbunc" --output="slurm_d$d-mpbunc.%j.out" --error="slurm_d$d-mpbunc.%j.err" icann_subscript.job "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$zfactors" "$d" &
