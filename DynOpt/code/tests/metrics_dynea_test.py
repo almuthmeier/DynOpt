@@ -37,14 +37,18 @@ class Test(unittest.TestCase):
                          str(act_rmse) + " exp_rmse: " + str(exp_rmse))
 
     def test_arr(self):
+        with_abs = True
         #======================================================================
         # test case 0a) fitness becomes worse in period 2
         generations_of_chgperiods = {0: [0, 1, 2, 3]}
         global_opt_fit_per_chgperiod = np.array([3])
         best_found_fit_per_gen = np.array([5, 9, 4, 4])
+        only_for_preds = True
+        first_chgp_idx_with_pred = 0
 
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen,
+                      only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         # arr = (0+4-1-1) / 4*(3-5) = 2/-8 (for ARR without math.abs)
@@ -59,7 +63,7 @@ class Test(unittest.TestCase):
         best_found_fit_per_gen = np.array([8, 5, 4, 4])
 
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         exp_arr = (0 - 3 - 4 - 4) / (-20)
@@ -72,7 +76,7 @@ class Test(unittest.TestCase):
         best_found_fit_per_gen = np.array([8, 6])
 
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         # change 1: (0-2) / 2*(5-8) = -2/-6
@@ -87,7 +91,7 @@ class Test(unittest.TestCase):
         best_found_fit_per_gen = np.array([7, 7, 7])
 
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         # change 2: (0+0+0) / 3*(7-7) = 0/0 (math error) -> 1
@@ -102,7 +106,7 @@ class Test(unittest.TestCase):
         best_found_fit_per_gen = np.array([7, 7, 7])
 
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         # change 3: (0+0+0) / 3*(2-7) = 0
@@ -117,7 +121,7 @@ class Test(unittest.TestCase):
         best_found_fit_per_gen = np.array([6])
 
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         # change 4: (0) / 1*(2-6) = 0
@@ -132,7 +136,7 @@ class Test(unittest.TestCase):
         best_found_fit_per_gen = np.array([66])
 
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         # change 5: 0 / 1*(0) = 0/0 (math error) -> 1
@@ -155,7 +159,7 @@ class Test(unittest.TestCase):
                                            66])
 
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         #--- ARR without math.abs
         # compute ARR manually
@@ -180,7 +184,7 @@ class Test(unittest.TestCase):
                                            10, 8,
                                            5, 3, 2])
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         n_chgperiods = len(generations_of_chgperiods)
@@ -199,7 +203,7 @@ class Test(unittest.TestCase):
 
         best_found_fit_per_gen = np.array([9, 6, 4, 3])
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         exp_arr = (0 - 3 - 5 - 6) / (4 * (3 - 9))  # = -14/-24
@@ -213,7 +217,7 @@ class Test(unittest.TestCase):
 
         best_found_fit_per_gen = np.array([9, 6, 3, 3])
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         exp_arr = (0 - 3 - 6 - 6) / (4 * (3 - 9))  # = -15/-24
@@ -227,7 +231,7 @@ class Test(unittest.TestCase):
 
         best_found_fit_per_gen = np.array([34, 27, 20, 13, 10, 8])
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         exp_arr = (0 - 7 - 14 - 21 - 24 - 26) / (6 * (3 - 34))
@@ -241,7 +245,7 @@ class Test(unittest.TestCase):
 
         best_found_fit_per_gen = np.array([16, 13, 10, 7, 4, 3])
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+                      global_opt_fit_per_chgperiod, best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # compute ARR manually
         exp_arr = (0 - 3 - 6 - 9 - 12 - 13) / (6 * (3 - 16))
@@ -253,7 +257,9 @@ class Test(unittest.TestCase):
         Examines which data have a good or a poor ARR.
         Only for visualization.
         '''
-
+        with_abs = True
+        only_for_preds = True
+        first_chgp_idx_with_pred = 0
         generations_of_chgperiods = {0: [0, 1, 2, 3, 4, 5, 6]}
         global_opt_fit_per_chgperiod = np.array([1])
         best_fit_evals_per_alg = OrderedDict()
@@ -263,7 +269,7 @@ class Test(unittest.TestCase):
         best_fit_evals_1 = np.array([1, 1, 1, 1, 1, 1, 1])
         best_fit_evals_per_alg[name] = best_fit_evals_1
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_fit_evals_1)
+                      global_opt_fit_per_chgperiod, best_fit_evals_1, only_for_preds, first_chgp_idx_with_pred, with_abs)
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_1)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_1]))
@@ -277,7 +283,7 @@ class Test(unittest.TestCase):
         best_fit_evals_2 = np.array([13, 11, 9, 7, 5, 3, 1])
         best_fit_evals_per_alg[name] = best_fit_evals_2
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_fit_evals_2)
+                      global_opt_fit_per_chgperiod, best_fit_evals_2, only_for_preds, first_chgp_idx_with_pred, with_abs)
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_2)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_2]))
@@ -291,7 +297,7 @@ class Test(unittest.TestCase):
         best_fit_evals_3 = np.array([13, 13, 13, 13, 13, 13, 1])  # -12/(7*-12)
         best_fit_evals_per_alg[name] = best_fit_evals_3
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_fit_evals_3)
+                      global_opt_fit_per_chgperiod, best_fit_evals_3, only_for_preds, first_chgp_idx_with_pred, with_abs)
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_3)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_3]))
@@ -305,7 +311,7 @@ class Test(unittest.TestCase):
         best_fit_evals_4 = np.array([7, 7, 7, 7, 7, 7, 1])  # -6/(7*-6) = 1/7
         best_fit_evals_per_alg[name] = best_fit_evals_4
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_fit_evals_4)
+                      global_opt_fit_per_chgperiod, best_fit_evals_4, only_for_preds, first_chgp_idx_with_pred, with_abs)
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_4)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_4]))
@@ -319,7 +325,7 @@ class Test(unittest.TestCase):
         best_fit_evals_5 = np.array([13, 13, 13, 13, 3, 2, 1])
         best_fit_evals_per_alg[name] = best_fit_evals_5
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_fit_evals_5)
+                      global_opt_fit_per_chgperiod, best_fit_evals_5, only_for_preds, first_chgp_idx_with_pred, with_abs)
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_5)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_5]))
@@ -333,7 +339,7 @@ class Test(unittest.TestCase):
         best_fit_evals_6 = np.array([7, 7, 7, 7, 3, 2, 1])
         best_fit_evals_per_alg[name] = best_fit_evals_6
         act_arr = arr(generations_of_chgperiods,
-                      global_opt_fit_per_chgperiod, best_fit_evals_6)
+                      global_opt_fit_per_chgperiod, best_fit_evals_6, only_for_preds, first_chgp_idx_with_pred, with_abs)
         bebc = best_error_before_change(
             generations_of_chgperiods, global_opt_fit_per_chgperiod,  best_fit_evals_6)
         avg_bog, _ = avg_best_of_generation(np.array([best_fit_evals_6]))
@@ -417,9 +423,12 @@ class Test(unittest.TestCase):
         generations_of_chgperiods = {0: [0, 1, 2, 3]}
         global_opt_fit_per_chgperiod = [3]
         best_found_fit_per_gen = np.array([5, 9, 4, 4])
+        only_for_preds = True
+        first_chgp_idx_with_pred = 0
 
         act = best_error_before_change(
-            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+            generations_of_chgperiods, global_opt_fit_per_chgperiod,
+            best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred)
         exp = 1
         self.assertEqual(act, exp)
 
@@ -432,7 +441,8 @@ class Test(unittest.TestCase):
                                            9, 0, 9])
 
         act = best_error_before_change(
-            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+            generations_of_chgperiods, global_opt_fit_per_chgperiod,
+            best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred)
         exp = (1 + 2 + 0) / 3
         self.assertEqual(act, exp)
 
@@ -445,7 +455,8 @@ class Test(unittest.TestCase):
                                            9, 0, 9])
 
         act = best_error_before_change(
-            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen)
+            generations_of_chgperiods, global_opt_fit_per_chgperiod,
+            best_found_fit_per_gen, only_for_preds, first_chgp_idx_with_pred)
         exp = (1 + 2 + 0) / 3
         self.assertEqual(act, exp)
 
@@ -456,11 +467,15 @@ class Test(unittest.TestCase):
         # test case 1) no convergence at all (fitness positive)
         generations_of_chgperiods = {0: [0, 1, 2, 3]}
         global_opt_fit_per_chgperiod = {0: 3}
+        only_for_preds = True
+        first_chgp_idx_with_pred = 0
+        with_abs = True
 
         best_fit_evals = np.array([8, 8, 8, 8])
         worst_fit_per_chg = {0: 8}
         act = __convergence_speed__(
-            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg)
+            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals,
+            worst_fit_per_chg, only_for_preds, first_chgp_idx_with_pred, with_abs)
         exp = 1
         self.assertEqual(act, exp)
 
@@ -472,7 +487,7 @@ class Test(unittest.TestCase):
         best_fit_evals = np.array([-2, -2, -2, -2])
         worst_fit_per_chg = {0: -2}
         act = __convergence_speed__(
-            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg)
+            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg, only_for_preds, first_chgp_idx_with_pred, with_abs)
         exp = 1
         self.assertEqual(act, exp)
         #======================================================================
@@ -483,7 +498,7 @@ class Test(unittest.TestCase):
         best_fit_evals = np.array([8, 4, -1, -3])
         worst_fit_per_chg = {0: 8}
         act = __convergence_speed__(
-            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg)
+            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg, only_for_preds, first_chgp_idx_with_pred, with_abs)
         exp = (1 * 20 + 2 * 16 + 3 * 11 + 4 * 9) / \
             (1 * 20 + 2 * 20 + 3 * 20 + 4 * 20)  # 0.605
         self.assertEqual(act, exp)
@@ -496,7 +511,7 @@ class Test(unittest.TestCase):
         best_fit_evals = np.array([-12, -12, -12, -12])
         worst_fit_per_chg = {0: -12}
         act = __convergence_speed__(
-            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg)
+            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg, only_for_preds, first_chgp_idx_with_pred, with_abs)
         exp = 0
         self.assertEqual(act, exp)
 
@@ -508,7 +523,7 @@ class Test(unittest.TestCase):
         best_fit_evals = np.array([3])
         worst_fit_per_chg = {0: 3}
         act = __convergence_speed__(
-            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg)
+            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg, only_for_preds, first_chgp_idx_with_pred, with_abs)
         exp = 1
         self.assertEqual(act, exp)
         #======================================================================
@@ -519,7 +534,7 @@ class Test(unittest.TestCase):
         best_fit_evals = np.array([3, -1])
         worst_fit_per_chg = {0: 3}
         act = __convergence_speed__(
-            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg)
+            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg, only_for_preds, first_chgp_idx_with_pred, with_abs)
         exp = (13 / 21)
         self.assertEqual(act, exp)
         #======================================================================
@@ -530,7 +545,7 @@ class Test(unittest.TestCase):
         best_fit_evals = np.array([-12, -12, -12, -12, 9, 3, -1])
         worst_fit_per_chg = {0: -12, 1: 9, 2: 3}
         act = __convergence_speed__(
-            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg)
+            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals, worst_fit_per_chg, only_for_preds, first_chgp_idx_with_pred, with_abs)
         exp = (0 + (4 / 4) + (13 / 21)) / 3
         self.assertEqual(act, exp)
 
@@ -541,8 +556,13 @@ class Test(unittest.TestCase):
         best_fit_evals_a = np.array([-12, -12, -12, -12])
         best_fit_evals_b = np.array([8, 8, 8, 8])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
+        only_for_preds = True
+        first_chgp_idx_with_pred = {'a': 0, 'b': 0}
+        with_abs = True
+
         act = rel_conv_speed(generations_of_chgperiods,
-                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
+                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg,
+                             only_for_preds, first_chgp_idx_with_pred, with_abs)
         exp = {'a': 0, 'b': 1}
         self.assertEqual(act, exp)
 
@@ -555,7 +575,7 @@ class Test(unittest.TestCase):
                                      3, 3, 3])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
         act = rel_conv_speed(generations_of_chgperiods,
-                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
+                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         exp_b = (((1 * abs(8 - (-12)) + 2 * abs(8 - (-12)) +
                    3 * abs(8 - (-12)) + 4 * abs(8 - (-12))) / (1 * abs(8 - (-12)) + 2 * abs(8 - (-12)) +
@@ -571,7 +591,7 @@ class Test(unittest.TestCase):
         best_fit_evals_b = np.array([9, 7, 5, 4])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
         act = rel_conv_speed(generations_of_chgperiods,
-                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
+                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg, only_for_preds, first_chgp_idx_with_pred, with_abs)
         exp_a = (1 * 4 + 2 * 2 + 0 + 0) / (5 * (1 + 2 + 3 + 4))
         exp_b = (1 * 5 + 2 * 3 + 3 * 1 + 0) / (5 * (1 + 2 + 3 + 4))
         exp = {'a': exp_a, 'b': exp_b}
@@ -584,7 +604,7 @@ class Test(unittest.TestCase):
         best_fit_evals_b = np.array([9, 5, 5, 4])
         best_fit_evals_per_alg = {'a': best_fit_evals_a, 'b': best_fit_evals_b}
         act = rel_conv_speed(generations_of_chgperiods,
-                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
+                             global_opt_fit_per_chgperiod, best_fit_evals_per_alg, only_for_preds, first_chgp_idx_with_pred, with_abs)
         exp_a = (1 * 4 + 2 * 2 + 0 + 0) / (5 * (1 + 2 + 3 + 4))
         exp_b = (1 * 5 + 2 * 1 + 3 * 1 + 0) / (5 * (1 + 2 + 3 + 4))
         exp = {'a': exp_a, 'b': exp_b}
@@ -601,6 +621,9 @@ class Test(unittest.TestCase):
         max_fit = 10
         generations_of_chgperiods = {0: [i for i in range(n_gens)]}
         global_opt_fit_per_chgperiod = np.array([0])
+        only_for_preds = True
+        first_chgp_idx_with_pred = 0
+        with_abs = True
 
         # all permutations of posssible fitness values
         graphs = graph_interface(max_fit, n_gens)
@@ -611,7 +634,7 @@ class Test(unittest.TestCase):
 
         # compute convergence speed
         speeds = rel_conv_speed(
-            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
+            generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals_per_alg, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
         # plot all graphs
         plt.figure()
@@ -713,6 +736,9 @@ def __make_graphs__(list_prefix, max_len):
 
 
 def other_simple_test():
+    with_abs = True
+    only_for_preds = True
+    first_chgp_idx_with_pred = 0
     generations_of_chgperiods = {0: [0, 1, 2, 3, ]}
     global_opt_fit_per_chgperiod = np.array([0])
     best_fit_evals_per_alg = OrderedDict()
@@ -722,9 +748,9 @@ def other_simple_test():
     best_fit_evals_per_alg[name] = best_fit_evals_1
 
     act_arr = arr(generations_of_chgperiods,
-                  global_opt_fit_per_chgperiod, best_fit_evals_1)
+                  global_opt_fit_per_chgperiod, best_fit_evals_1, only_for_preds, first_chgp_idx_with_pred, with_abs)
     speed = rel_conv_speed(
-        generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_1})
+        generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_1}, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
     print(name, ": \n    ARR ", act_arr, "\n    Speed ", speed)
 
@@ -733,15 +759,15 @@ def other_simple_test():
     best_fit_evals_per_alg[name] = best_fit_evals_2
 
     act_arr = arr(generations_of_chgperiods,
-                  global_opt_fit_per_chgperiod, best_fit_evals_2)
+                  global_opt_fit_per_chgperiod, best_fit_evals_2, only_for_preds, first_chgp_idx_with_pred, with_abs)
     speed = rel_conv_speed(
-        generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_2})
+        generations_of_chgperiods, global_opt_fit_per_chgperiod, {'a': best_fit_evals_2}, only_for_preds, first_chgp_idx_with_pred, with_abs)
 
     print(name, ": \n    ARR ", act_arr, "\n    Speed ", speed)
 
     # overall convergence speed
     overall_speed = rel_conv_speed(
-        generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals_per_alg)
+        generations_of_chgperiods, global_opt_fit_per_chgperiod, best_fit_evals_per_alg, only_for_preds, first_chgp_idx_with_pred, with_abs)
     for alg, speed in overall_speed.items():
         print(alg, "\n    ", speed)
 
