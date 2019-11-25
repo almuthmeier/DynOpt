@@ -29,7 +29,8 @@ noises=0.00 #0.00,0.01,0.05
 pathaddition="architecture/"
 metricfilename="output_2019-11-07.csv"
 onlyforpreds="True"			# True if metrics should be computed only over change periods where a prediction was made
-
+arrwithabs="False"
+rcswithabs="False"
 # -----------------------------------------------------------------------------
 
 python3.5 metrics_input_parser.py -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
@@ -41,7 +42,9 @@ python3.5 metrics_input_parser.py -benchmarkfunctionfolderpath="$benchmarkfuncti
 -noises="$noises" \
 -pathaddition="$pathaddition" \
 -metricfilename="$metricfilename" \
--onlyforpreds="$onlyforpreds" &
+-onlyforpreds="$onlyforpreds" \
+-arrwithabs="$arrwithabs" \
+-rcswithabs="$rcswithabs" &
 
 # -----------------------------------------------------------------------------
 #

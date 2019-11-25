@@ -236,6 +236,7 @@ def compute_composition_curviness(fcts, time, n_base_time_points):
 
 def compute_curviness_analytically(values):
     '''
+    TODO analytically is wrong terminology
     @param values: for each time step the function values
     '''
     diff_vals = values[1:] - values[:-1]

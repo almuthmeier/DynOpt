@@ -29,7 +29,7 @@ class MetricCalculator():
     def __init__(self, path_to_datasets=None, path_to_output=None,
                  benchmarkfunctions=None, poschgtypes=None, fitchgtypes=None,
                  dims=None, noises=None, path_addition=None, metric_filename=None,
-                 only_for_preds=None):
+                 only_for_preds=None, arrwithabs=None, rcswithabs=None):
         '''
         Initialize paths, properties of the experiments, etc.
         '''
@@ -59,6 +59,8 @@ class MetricCalculator():
             self.path_addition = "architecture/"
             self.metric_filename = "metric_db.csv"
             self.only_for_preds = True
+            self.arr_with_abs = False
+            self.rcs_with_abs = False
 
         else:
             self.output_dir_path = path_to_output
@@ -73,6 +75,8 @@ class MetricCalculator():
             # True if metrics are computed only for change periods where
             # predictions where made
             self.only_for_preds = only_for_preds
+            self.arr_with_abs = arrwithabs
+            self.rcs_with_abs = rcswithabs
 
     def compute_rmses(self, global_opt_per_chgperiod, best_found_per_chgperiod,
                       pred_opt_per_chgperiod, first_chgp_idx_with_pred):
@@ -124,7 +128,7 @@ class MetricCalculator():
         # arr
         arr_value = arr(gens_of_chgperiods,
                         global_opt_fit_per_chgperiod, best_found_fit_per_gen,
-                        self.only_for_preds, first_chgp_idx_with_pred)
+                        self.only_for_preds, first_chgp_idx_with_pred, self.arr_with_abs)
         print("                    arr: ", arr_value)
 
         # fitness RMSEs
@@ -409,7 +413,7 @@ class MetricCalculator():
                     # this algorithm needs not to be considered for RCS
             rcs_per_alg = rel_conv_speed(
                 gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict,
-                self.only_for_preds, first_chgp_idx_with_pred_per_alg)
+                self.only_for_preds, first_chgp_idx_with_pred_per_alg, self.rcs_with_abs)
             print("                    rcs_per_alg ", rcs_per_alg, flush=True)
 
             # store RCS data
@@ -430,11 +434,12 @@ class MetricCalculator():
 def start_computing_metrics(benchmarkfunctionfolderpath=None, outputpath=None,
                             benchmarkfunctions=None, poschgtypes=None,
                             fitchgtypes=None, dims=None, noises=None,
-                            path_addition=None, metric_filename=None, only_for_preds=None):
+                            path_addition=None, metric_filename=None, only_for_preds=None,
+                            arrwithabs=None, rcswithabs=None):
     calculator = MetricCalculator(benchmarkfunctionfolderpath, outputpath,
                                   benchmarkfunctions, poschgtypes, fitchgtypes,
                                   dims, noises, path_addition, metric_filename,
-                                  only_for_preds)
+                                  only_for_preds, arrwithabs, rcswithabs)
     calculator.compute_and_save_all_metrics()
     print("saved metric database", flush=True)
 
