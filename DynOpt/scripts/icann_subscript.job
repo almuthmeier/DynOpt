@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --gres=gpu:0
-#SBATCH --ntasks=3
+#SBATCH --ntasks=2
 #SBATCH --time=3-00:00
 
 
@@ -28,6 +28,7 @@
 f="mpbcorr"
 poschgt="none"
 noises=(0.00 0.01 0.05)
+noises=(0.05)
 #for n in "${noises[@]}"
 
 
