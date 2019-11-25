@@ -226,14 +226,11 @@ class MetricCalculator():
         for alg in alg_types:
             # read all array files for the runs of the experiment
             arrays_path = subdir_path + alg + "/arrays/"
-            print("arrays_path: ", arrays_path)
             array_names = get_sorted_array_file_names_for_experiment_file_name(exp_file_name,
                                                                                arrays_path)
-            print("array_names: ", array_names)
             if ks is not None and filters is not None:  # for TCNs
                 array_names = get_array_names_for_ks_and_filters(
                     array_names, ks, filters)
-                print("array_names in if: ", array_names)
             #print("                array_names: ", array_names, flush=True)
 
             # load first array file
