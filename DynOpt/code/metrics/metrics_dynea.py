@@ -361,9 +361,9 @@ def __convergence_speed__(generations_of_chgperiods,
         optimal_fit = global_opt_fit_per_chgperiod[chgperiod_nr]
         worst_fit = worst_fit_per_chgperiod[chgperiod_nr]
         if with_abs:
-            best_worst_fit_diff = abs(optimal_fit - worst_fit)
+            best_worst_fit_diff = abs(worst_fit - optimal_fit)
         else:
-            best_worst_fit_diff = (optimal_fit - worst_fit)
+            best_worst_fit_diff = (worst_fit - optimal_fit)
         # compute area for this change
         area_for_change = 0
         max_area_for_change = 0
@@ -375,9 +375,9 @@ def __convergence_speed__(generations_of_chgperiods,
             assert optimal_fit <= found_fit, "opt-fit " + str(
                 optimal_fit) + " fit " + str(found_fit)
             if with_abs:
-                diff = abs(optimal_fit - found_fit)
+                diff = abs(found_fit - optimal_fit)
             else:
-                diff = (optimal_fit - found_fit)
+                diff = (found_fit - optimal_fit)
             area_for_change += (gen_in_chg + 1) * diff  # +1, otherwise first 0
             max_area_for_change += (gen_in_chg + 1) * best_worst_fit_diff
             gen_in_chg += 1
