@@ -28,10 +28,10 @@ dims=2,5,10,20
 #dims=2,5,10,20,50,100
 noises=0.00,0.01,0.05
 pathaddition="architecture/"
-metricfilename="output_2019-11-25_withabs_umgedrehteSubtr.csv"
+metricfilename="output_2019-11-25_noabs_umgedrehteSubtr.csv"
 onlyforpreds="True"			# True if metrics should be computed only over change periods where a prediction was made
-arrwithabs="True"
-rcswithabs="True"
+arrwithabs="False"
+rcswithabs="False"
 # -----------------------------------------------------------------------------
 
 python3.5 metrics_input_parser.py -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" \
