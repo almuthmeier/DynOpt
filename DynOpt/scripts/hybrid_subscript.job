@@ -1,6 +1,7 @@
 #!/bin/bash
 
-#SBATCH --ntasks=4
+#SBATCH --gres=gpu:0
+#SBATCH --ntasks=6
 #SBATCH --time=3-00:00
 
 
@@ -8,17 +9,22 @@
 #  $1 -> predictor type
 #  $2 -> algnameaddition
 #  $3 -> whether uncertainties are used
-#  $4 -> cmavariant
-#  $5 -> predvariant
+#  $4 -> re-initialization mode
+#  $5 -> sigma factors
 #  $6 -> dimension
 
 # ----------------------------------------------------------------------------
 # sphere, rastrigin, rosenbrock
 
-functions=(sphere rastrigin rosenbrock)
-poschgt="sinefreq"
+#functions=(sphere rastrigin rosenbrock)
+#functions=(sphere)
+f=sphere
+poschgt=("sine" "linear")
+poschgt=("linear")
 n=0.00
 #for f in "${functions[@]}"
+
+dims=(2 5 10 20 50 100)
 
 # ----------------------------------------------------------------------------
 # MPB
@@ -31,13 +37,15 @@ n=0.00
 
 
 # ----------------------------------------------------------------------------
-
-
-
-
-for f in "${functions[@]}"
+for d in "${dims[@]}" 
 do
-	./run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$f" "$poschgt" "$n" & 
+	./hybrid_run_server.sh "$1" "$2" "$3" "$4" "$5" "$d" "$f" "$poschgt" "$n" &
 done
+
+
+#for f in "${functions[@]}"
+#do
+#	./hybrid_run_server.sh "$1" "$2" "$3" "$4" "$5" "$6" "$f" "$poschgt" "$n" & 
+#done
 
 wait

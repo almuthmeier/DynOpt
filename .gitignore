@@ -17,6 +17,7 @@
 # Benchmarks (do not ignore "MyTests"-folders since required for tests)
 *.npz
 !**/test_datasets/**
+dsb_2019-09-03.npz
 
 # Output
 **/logs

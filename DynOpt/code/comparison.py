@@ -13,6 +13,7 @@ import math
 import random
 import warnings
 
+from algorithms.dyncmaes import DynamicCMAES
 from algorithms.dynea import DynamicEA
 from algorithms.dynpso import DynamicPSO
 import numpy as np
@@ -67,8 +68,13 @@ class PredictorComparator(object):
         self.reinitializationmode = None  # string
         self.sigmafactors = None
 
+        # CMA-ES
+        self.cmavariant = None  # str
+        self.predvariant = None  # str
+
         # predictor
         self.predictor = None  # string
+        self.trueprednoise = None  # float
         self.timesteps = None  # int
         self.addnoisytraindata = None  # bool
         self.traininterval = None  # int
@@ -110,23 +116,26 @@ class PredictorComparator(object):
         self.metrics_file_path = None
         self.logs_file_path = None
 
-    def instantiate_optimization_alg(self):
+    def instantiate_optimization_alg(self, seed_alg_generator, seed_pred_generator):
         from utils.utils_prediction import get_n_neurons
         # random number generators
 
         # random generator for the optimization algorithm
         #  (e.g. for creation of population, random immigrants)
-        alg_np_rnd_generator = np.random.RandomState()
+        alg_np_rnd_generator = np.random.RandomState(seed_alg_generator)
         # so?: np.random.RandomState(random.randint(1, 567))
         # for predictor related stuff: random generator for  numpy arrays
-        pred_np_rnd_generator = np.random.RandomState()
+        pred_np_rnd_generator = np.random.RandomState(seed_pred_generator)
 
         dimensionality = len(self.experiment_data['orig_global_opt_pos'])
+        assert dimensionality == self.dims
         n_generations = self.get_n_generations()
-        if (self.predictor == "no" or self.predictor == "autoregressive" or
-                self.predictor == "tfrnn" or self.predictor == "rnn" or
-                self.predictor == "tcn" or self.predictor == "kalman"):
+        if self.predictor in ["no", "autoregressive", "tfrnn", "tcn",
+                              "kalman", "truepred"]:
             n_neurons = None
+            full_tl_model_name = None
+        elif self.predictor in ["rnn", "hybrid-autoregressive-rnn"]:
+            n_neurons = get_n_neurons(self.neuronstype, dimensionality)
             full_tl_model_name = None
         else:
             n_neurons = get_n_neurons(self.neuronstype, dimensionality)
@@ -135,7 +144,7 @@ class PredictorComparator(object):
         if self.algorithm == "dynea":
             alg = DynamicEA(self.benchmarkfunction, dimensionality,
                             n_generations, self.experiment_data, self.predictor,
-                            self.lbound, self.ubound,
+                            self.trueprednoise, self.lbound, self.ubound,
                             alg_np_rnd_generator, pred_np_rnd_generator,
                             self.mu, self.la, self.ro, self.mean, self.sigma,
                             self.trechenberg, self.tau,
@@ -159,9 +168,21 @@ class PredictorComparator(object):
                              self.n_layers, self.apply_tl, self.n_tllayers,
                              full_tl_model_name, self.tl_learn_rate,
                              self.chgperiodrepetitions)
+        elif self.algorithm == "dyncma":
+            alg = DynamicCMAES(self.benchmarkfunction, dimensionality,
+                               self.lenchgperiod,
+                               n_generations, self.experiment_data, self.predictor,
+                               self.trueprednoise, self.lbound, self.ubound,
+                               alg_np_rnd_generator, pred_np_rnd_generator,
+                               self.timesteps,
+                               n_neurons, self.epochs, self.batchsize,
+                               self.n_layers,
+                               self.traininterval, self.nrequiredtraindata, self.useuncs,
+                               self.trainmcruns, self.testmcruns, self.traindropout, self.testdropout,
+                               self.kernelsize, self.nkernels, self.lr,
+                               self.cmavariant, self.predvariant)
         else:
-            warnings.warn("unknown optimization algorithm")
-            exit(1)
+            exit("Error: unknown optimization algorithm")
         return alg
 
     def save_results(self, repetition_ID, alg):
@@ -174,6 +195,11 @@ class PredictorComparator(object):
             repetition_ID, self.chgperiods, self.lenchgperiod,
             self.ischgperiodrandom, self.kernelsize, self.nkernels, self.lr,
             self.epochs, self.batchsize, self.traindropout, self.testdropout)
+
+        if self.algorithm == "dynea":
+            alg.sig_per_gen = None
+            alg.m_per_gen = None
+            alg.p_sig_pred_per_chgp = None
 
         # TODO(dev) extend if necessary, e.g, for computing prediction quality
         # (what if an algorithm doesn't provide one of the variables? (e.g.
@@ -195,10 +221,11 @@ class PredictorComparator(object):
                  final_pop_fitness_per_run_per_changeperiod=alg.final_pop_fitness_per_run_per_changeperiod,
                  stddev_among_runs_per_chgp=alg.stddev_among_runs_per_chgp,
                  mean_among_runs_per_chgp=alg.mean_among_runs_per_chgp,
-                 epist_unc_per_chgperiod=alg.epist_unc_per_chgperiod,
+                 pred_unc_per_chgperiod=alg.pred_unc_per_chgperiod,
                  aleat_unc_per_chgperiod=alg.aleat_unc_per_chgperiod,
-                 kal_variance_per_chgperiod=alg.kal_variance_per_chgperiod
-                 )
+                 # only for CMA-ES
+                 sig_per_gen=alg.sig_per_gen, m_per_gen=alg.m_per_gen,
+                 p_sig_pred_per_chgp=alg.p_sig_pred_per_chgp)
 
     def instantiate_and_run_algorithm(self, repetition_ID, gpu_ID, seed):
         '''
@@ -206,11 +233,14 @@ class PredictorComparator(object):
         '''
         np.random.seed(seed)
         random.seed(seed)
+        seed_alg_generator = np.random.randint(1, 654)
+        seed_pred_generator = np.random.randint(732, 1230)
 
         print("\n run: ", repetition_ID, flush=True)
         # =====================================================================
         # instantiate algorithm
-        alg = self.instantiate_optimization_alg()
+        alg = self.instantiate_optimization_alg(
+            seed_alg_generator, seed_pred_generator)
 
         # =====================================================================
 
@@ -234,6 +264,7 @@ class PredictorComparator(object):
 
         # =====================================================================
         # save results
+        print("\n    save results for run: ", repetition_ID, flush=True)
         self.save_results(repetition_ID, alg)
 
     def run_runs_parallel(self):
@@ -246,7 +277,7 @@ class PredictorComparator(object):
 
         # distribute runs on different GPUs so that each GPU has the same number of
         # processes
-        if self.ngpus is None or self.ngpus is 0 or self.predictor == "no" or self.predictor == "arr":
+        if self.ngpus is None or self.ngpus is 0 or self.predictor in ["no", "arr", "truepred"]:
             # no gpus required
             gpus_for_runs = np.array(self.repetitions * [None])
         else:
@@ -267,7 +298,7 @@ class PredictorComparator(object):
             argument_list[-1][0] = i
             # set gpu ID
             argument_list[-1][1] = gpus_for_runs[i]
-            argument_list[-1][1] = seeds_for_runs[i]
+            argument_list[-1][2] = seeds_for_runs[i]
         # execute repetitions of the experiments on different CPUs
         n_kernels = self.ncpus
         '''

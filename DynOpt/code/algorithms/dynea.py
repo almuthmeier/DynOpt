@@ -14,17 +14,16 @@ from utils import utils_dynopt
 from utils.utils_dynopt import environment_changed
 from utils.utils_ea import dominant_recombination, gaussian_mutation,\
     mu_plus_lambda_selection, adapt_sigma
-from utils.utils_prediction import build_predictor,\
-    predict_next_optimum_position, get_noisy_time_series, fit_scaler
-from utils.utils_prediction import calculate_n_train_samples,\
-    calculate_n_required_chgps_from_n_train_samples
+from utils.utils_prediction import build_all_predictors
+from utils.utils_prediction import prepare_data_train_and_predict
 from utils.utils_transferlearning import get_variables_and_names
 from utils.utils_values import make_values_feasible_for_square
 
 
 class DynamicEA():
     def __init__(self, benchmarkfunction, dim,
-                 n_generations, experiment_data, predictor_name, lbound, ubound,
+                 n_generations, experiment_data, predictor_name,
+                 trueprednoise, lbound, ubound,
                  ea_np_rnd_generator, pred_np_rnd_generator,
                  mu, la, ro, mean, sigma, trechenberg, tau,
                  reinitialization_mode, sigma_factors,
@@ -75,7 +74,7 @@ class DynamicEA():
         @param n_required_train_data: (int) number of training data that is
         used for training
         @param use_uncs: (True) if predictive uncertainty should be estimated; 
-        only possible for predictors "kalman" and "tcn" 
+        only possible for predictors "kalman", "tcn" and "truepred" 
         @param train_mc_runs: (int) number of Monte Carlo runs during training
         (when predictive uncertainty is estimated)
         @param test_mc_runs: (int) number of Monte Carlo runs during prediciton
@@ -92,6 +91,7 @@ class DynamicEA():
         self.n_generations = n_generations
         self.experiment_data = experiment_data
         self.predictor_name = predictor_name
+        self.trueprednoise = trueprednoise  # TODO unused so far
 
         self.lbound = lbound  # 100  # assumed that the input data follow this assumption
         self.ubound = ubound  # 200  # TODO(exe) , TODO insert into dynPSO
@@ -187,12 +187,8 @@ class DynamicEA():
         # each change period)
         self.pred_opt_pos_per_chgperiod = []
         self.pred_opt_fit_per_chgperiod = []
-        self.epist_unc_per_chgperiod = []  # predictive variance
+        self.pred_unc_per_chgperiod = []  # predictive variance
         self.aleat_unc_per_chgperiod = []  # average aleatoric uncertainty
-        # estimated variance by kal. filter
-        # TODO use epist_unc_per_chgperiod also for Kalman filter (both have
-        # currently same format)
-        self.kal_variance_per_chgperiod = []
         # training error per chgperiod (if prediction was done)
         self.train_error_per_chgperiod = []
         # training error per epoch for each chgperiod (if prediction was done)
@@ -283,14 +279,7 @@ class DynamicEA():
         elif self.reinitialization_mode == "pred-UNC":
             # predictive variance for re-initialization
             # -> different variance for each dimension
-            try:
-                # for predictor "tcn" (AutoTCN)
-                # variance (vector)
-                covariance = self.epist_unc_per_chgperiod[-1]
-            except:
-                # for predictor "kalman"
-                # variance (vector)
-                covariance = self.kal_variance_per_chgperiod[-1]
+            covariance = self.pred_unc_per_chgperiod[-1]
             assert len(covariance) == self.dim
         elif self.reinitialization_mode == "pred-DEV":
             # -> one variance for all dimensions
@@ -316,12 +305,7 @@ class DynamicEA():
             # for explanation of this type see the paper "Tracking moving optima
             # using Kalman-Based predictions"
             c = 0.1  # seemed to be good setting in the paper
-            try:
-                # for predictor "kalman"
-                covariance = self.kal_variance_per_chgperiod[-1]
-            except:
-                # for predictor "tcn" (AutoTCN)
-                covariance = self.epist_unc_per_chgperiod[-1]
+            covariance = self.pred_unc_per_chgperiod[-1]
             max_variance = np.max(covariance)
             max_sigma = np.sqrt(max_variance)
             g = c / (1 + max_sigma)
@@ -416,10 +400,9 @@ class DynamicEA():
                 warnings.warn("unknown reinitialization mode: " +
                               self.reinitialization_mode)
 
-        elif my_pred_mode == "rnn" or my_pred_mode == "autoregressive" or \
-                my_pred_mode == "tfrnn" or my_pred_mode == "tftlrnn" or \
-                my_pred_mode == "tftlrnndense" or my_pred_mode == "tcn" or \
-                my_pred_mode == "kalman":
+        elif my_pred_mode in ["rnn", "autoregressive", "tfrnn", "tftlrnn",
+                              "tftlrnndense", "tcn", "kalman", "truepred",
+                              "hybrid-autoregressive-rnn"]:
             # last predicted optimum
             pred_optimum_position = self.pred_opt_pos_per_chgperiod[-1]
             # insert predicted optimum into immigrants
@@ -445,7 +428,7 @@ class DynamicEA():
                     if len(noisy_optimum_positions) != 0:
                         immigrants = np.concatenate(
                             (immigrants, noisy_optimum_positions))
-                # b)
+                # b) TODO only use respective re-initialization strategy
                 # initialize remaining immigrants completely randomly
                 n_remaining_immigrants = n_immigrants - len(immigrants)
                 immigrants = np.concatenate(
@@ -474,85 +457,6 @@ class DynamicEA():
         '''
         self.sigma = self.init_sigma
 
-    def prepare_data_train_and_predict(self, sess, gen_idx,
-                                       n_features, predictor):
-        '''
-        TODO insert this function into dynpso
-        '''
-        ar_predictor = None
-        n_past_chgps = len(self.best_found_pos_per_chgperiod)
-        # number of train data that can be produced from the last chg. periods
-        overall_n_train_data = calculate_n_train_samples(
-            n_past_chgps, self.predict_diffs, self.n_time_steps)
-
-        # prevent training with too few train data
-        if (overall_n_train_data < self.n_required_train_data or self.predictor_name == "no"):
-            my_pred_mode = "no"
-            train_data = None
-            prediction = None
-
-        else:
-            my_pred_mode = self.predictor_name
-
-            # number of required change periods (to construct training data)
-            n_required_chgps = calculate_n_required_chgps_from_n_train_samples(
-                self.n_required_train_data, self.predict_diffs, self.n_time_steps)
-            best_found_vals_per_chgperiod = self.best_found_pos_per_chgperiod[-n_required_chgps:]
-
-            # transform absolute values to differences
-            if self.predict_diffs:
-                best_found_vals_per_chgperiod = np.subtract(
-                    best_found_vals_per_chgperiod[1:], best_found_vals_per_chgperiod[:-1])
-
-            # scale data (the data are re-scaled directly after the
-            # prediction in this iteration)
-            scaler = fit_scaler(best_found_vals_per_chgperiod)
-            train_data = scaler.transform(
-                copy.copy(best_found_vals_per_chgperiod))
-
-            # add noisy training data in order to make network more robust and
-            # increase the number of training data
-            if self.add_noisy_train_data:
-                # 3d array [n_series, n_chgperiods, dims]
-                noisy_series = get_noisy_time_series(np.array(self.best_found_pos_per_chgperiod),
-                                                     self.n_noisy_series,
-                                                     self.stddev_among_runs_per_chgp)
-                if self.predict_diffs:
-                    noisy_series = np.array([np.subtract(
-                        noisy_series[i, 1:], noisy_series[i, :-1]) for i in range(len(noisy_series))])
-                # scale data
-                noisy_series = np.array([scaler.transform(
-                    copy.copy(noisy_series[i])) for i in range(len(noisy_series))])
-            else:
-                noisy_series = None
-
-            # train data
-            train_data = np.array(train_data)
-            # train the model only when train_interval new data are available
-            do_training = self.n_new_train_data >= self.train_interval
-            if do_training:
-                self.n_new_train_data = 0
-            # predict next optimum position or difference (and re-scale value)
-            (prediction, train_error, train_err_per_epoch,
-             ep_unc, avg_al_unc, kal_variance, ar_predictor) = predict_next_optimum_position(my_pred_mode, sess, train_data, noisy_series,
-                                                                                             self.n_epochs, self.batch_size,
-                                                                                             self.n_time_steps, n_features,
-                                                                                             scaler, predictor, self.return_seq, self.shuffle_train_data,
-                                                                                             do_training, self.best_found_pos_per_chgperiod,
-                                                                                             self.predict_diffs, self.test_mc_runs, self.n_new_train_data)
-            self.pred_opt_pos_per_chgperiod.append(copy.copy(prediction))
-            self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(
-                self.benchmarkfunction, prediction, gen_idx, self.experiment_data))
-            if ep_unc is not None and self.use_uncs:
-                self.epist_unc_per_chgperiod.append(copy.copy(ep_unc))
-                self.aleat_unc_per_chgperiod.append(copy.copy(avg_al_unc))
-            if self.predictor_name == "kalman" and kal_variance is not None:
-                self.kal_variance_per_chgperiod.append(copy.copy(kal_variance))
-            self.train_error_per_chgperiod.append(train_error)
-            self.train_error_for_epochs_per_chgperiod.append(
-                train_err_per_epoch)
-        return my_pred_mode, ar_predictor
-
 
 # =============================================================================
 
@@ -560,17 +464,16 @@ class DynamicEA():
         # ---------------------------------------------------------------------
         # local variables for predictor
         # ---------------------------------------------------------------------
-        predictor = build_predictor(self.predictor_name, self.n_time_steps,
-                                    self.dim, self.batch_size, self.n_neurons,
-                                    self.return_seq, self.apply_tl, self.n_layers,
-                                    self.n_epochs, self.tl_rnn_type, self.n_tllayers,
-                                    self.with_dense_first, self.tl_learn_rate, self.use_uncs,
-                                    self.train_mc_runs, self.train_dropout, self.test_dropout,
-                                    self.kernel_size, self.n_kernels, self.lr)
-        ar_predictor = None
+        predictors = build_all_predictors(self.predictor_name, self.n_time_steps,
+                                          self.dim, self.batch_size, self.n_neurons,
+                                          self.return_seq, self.apply_tl, self.n_layers,
+                                          self.n_epochs, self.tl_rnn_type, self.n_tllayers,
+                                          self.with_dense_first, self.tl_learn_rate, self.use_uncs,
+                                          self.train_mc_runs, self.train_dropout, self.test_dropout,
+                                          self.kernel_size, self.n_kernels, self.lr)
         sess = None  # necessary since is assigned anew after each training
-        if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
-                self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn":
+        if self.predictor_name in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn",
+                                   "hybrid-autoregressive-rnn"]:
             import tensorflow as tf
             # if transfer learning then load weights
             if self.apply_tl:
@@ -605,6 +508,8 @@ class DynamicEA():
         start_pop_for_curr_chgperiod = self.population
         start_pops_fit_for_curr_chgperiod = self.population_fitness
         for i in range(self.n_generations):
+            glob_opt = self.experiment_data['global_opt_pos_per_gen'][i]
+            #print("generation , ", i, " glob opt: ", glob_opt)
             # store generations that have to be repeated (to compute the
             # variance of the ES)
             gens_for_rep.append(i)
@@ -652,10 +557,22 @@ class DynamicEA():
                     copy.copy(self.best_found_fit_per_gen[i - 1]))
 
                 # prepare data and predict optimum
-                my_pred_mode, ar_predictor = self.prepare_data_train_and_predict(sess, i,
-                                                                                 self.dim, predictor)
-                if not ar_predictor is None:
-                    predictor = ar_predictor
+                (my_pred_mode,
+                 updated_predictors,
+                 self.n_new_train_data) = prepare_data_train_and_predict(sess, i, self.dim, predictors,
+                                                                         self.experiment_data, self.n_epochs, self.batch_size,
+                                                                         self.return_seq, self.shuffle_train_data, self.n_new_train_data,
+                                                                         self.best_found_pos_per_chgperiod, self.train_interval,
+                                                                         self.predict_diffs, self.n_time_steps, self.n_required_train_data,
+                                                                         self.predictor_name, self.add_noisy_train_data,
+                                                                         self.n_noisy_series, self.stddev_among_runs_per_chgp,
+                                                                         self.test_mc_runs, self.benchmarkfunction, self.use_uncs,
+                                                                         self.pred_unc_per_chgperiod, self.aleat_unc_per_chgperiod,
+                                                                         self.pred_opt_pos_per_chgperiod, self.pred_opt_fit_per_chgperiod,
+                                                                         self.train_error_per_chgperiod,
+                                                                         self.train_error_for_epochs_per_chgperiod,
+                                                                         glob_opt, self.trueprednoise, self.pred_np_rnd_generator)
+                predictors = updated_predictors
 
                 # adapt population to environment change
                 self.adapt_population(i, my_pred_mode)
@@ -703,8 +620,10 @@ class DynamicEA():
                 self.population_fitness[min_fitness_index])
             self.best_found_pos_per_gen[i] = copy.copy(
                 self.population[min_fitness_index])
-        if self.predictor_name == "tfrnn" or self.predictor_name == "tftlrnn" or \
-                self.predictor_name == "tftlrnndense" or self.predictor_name == "tcn":
+            # print("best: ", self.population_fitness[min_fitness_index],
+            #      "[", self.population[min_fitness_index], "]")
+        if self.predictor_name in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn", "rnn",
+                                  "hybrid-autoregressive-rnn"]:
             sess.close()
             tf.reset_default_graph()
 

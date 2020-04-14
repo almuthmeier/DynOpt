@@ -199,7 +199,7 @@ class TFRNNWithoutState():
                 rnn_layer = tf.nn.rnn_cell.BasicRNNCell(
                     num_units=n_neurons, activation=self.act_func)
             else:
-                warnings.warn("unsupported RNN type: ", self.rnn_type)
+                warnings.warn("unsupported RNN type: " + self.rnn_type)
             # Dropout for RNN
             # https://www.tensorflow.org/api_docs/python/tf/contrib/rnn/DropoutWrapper
             # input_size: TensorShape object
@@ -219,7 +219,7 @@ class TFRNNWithoutState():
             cell_list.append(drop_with_rnn_layer)
         return cell_list
 
-    def train(self, sess, train_in, train_out, in_keep_prob=1.0, out_keep_prob=1.0, st_keep_prob=1.0,
+    def train(self, sess, train_in, train_out, pred_np_rnd_generator, in_keep_prob=1.0, out_keep_prob=1.0, st_keep_prob=1.0,
               shuffle_between_epochs=False, saver=None, saver_path=None, model_name=None,
               do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None):
 
@@ -240,7 +240,7 @@ class TFRNNWithoutState():
                 # generate and shuffle indices to shuffle input and output data
                 # in same order
                 idx = np.arange(n_train_data)
-                np.random.shuffle(idx)
+                pred_np_rnd_generator.shuffle(idx)
                 train_in = train_in[idx]
                 train_out = train_out[idx]
             # https://stackoverflow.com/questions/46840539/online-or-batch-training-by-default-in-tensorflow

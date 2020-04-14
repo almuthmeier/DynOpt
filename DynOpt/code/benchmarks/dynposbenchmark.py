@@ -43,17 +43,20 @@ def create_problems(output_parent_dir_path=None):
     # TODO(exp) parameters to adjust
     n_chg_periods = 10000
     dims = [2, 5, 10, 20]  # [1, 2, 5]  # , 10, 50]
-    dims = [3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    #dims = [2]
+    #dims = [3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19]
     functions = [sphere, rastrigin, rosenbrock]  # , rastrigin]
-    functions = [sphere]  # , rastrigin]
+    # functions = [sphere]  # , rastrigin]
     pos_chng_types = ['pch-linear', 'pch-sine',
                       'pch-circle', 'pch-mixture', 'pch-sinefreq']
     pos_chng_types = ['pch-sinefreq']  # , 'pch-mixture']
     fit_chng_type = 'fch-none'
     # "EvoStar_2018" or "GECCO_2018" (must be equivalent to directory)
-    conference = "GECCO_2019"
+    conference = "EvoStar_2020"
     lbound = 0
-    ubound = 100
+    ubound = 900
+    fcts_params_per_dim = None  # only used for sine_generator
+    step_size = None  # only used for sine_generator
     # -------------------------------------------------------------------------
     # for circle movement
 
@@ -65,7 +68,7 @@ def create_problems(output_parent_dir_path=None):
     # -------------------------------------------------------------------------
 
     # severity of change (for linear movement)
-    if conference == "GECCO_2018" or conference == "GECCO_2019" or conference == "ESANN_2019":
+    if conference in ["GECCO_2018", "GECCO_2019", "ESANN_2019", "EvoStar_2020"]:
         linear_movement_factor = 5
     elif conference == "EvoStar_2018":
         linear_movement_factor = 2
@@ -111,7 +114,7 @@ def create_problems(output_parent_dir_path=None):
                 opts = []
                 opts.append(copy.copy(orig_global_opt_position))
                 if pos_chng_type == 'pch-sine':
-                    if conference == "GECCO_2018" or conference == "GECCO_2019" or conference == "ESANN_2019":
+                    if conference in ["GECCO_2018", "GECCO_2019", "ESANN_2019", "EvoStar_2020"]:
                         # initialize sine-parameters randomly (stay unchanged
                         # during all change periods)
                         amplitudes = np_rand_gen.randint(5, 50, dim)
@@ -149,8 +152,8 @@ def create_problems(output_parent_dir_path=None):
                     else:
                         warnings.warn("unknown conference type")
                 elif pos_chng_type == 'pch-linear':
-                    if (conference == "GECCO_2018" or conference == "EvoStar_2018" or
-                            conference == "GECCO_2019" or conference == "ESANN_2019"):
+                    if conference in ["GECCO_2018", "GECCO_2019", "ESANN_2019",
+                                      "EvoStar_2018", "EvoStar_2020"]:
                         for chg_period in range(1, n_chg_periods):
                             movement = np.array(
                                 dim * [chg_period * linear_movement_factor])
@@ -189,13 +192,20 @@ def create_problems(output_parent_dir_path=None):
                         dims=dim, seed=np_rand_gen.randint(974), min_value=lbound, max_value=ubound)
                     opts = opts[:n_chg_periods]
                 elif pos_chng_type == 'pch-sinefreq':
-                    seed = np_rand_gen.randint(4)
-                    desired_curv = 10
-                    desired_min_acc = 0.5  # no longer used
-                    desired_med_acc = 0.5
-                    opts = generate_sine_fcts_for_multiple_dimensions(dim, n_chg_periods, seed,
-                                                                      lbound, ubound, desired_curv,
-                                                                      desired_min_acc, desired_med_acc)
+                    if conference == "GECCO_2019":
+                        seed = np_rand_gen.randint(4)
+                        desired_curv = 10
+                        desired_med_vel = 0.5
+                    elif conference == "EvoStar_2020":
+                        seed = np_rand_gen.randint(4)
+                        desired_curv = 10
+                        desired_med_vel = 2.0
+                        max_n_functions = 4
+                        n_base_time_points = 100
+                    opts, fcts_params_per_dim, step_size = generate_sine_fcts_for_multiple_dimensions(dim, n_chg_periods, seed,
+                                                                                                      n_base_time_points,
+                                                                                                      lbound, ubound, desired_curv,
+                                                                                                      desired_med_vel, max_n_functions)
                 else:
                     warnings.warn("unknown position change type")
                 opts = np.array(opts)
@@ -204,7 +214,9 @@ def create_problems(output_parent_dir_path=None):
                     str(dim) + "_chgperiods-" + str(n_chg_periods) + "_" + pos_chng_type + "_" + \
                     fit_chng_type + "_" + day + '_' + time + ".npz"
                 np.savez(ds_file_name, global_opt_fit_per_chgperiod=global_opt_fit,
-                         global_opt_pos_per_chgperiod=opts, orig_global_opt_pos=orig_global_opt_position)
+                         global_opt_pos_per_chgperiod=opts, orig_global_opt_pos=orig_global_opt_position,
+                         fcts_params_per_dim=fcts_params_per_dim,
+                         step_size=step_size)
 
 
 def original_fitness(x, problem):
@@ -321,4 +333,6 @@ def plot_scatter(points):
 if __name__ == '__main__':
     # create_and_plot_different_movements()
     # create_and_plot_random_sine_movement()
-    create_problems()
+    #output_parent_dir_path = "/home/ameier/Documents/Promotion/Ausgaben/Buchkapitel_Springer19/data_0/"
+    output_parent_dir_path = None
+    create_problems(output_parent_dir_path)

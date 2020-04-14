@@ -9,21 +9,21 @@
 #SBATCH --error="slurm_benchmarks.%j.err"
 
 
-benchmarkfunctionfolderpath=<path>
+benchmarkfunctionfolderpath="/raid/almuth/Uncertainty/Ausgaben/data_2019-11-20/data_2019-11-20_normMPB"
 
 
 # -----------------------------------------------------------------------------
 # mpbcorr
 benchmarkfunction="mpbcorr"
 
-#python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
 
 
 # -----------------------------------------------------------------------------
 # shpere, rastrigin, rosenbrock, griewank
 benchmarkfunction="srr"
 
-python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
+#python3.5 benchmark_input_parser.py -benchmarkfunction="$benchmarkfunction" -benchmarkfunctionfolderpath="$benchmarkfunctionfolderpath" &
 
 # -----------------------------------------------------------------------------
 #

@@ -1,0 +1,81 @@
+#!/bin/bash
+
+#SBATCH --ntasks=2
+#SBATCH --time=7-00:00
+#SBATCH --job-name="ar-no" 
+#SBATCH --output="slurm_ar-no%j.out" 
+#SBATCH --error="slurm_ar-no.%j.err"
+#SBATCH --mem=16G 
+#SBATCH --gres=gpu:0
+
+# input parameters:
+#  $1 -> predictor type
+#  $2 -> algnameaddition
+#  $3 -> whether uncertainties are used
+#  $4 -> cmavariant   -> weg -> reinimode
+#  $5 -> predvariant  -> weg
+#  $6 -> dimension
+
+# ----------------------------------------------------------------------------
+# sphere, rastrigin, rosenbrock
+
+f="sphere"
+d=20
+poschgt="sinefreq"
+n=0.00
+
+# ----------------------------------------------------------------------------
+# MPB
+
+#f="mpbcorr"
+#poschgt="none"
+#noises=(0.00 0.01 0.05)
+#for n in "${noises[@]}"
+
+
+
+# ----------------------------------------------------------------------------
+
+
+
+
+#predictor
+
+pred1="no"
+pred2="autoregressive"
+pred3="rnn"
+pred4="tcn"
+
+							
+useuncs1="False"
+useuncs2="False"
+useuncs3="False"
+useuncs4="False"
+
+reinimode1="no-RND"
+reinimode2="pred-RND"
+reinimode3="pred-RND"
+reinimode4="pred-RND"
+
+
+algnameaddition1="_$reinimode1"
+algnameaddition2="_$reinimode2"
+algnameaddition3="_$reinimode3"
+algnameaddition4="_$reinimode4"
+
+#window size
+ws1=7
+ws2=7
+ws3=7
+ws4=50
+
+# ----------------------------------------------------------------------------
+# no, ar (Vegas)
+
+
+./eswithpred_run_server.sh "$pred1" "$algnameaddition1" "$useuncs1" "$reinimode1" "$d" "$f" "$poschgt" "$n" "$ws1" & 
+./eswithpred_run_server.sh "$pred2" "$algnameaddition2" "$useuncs2" "$reinimode2" "$d" "$f" "$poschgt" "$n" "$ws2" & 
+#./eswithpred_run_server.sh "$pred3" "$algnameaddition3" "$useuncs3" "$reinimode3" "$d" "$f" "$poschgt" "$n" "$ws3" & 
+#./eswithpred_run_server.sh "$pred4" "$algnameaddition4" "$useuncs4" "$reinimode4" "$d" "$f" "$poschgt" "$n" "$ws4" & 
+
+wait

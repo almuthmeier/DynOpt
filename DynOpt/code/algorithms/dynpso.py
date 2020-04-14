@@ -281,7 +281,7 @@ class DynamicPSO():
                     prediction = predict_next_optimum_position(my_pred_mode, train_data,
                                                                self.n_epochs, self.batch_size,
                                                                self.n_time_steps, n_features,
-                                                               scaler, predictor)
+                                                               scaler, predictor, self.pred_np_rnd_generator)
                     self.pred_opt_pos_per_chgperiod.append(
                         copy.copy(prediction))
                     self.pred_opt_fit_per_chgperiod.append(utils_dynopt.fitness(

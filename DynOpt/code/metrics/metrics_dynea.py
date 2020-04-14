@@ -20,7 +20,7 @@ def rmse(true_vals, current_vals):
 
 
 def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen,
-        only_for_preds, first_chgp_idx_with_pred):
+        only_for_preds, first_chgp_idx_with_pred, with_abs):
     '''
     ARR (absolute recovery rate) from the paper "Evolutionary dynamic 
     optimization: A survey of the state of the art", Trung Thanh Nguyen et al. 2012.
@@ -34,6 +34,7 @@ def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_
     len(global_opt_fit_per_chgperiod) may be larger than len(generations_of_chgperiods)
     @param best_found_fit_per_gen: 1d numpy array: best found fitness for each
     generation
+    @param with_abs: True if absolute values of differences should be used
     @return scalar: ARR
     '''
     # =========================================================================
@@ -63,20 +64,40 @@ def arr(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_
             sum_over_changes += 1
         else:
             sum_over_generations = 0
-            diff_optimum_first = abs(optimum_fitness - first_fitness)
+            if with_abs:
+                diff_optimum_first = abs(optimum_fitness - first_fitness)
+            else:
+                diff_optimum_first = (optimum_fitness - first_fitness)
             # number of generations during this change period
             n_generations_of_change = len(generations_of_chgperiods[i])
             for j in range(n_generations_of_change):
                 until_now_best_fitness = best_found_fit_per_gen[generations_of_chgperiods[i][j]]
-                diff_now_first = abs(until_now_best_fitness - first_fitness)
+                if with_abs:
+                    diff_now_first = abs(
+                        until_now_best_fitness - first_fitness)
+                else:
+                    diff_now_first = (until_now_best_fitness - first_fitness)
                 sum_over_generations += diff_now_first
-
+                #print("    until_now_best_fitness: ", until_now_best_fitness)
+                # if until_now_best_fitness > first_fitness:
+                #    print("now larger")
             divisor = n_generations_of_change * diff_optimum_first
             summand = sum_over_generations / divisor
+
+            # if divisor < sum_over_changes:
+            #    print("chgp: ", i)
+            #    print("    sum_over_generations: ", sum_over_generations)
+            #    print("    divisor: ", divisor)
+            #    print("    opt_fit: ", optimum_fitness)
+            #    print("    first fit: ", first_fitness)
             sum_over_changes = sum_over_changes + summand
     n_summed_chgps = len(chgp_idxs)
     sum_over_changes = sum_over_changes / n_summed_chgps
-
+    # if sum_over_changes > 1:
+    #    from matplotlib import pyplot as plt
+    #    plt.plot(best_found_fit_per_gen)
+    #    plt.show()
+    #    print("----------------- ARR > 1")
     return sum_over_changes
 
 
@@ -228,7 +249,7 @@ def best_error_before_change(generations_of_chgperiods, global_opt_fit_per_chgpe
 
 
 def rel_conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best_found_fit_per_gen_and_alg,
-                   only_for_preds, first_chgp_idx_with_pred):
+                   only_for_preds, first_chgp_idx_with_pred_per_alg, with_abs):
     '''
     Measure of relative convergence speed of algorithms for one run of a 
     specific problem. Depends on the worst fitness value any algorithm achieved.
@@ -276,8 +297,10 @@ def rel_conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best
     #    str(len(global_opt_fit_per_chgperiod)) + " len-worst: " + \
     #    str(len(list(worst_fit_per_chgperiod.values())))
     try:
+        all_idcs = np.arange(n_chgperiods)
+        bools = np.array(global_opt_fit_per_chgperiod)[all_idcs]
         assert np.all(list(worst_fit_per_chgperiod.values(
-        )) >= global_opt_fit_per_chgperiod[range(n_chgperiods)]), "global fitness worse than worst fitness"
+        )) >= bools), "global fitness worse than worst fitness"
     except Exception as e:
         print(e, flush=True)
         print("worst-fit-per-change-period: ")
@@ -296,7 +319,7 @@ def rel_conv_speed(generations_of_chgperiods, global_opt_fit_per_chgperiod, best
                                                    global_opt_fit_per_chgperiod,
                                                    best_found_fit_per_gen_and_alg[alg],
                                                    worst_fit_per_chgperiod,
-                                                   only_for_preds, first_chgp_idx_with_pred)
+                                                   only_for_preds, first_chgp_idx_with_pred_per_alg[alg], with_abs)
     return speed_per_alg
 
 
@@ -304,7 +327,7 @@ def __convergence_speed__(generations_of_chgperiods,
                           global_opt_fit_per_chgperiod,
                           best_found_fit_per_gen,
                           worst_fit_per_chgperiod,
-                          only_for_preds, first_chgp_idx_with_pred):
+                          only_for_preds, first_chgp_idx_with_pred, with_abs):
     '''
     Internal method, called by rel_conv_speed().
 
@@ -337,7 +360,12 @@ def __convergence_speed__(generations_of_chgperiods,
 
         optimal_fit = global_opt_fit_per_chgperiod[chgperiod_nr]
         worst_fit = worst_fit_per_chgperiod[chgperiod_nr]
-        best_worst_fit_diff = abs(optimal_fit - worst_fit)
+        if with_abs:
+            # TODO actually, in the RCS definition the differences are reverse
+            # due to abs() it should not make a difference
+            best_worst_fit_diff = abs(optimal_fit - worst_fit)
+        else:
+            best_worst_fit_diff = (optimal_fit - worst_fit)
         # compute area for this change
         area_for_change = 0
         max_area_for_change = 0
@@ -348,12 +376,17 @@ def __convergence_speed__(generations_of_chgperiods,
                 return None
             assert optimal_fit <= found_fit, "opt-fit " + str(
                 optimal_fit) + " fit " + str(found_fit)
-            diff = abs(optimal_fit - found_fit)
+            if with_abs:
+                diff = abs(optimal_fit - found_fit)
+            else:
+                diff = (optimal_fit - found_fit)
             area_for_change += (gen_in_chg + 1) * diff  # +1, otherwise first 0
             max_area_for_change += (gen_in_chg + 1) * best_worst_fit_diff
             gen_in_chg += 1
 
         if max_area_for_change == 0:
+            # means RCS=0 for this change period since all algorithms always
+            # had the global optimum fitness
             pass
         else:
             # normalize area so that it lies between 0 and 1

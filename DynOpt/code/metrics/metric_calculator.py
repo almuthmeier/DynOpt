@@ -10,16 +10,17 @@ Created on May 15, 2018
 import os
 from os.path import isdir, join
 from posix import listdir
+import warnings
 
 from metrics.metrics_dynea import best_error_before_change, arr,\
     rel_conv_speed, avg_bog_for_one_run, rmse
 import numpy as np
 import pandas as pd
 from utils.utils_dynopt import convert_chgperiods_for_gens_to_dictionary
-from utils.utils_files import get_array_names_for_ks_and_filters
+from utils.utils_files import get_array_names_for_ks_and_filters,\
+    get_info_from_array_file_name
 from utils.utils_files import select_experiment_files,\
-    get_sorted_array_file_names_for_experiment_file_name, \
-    get_info_from_array_file_name, get_run_number_from_array_file_name
+    get_sorted_array_file_names_for_experiment_file_name
 from utils.utils_prediction import get_first_chgp_idx_with_pred
 from utils.utils_prediction import get_first_generation_idx_with_pred
 
@@ -28,7 +29,7 @@ class MetricCalculator():
     def __init__(self, path_to_datasets=None, path_to_output=None,
                  benchmarkfunctions=None, poschgtypes=None, fitchgtypes=None,
                  dims=None, noises=None, path_addition=None, metric_filename=None,
-                 only_for_preds=None):
+                 only_for_preds=None, arrwithabs=None, rcswithabs=None):
         '''
         Initialize paths, properties of the experiments, etc.
         '''
@@ -44,7 +45,10 @@ class MetricCalculator():
                                       [:-1]) + "/output/"
             self.output_dir_path = path_to_output + \
                 "GECCO_2019/"
+            self.output_dir_path = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/output_2019-09-11_DSB_vel-0.5/tests_for_examination/"
+            self.output_dir_path = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/output_2019-09-11_DSB_vel-0.5/"
             self.benchmark_folder_path = path_to_datasets + "GECCO_2019/"
+            self.benchmark_folder_path = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/data_2019-09-11_newDSB/vel-0.5/"
             # , "rosenbrock", "rastrigin"]  # sphere, rosenbrock, mpbnoisy,griewank
             self.benchmarkfunctions = ["sphere"]
             # ["linear", "sine", "circle"]
@@ -52,9 +56,11 @@ class MetricCalculator():
             self.fitchgtypes = ["none"]
             self.dims = [2]
             self.noises = [0.0]
-            self.path_addition = ""
+            self.path_addition = "architecture/"
             self.metric_filename = "metric_db.csv"
             self.only_for_preds = True
+            self.arr_with_abs = False
+            self.rcs_with_abs = False
 
         else:
             self.output_dir_path = path_to_output
@@ -69,6 +75,8 @@ class MetricCalculator():
             # True if metrics are computed only for change periods where
             # predictions where made
             self.only_for_preds = only_for_preds
+            self.arr_with_abs = arrwithabs
+            self.rcs_with_abs = rcswithabs
 
     def compute_rmses(self, global_opt_per_chgperiod, best_found_per_chgperiod,
                       pred_opt_per_chgperiod, first_chgp_idx_with_pred):
@@ -109,7 +117,7 @@ class MetricCalculator():
                         best_found_pos_per_chgperiod, best_found_fit_per_chgperiod,
                         first_chgp_idx_with_pred):
         '''
-        Computes BEBC and ARR
+        Computes BEBC and ARR and RMSEs
         '''
         # bebc
         bebc = best_error_before_change(gens_of_chgperiods, global_opt_fit_per_chgperiod,
@@ -120,7 +128,7 @@ class MetricCalculator():
         # arr
         arr_value = arr(gens_of_chgperiods,
                         global_opt_fit_per_chgperiod, best_found_fit_per_gen,
-                        self.only_for_preds, first_chgp_idx_with_pred)
+                        self.only_for_preds, first_chgp_idx_with_pred, self.arr_with_abs)
         print("                    arr: ", arr_value)
 
         # fitness RMSEs
@@ -204,6 +212,75 @@ class MetricCalculator():
         # save data frame into file (index=False --> no row indices)
         df.to_csv(self.output_dir_path + self.metric_filename, index=False)
 
+    def get_experiment_metadata(self, alg_types, subdir_path, exp_file_name, ks, filters):
+        '''
+        For each algorithm it is examined whether a prediction was employed. 
+        Based on this, for all algorithms values for
+        first_chgp_idx_with_pred_per_alg and first_gen_idx_with_pred_per_alg
+        are determined. Algorithms without prediction get the lowest value 
+        any other algorithm has for these values.
+        '''
+        first_chgp_idx_with_pred_per_alg = {}
+        first_gen_idx_with_pred_per_alg = {}
+        n_preds = 0
+        for alg in alg_types:
+            # read all array files for the runs of the experiment
+            arrays_path = subdir_path + alg + "/arrays/"
+            array_names = get_sorted_array_file_names_for_experiment_file_name(exp_file_name,
+                                                                               arrays_path)
+            if ks is not None and filters is not None:  # for TCNs
+                array_names = get_array_names_for_ks_and_filters(
+                    array_names, ks, filters)
+            #print("                array_names: ", array_names, flush=True)
+
+            # load first array file
+            first_arr_name = array_names[0]
+            file = np.load(arrays_path + first_arr_name)
+            real_chgperiods_for_gens = file['real_chgperiods_for_gens']
+            pred_opt_pos_per_chgperiod = file['pred_opt_pos_per_chgperiod']
+            best_found_pos_per_chgperiod = file['best_found_pos_per_chgperiod']
+            file.close()
+
+            n_preds = len(pred_opt_pos_per_chgperiod)
+            n_chgps = len(best_found_pos_per_chgperiod)
+
+            gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
+                real_chgperiods_for_gens)
+
+            first_chgp_idx_with_pred_per_alg[alg] = get_first_chgp_idx_with_pred(
+                n_chgps, n_preds)
+            first_gen_idx_with_pred_per_alg[alg] = get_first_generation_idx_with_pred(
+                n_chgps, n_preds, gens_of_chgperiods)
+
+        # all "starting indices" of all algorithms in one array
+        arr_first_chgp_idx = np.array(
+            list(first_chgp_idx_with_pred_per_alg.values()))  # convert to arr.
+        arr_first_gen_idx = np.array(
+            list(first_gen_idx_with_pred_per_alg.values()))  # convert to arr.
+
+        if len(np.argwhere(arr_first_chgp_idx > 0)) != 0 and len(np.argwhere(arr_first_gen_idx > 0)) != 0:
+            # lowest change period index where any algorithm starts prediction
+            min_first_chgp_idx_w_p = np.min(
+                np.argwhere(arr_first_chgp_idx > 0))
+            min_first_gen_idx_w_p = np.min(np.argwhere(arr_first_chgp_idx > 0))
+
+            # for algorithms without prediction: take the first change period
+            # with prediction that any other algorithm has (the first change period
+            # with prediction depends on the employed window size)
+            for alg in alg_types:
+                if first_chgp_idx_with_pred_per_alg[alg] == 0:
+                    first_chgp_idx_with_pred_per_alg[alg] = min_first_chgp_idx_w_p
+                if first_gen_idx_with_pred_per_alg[alg] == 0:
+                    first_gen_idx_with_pred_per_alg[alg] = min_first_gen_idx_w_p
+        else:
+            # there was no prediction done for any algorithm; in this case
+            # all indices are zero -> compute metrics over all generations
+            pass
+
+        # gens_of_chgperiods: the same for all (since all algorithms have same
+        # change frequency), therefore only done for data of last algorithm
+        return gens_of_chgperiods, first_chgp_idx_with_pred_per_alg, first_gen_idx_with_pred_per_alg
+
     def evaluate_subdirs(self, subdir, output_dir_for_benchmark_funct, df,
                          exp_file_name, benchmarkfunction, dim,
                          global_opt_fit_per_chgperiod, global_opt_pos_per_chgperiod,
@@ -215,14 +292,22 @@ class MetricCalculator():
         # different alg types/predictors
         alg_types = [d for d in listdir(subdir_path) if (
             isdir(join(subdir_path, d)))]
+        # if "logs" in alg_types and "metrics" in alg_types and "arrays" in alg_types:
+        #    # no special types for the current algorithm
+        #    alg_types = [""]
         # dictionary: for each algorithm  a list of 1d numpy arrays
         # (for each run the array of best found fitness values)
         best_found_fit_per_gen_and_run_and_alg = {
             key: [] for key in alg_types}
         array_file_names_per_run_and_alg = {
             key: [] for key in alg_types}
+
         print("        alg_types: ", alg_types, flush=True)
+
         # algorithms with predictor types, e.g. "ea_no"
+        gens_of_chgperiods, first_chgp_idx_with_pred_per_alg, first_gen_idx_with_pred_per_alg = self.get_experiment_metadata(
+            alg_types, subdir_path, exp_file_name, ks, filters)
+
         for alg in alg_types:
             print("            \n\nalg: ", alg, flush=True)
             # read all array files for the runs of the experiment
@@ -260,15 +345,6 @@ class MetricCalculator():
                 best_found_fit_per_chgperiod = file['best_found_fit_per_chgperiod']
                 file.close()
 
-                gens_of_chgperiods = convert_chgperiods_for_gens_to_dictionary(
-                    real_chgperiods_for_gens)
-                n_preds = len(pred_opt_pos_per_chgperiod)
-                n_chgps = len(best_found_pos_per_chgperiod)
-                first_chgp_idx_with_pred = get_first_chgp_idx_with_pred(
-                    n_chgps, n_preds)
-                first_gen_idx_with_pred = get_first_generation_idx_with_pred(
-                    n_chgps, n_preds, gens_of_chgperiods)
-
                 # arr, bebc
                 (bebc, arr_value,
                  fit_ea_rmse, fit_foundpred_rmse, fit_truepred_rmse,
@@ -280,13 +356,13 @@ class MetricCalculator():
                                                                                             pred_opt_fit_per_chgperiod,
                                                                                             best_found_pos_per_chgperiod,
                                                                                             best_found_fit_per_chgperiod,
-                                                                                            first_chgp_idx_with_pred)
+                                                                                            first_chgp_idx_with_pred_per_alg[alg])
                 # averaged bog for this run (not the average bog as
                 # defined) (should not be used other than as average
                 # over all runs)
                 bog_for_run = avg_bog_for_one_run(best_found_fit_per_gen,
                                                   self.only_for_preds,
-                                                  first_gen_idx_with_pred)
+                                                  first_gen_idx_with_pred_per_alg[alg])
                 data = {'expfilename': exp_file_name,
                         'arrayfilename': array_file_name,
                         'function': benchmarkfunction, 'predictor': predictor,
@@ -337,7 +413,7 @@ class MetricCalculator():
                     # this algorithm needs not to be considered for RCS
             rcs_per_alg = rel_conv_speed(
                 gens_of_chgperiods, global_opt_fit_per_chgperiod, new_dict,
-                self.only_for_preds, first_chgp_idx_with_pred)
+                self.only_for_preds, first_chgp_idx_with_pred_per_alg, self.rcs_with_abs)
             print("                    rcs_per_alg ", rcs_per_alg, flush=True)
 
             # store RCS data
@@ -358,14 +434,16 @@ class MetricCalculator():
 def start_computing_metrics(benchmarkfunctionfolderpath=None, outputpath=None,
                             benchmarkfunctions=None, poschgtypes=None,
                             fitchgtypes=None, dims=None, noises=None,
-                            path_addition=None, metric_filename=None, only_for_preds=None):
+                            path_addition=None, metric_filename=None, only_for_preds=None,
+                            arrwithabs=None, rcswithabs=None):
     calculator = MetricCalculator(benchmarkfunctionfolderpath, outputpath,
                                   benchmarkfunctions, poschgtypes, fitchgtypes,
                                   dims, noises, path_addition, metric_filename,
-                                  only_for_preds)
+                                  only_for_preds, arrwithabs, rcswithabs)
     calculator.compute_and_save_all_metrics()
     print("saved metric database", flush=True)
 
 
 if __name__ == '__main__':
+    warnings.simplefilter("always")  # prints every warning
     start_computing_metrics()

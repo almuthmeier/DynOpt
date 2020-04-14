@@ -40,21 +40,38 @@ def __create_vector(dimensionality, len_vector, np_random_generator, noise=None,
     @param noise: if noise is not None, instead of random movement the peaks' 
     positions are moved linearly with random noise. "noise" specifies its strength.
     '''
-    if use_correlation and old_movement is not None:
+    if use_correlation:  # and old_movement is not None:
+        if old_movement is None:  # first time: completely random
+            # the initial random vector
+            my_rnd_vec = np_random_generator.normal(0, 1, dimensionality)
+            my_initial_length = np.linalg.norm(my_rnd_vec)
+            # the scaling factors
+            #my_scale_f = np.array([my_initial_length])
+            # the random vectors in R^d -> vector has length one
+            my_rnd_vec = my_rnd_vec / my_initial_length
+            # change vector so that it has desired length
+            my_rnd_vec = my_rnd_vec * len_vector
+            return my_rnd_vec
+
         # newer version of MPB, like listed in
         #    - CEC tutorial: http://ieee-tf-ecidue.cug.edu.cn/Yang-CEC2017-Tutorial-ECDOP.pdf
         #    - publication of e.g. Irene Moser: "Dynamic Function Optimization: The Moving Peaks Benchmark"
 
         # convert noise to correlation (in order to have formulas like in the
         # paper
+
+        # my correction of the version in the papers: now the returned vector
+        # really has length "len_vector"
         correlation_factor = 1 - noise
         # the initial random vector
-        rnd_vec = np_random_generator.uniform(-1, 1, dimensionality)
-        denominator = np.linalg.norm(rnd_vec + old_movement)
+        rnd_vec = np_random_generator.normal(0, 1, dimensionality)
+        denominator = np.linalg.norm(  # different from paper (-> my correction!)
+            (1 - correlation_factor) * rnd_vec +
+            correlation_factor * old_movement)
         fraction = len_vector / denominator
         rnd_factor = (1 - correlation_factor) * rnd_vec
         deterministic_part = correlation_factor * old_movement
-        return fraction * rnd_factor + deterministic_part
+        return fraction * (rnd_factor + deterministic_part)
     elif noise is None or (use_correlation and old_movement is None):
         # normal case as defined in the paper (or actually the "correlation"-variant
         # is desired but it is only the second point for which no previous
@@ -107,7 +124,7 @@ def __create_and_save_mpb_problem__(min_range, max_range,
     global_opt_pos = []
 
     heigth_severity = 7  # as in initial paper by Branke
-    width_severity = 0.1  # as in initial paper by Branke
+    width_severity = 0.1  # as in initial paper by Branke (no! there: 0.01)
 
     # (unequal to dynposbenchmark.py) position of first global optimum
     orig_global_opt_position = []

@@ -51,7 +51,10 @@ For the mpb benchmarks it is necessary to have the heights, widths, and position
 	- 'widths'  
 	- 'positions'  
 
-
+### Additional content of DSB files
+Only the DSB benchmark generator uses the following entries:
+	- 'fcts_params_per_dim (parametrization of the component sine functions that build the composition function; 3d numpy array: for each dimension the parameters of the functions: [#d, #functions, 5])
+	- 'step_size': If the composition function is sampled with this step size, the values of global_opt_pos_per_chgperiod can be generated
 
 ## Output of experiments
 For each run of an experiment one .npz-file is stored that contains information about the optimization process. It contains the following eight elements that are necessary to compute the metric values afterwards:  

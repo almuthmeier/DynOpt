@@ -8,12 +8,14 @@ Created on Jan 18, 2018
 
 @author: ameier
 '''
-
+from _collections import OrderedDict
+import copy
 import math
 import warnings
 
 import numpy as np
 from predictors.myautomatictcn import MyAutoTCN
+from utils import utils_dynopt
 from utils.my_scaler import MyMinMaxScaler
 
 
@@ -53,13 +55,14 @@ def make_multidim_samples_from_series(train_data, n_time_steps):
     return series
 
 
-def shuffle_split_output(samples, returnseq, ntimesteps, n_features, shuffle):
+def shuffle_split_output(samples, returnseq, ntimesteps, n_features, shuffle,
+                         pred_np_rnd_generator):
     '''
     Shuffle data (the rows, but content within rows stays same). Cuts also the
     data that doesn't fit into the last batch.
     '''
     if shuffle:
-        np.random.shuffle(samples)
+        pred_np_rnd_generator.shuffle(samples)
 
     # split input and output
     in_data = samples[:, :-1]
@@ -83,6 +86,32 @@ def shuffle_split_output(samples, returnseq, ntimesteps, n_features, shuffle):
     return np.float32(in_data), np.float32(out_data)
 
 
+def build_all_predictors(mode, n_time_steps, n_features, batch_size, n_neurons,
+                         returnseq, apply_tl, n_overall_layers, epochs, rnn_type,
+                         ntllayers, with_dense_first, tl_learn_rate, use_uncs,
+                         train_mc_runs, train_dropout, test_dropout, kernel_size,
+                         nhid, lr):
+    '''
+    @return: dictionary containing for each single predictor the respective
+    model
+    '''
+    if "hybrid-" in mode:
+        # e.g. "hybrid-autoregressive-rnn"
+        parts = mode.split("-")
+        predictor_names = parts[1:]  # first entry is "hybrid"
+    else:
+        predictor_names = [mode]
+
+    predictors = OrderedDict()
+    for name in predictor_names:
+        predictors[name] = build_predictor(name, n_time_steps, n_features, batch_size, n_neurons,
+                                           returnseq, apply_tl, n_overall_layers, epochs, rnn_type,
+                                           ntllayers, with_dense_first, tl_learn_rate, use_uncs,
+                                           train_mc_runs, train_dropout, test_dropout, kernel_size,
+                                           nhid, lr)
+    return predictors
+
+
 def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                     returnseq, apply_tl, n_overall_layers, epochs, rnn_type,
                     ntllayers, with_dense_first, tl_learn_rate, use_uncs,
@@ -90,7 +119,9 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                     nhid, lr):
     '''
     Creates the desired prediction model.
-    @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense, tcn, kalman
+    @param mode: which predictor: no, rnn, autoregressive, tfrnn, tftlrnn,tftlrnndense, tcn, kalman;
+    no hybrid predictor names allowed (e.g. hybrid-autoregressive-rnn) 
+    because they are decomposed in their single predictors before
     @param batch_size: batch size for the RNN
     @param n_time_steps: number of time steps to use for prediction/training
     @param n_features: dimensionality of the solution space
@@ -126,7 +157,8 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
         # 5  # 6  # 5  # 8  # 4
         # #levels like in the paper "an Empirical Evaluation of Generic
         # Convolutional and Reccurent Networks for Sequence Modeling
-        levels = math.ceil(math.log(n_time_steps / (kernel_size - 1), 2))
+        levels = math.ceil(math.log(n_time_steps / (2 * (kernel_size - 1)), 2))
+
         # nhid = 16  # number filters
         in_channels = n_features  # for each dimension one channel
         output_size = n_features  # n_classes
@@ -136,6 +168,8 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
                               n_time_steps, kernel_size, batch_size,
                               train_mc_runs, train_dropout, test_dropout, lr,
                               init=False, use_uncs=use_uncs)
+    elif mode == "truepred":
+        predictor = None
     else:
         msg = "unknown prediction mode " + mode
         warnings.warn(msg)
@@ -257,7 +291,7 @@ def predict_with_kalman(new_train_data, scaler, predictor,  do_training):
 
 
 def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
-                     n_features, scaler, predictor):
+                     n_features, scaler, predictor, shuffle, pred_np_rnd_generator, do_training):
     '''
     Predicts next optimum position with a recurrent neural network.
     '''
@@ -270,29 +304,22 @@ def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_
     if noisy_series is not None:
         pass  # TODO implement
 
-    # separate input series (first values) and prediction value (last value)
-    train_in_data, train_out_data = train_samples[:, :-1], train_samples[:, -1]
-
-    # define constants from data
-    n_train_samples = train_in_data.shape[0]
-    #n_features = train_out_data.shape[1]
-
-    # Samples/TimeSteps/Features format, for example:
-    train_in_data = train_in_data.reshape(
-        n_train_samples, n_time_steps, n_features)
-
+    # separate input series (first values) and prediction value (last
+    # value)
+    train_in_data, train_out_data = shuffle_split_output(train_samples, False,
+                                                         n_time_steps, n_features, shuffle, pred_np_rnd_generator)
     #========================
     # train regressor
-
-    for i in range(n_epochs):
-        hist = predictor.fit(train_in_data, train_out_data, epochs=1,
-                             batch_size=batch_size,  verbose=0, shuffle=False)  # TODO shuffle should be True
-        # print("epoch ", i, "/", n_epochs, ": loss ",
-        #      hist.history['loss'], flush=True)
-        predictor.reset_states()
-        # states usually are reset after epochs:
-        # https://stackoverflow.com/questions/45623480/stateful-lstm-when-to-reset-states
-        # https://machinelearningmastery.com/time-series-forecasting-long-short-term-memory-network-python/
+    if do_training:
+        for i in range(n_epochs):
+            hist = predictor.fit(train_in_data, train_out_data, epochs=1,
+                                 batch_size=batch_size,  verbose=0, shuffle=shuffle)  # TODO shuffle should be True
+            # print("epoch ", i, "/", n_epochs, ": loss ",
+            #      hist.history['loss'], flush=True)
+            predictor.reset_states()
+            # states usually are reset after epochs:
+            # https://stackoverflow.com/questions/45623480/stateful-lstm-when-to-reset-states
+            # https://machinelearningmastery.com/time-series-forecasting-long-short-term-memory-network-python/
 
     # predict on training set to set state for prediction on test set
     #train_prediction = predictor.predict(train_in_data, batch_size=batch_size)
@@ -301,7 +328,7 @@ def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_
     # prediction for next step (with n_time_steps)
     prediction_series = np.array(new_train_data[-n_time_steps:])
 
-    n_sampl = 1  # should be 1
+    n_sampl = 1  # must equal batch size (for RNN)
     reshaped_sample_x = prediction_series.reshape(
         n_sampl, n_time_steps, n_features)
     sample_y_hat = predictor.predict(
@@ -313,7 +340,7 @@ def predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size, n_time_
 
 
 def predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
-                       n_features, scaler, predictor, returnseq, shuffle):
+                       n_features, scaler, predictor, returnseq, shuffle, pred_np_rnd_generator, do_training):
     '''
     Predicts next optimum position with a tensorflow recurrent neural network.
     @param new_train_data: [n_chgperiods, dims] (if differences are predicted 
@@ -338,14 +365,15 @@ def predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size,
 
     # separate input series (first values) and prediction value (last value)
     train_in_data, train_out_data = shuffle_split_output(train_samples, returnseq,
-                                                         n_time_steps, n_features, shuffle)
+                                                         n_time_steps, n_features, shuffle, pred_np_rnd_generator)
     #========================
     # train regressor
     # TODO save model? report training error?
-    keep_prob = 0.95
-    train_error, _, _, train_err_per_epoch, _ = predictor.train(sess, train_in_data, train_out_data, in_keep_prob=keep_prob, out_keep_prob=keep_prob, st_keep_prob=keep_prob,
-                                                                shuffle_between_epochs=True, saver=None, saver_path=None, model_name=None,
-                                                                do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None)
+    if do_training:
+        keep_prob = 0.95
+        train_error, _, _, train_err_per_epoch, _ = predictor.train(sess, train_in_data, train_out_data, pred_np_rnd_generator, in_keep_prob=keep_prob, out_keep_prob=keep_prob, st_keep_prob=keep_prob,
+                                                                    shuffle_between_epochs=True, saver=None, saver_path=None, model_name=None,
+                                                                    do_validation=False, do_early_stopping=False, validation_in=None, validation_out=None)
 
     #========================
     # prediction for next step (with n_time_steps)
@@ -369,7 +397,8 @@ def predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size,
 def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
                      n_time_steps, n_features, scaler, predictor,
                      shuffle, do_training,
-                     best_found_pos_per_chgperiod, predict_diffs, test_mc_runs):
+                     best_found_pos_per_chgperiod, predict_diffs, test_mc_runs,
+                     pred_np_rnd_generator):
     '''
     @param do_training: False if model should not be trained but should only
     predict the next step for the given data
@@ -395,7 +424,8 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     # separate input series (first values) and prediction value (last value)
     returnseq = False
     train_in_data, train_out_data = shuffle_split_output(train_samples, returnseq,
-                                                         n_time_steps, n_features, shuffle)
+                                                         n_time_steps, n_features,
+                                                         shuffle, pred_np_rnd_generator)
     n_train = len(train_in_data)
     #========================
     # Training
@@ -406,7 +436,7 @@ def predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
     if do_training:
         print("train_CNN", flush=True)
         predictor.train(n_epochs, sess, train_in_data, train_out_data,
-                        n_train, log_interval, file_writer, shuffle)
+                        n_train, log_interval, file_writer, shuffle, pred_np_rnd_generator)
 
     #========================
     # Prediction
@@ -514,14 +544,31 @@ def rescale_tcn_auto_results(scaler, predictions, aleat_uncts, pred_diffs, best_
     return predictions, aleat_uncts
 
 
+def predict_with_truepred(glob_opt, trueprednoise, pred_np_rnd_generator):
+    '''
+    Disturbs the known global optimum with known noise that follows a 
+    normal distribution with mean=0.0 and standard deviation=trueprednoise
+    @param glob_opt: global optimum
+    @param trueprednoise: standard deviation of noise 
+    @param pred_np_rnd_generator: random number generator
+    @return: Tupel (noisy global optimum, variance of noise)  
+    '''
+    prediction = glob_opt + \
+        pred_np_rnd_generator.normal(0, trueprednoise, size=(len(glob_opt)))
+    pred_unc = trueprednoise**2
+    return prediction, pred_unc
+
+
 def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_epochs, batch_size,
                                   n_time_steps, n_features, scaler, predictor,
                                   returnseq, shuffle, do_training, best_found_pos_per_chgperiod,
-                                  predict_diffs, test_mc_runs, n_new_train_data):
+                                  predict_diffs, test_mc_runs, n_new_train_data,
+                                  glob_opt, trueprednoise, pred_np_rnd_generator):
     '''
     @param mode: the desired predictor
     @param new_train_data: 2d numpy array: contains time series of 
-    (n_time_steps+1) previous found solutions
+    (n_time_steps+1) previous found solutions (they are already differences if
+    predict_diffs is True)
     @param n_epochs: number training epochs for RNN 
     @param batch_size: batch size for RNN
     @param n_time_steps: number of previous solutions to use for the prediction
@@ -535,13 +582,13 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
     '''
     train_error = None
     train_err_per_epoch = None
-    ep_unc = None
+    pred_unc = None
     avg_al_unc = None
-    variance = None
     ar_predictor = None
     if mode == "rnn":
         prediction = predict_with_rnn(new_train_data, noisy_series, n_epochs, batch_size,
-                                      n_time_steps, n_features, scaler, predictor)
+                                      n_time_steps, n_features, scaler, predictor, shuffle,
+                                      pred_np_rnd_generator, do_training)
     elif mode == "autoregressive":
         try:
             prediction, ar_predictor = predict_with_autoregressive(
@@ -549,26 +596,30 @@ def predict_next_optimum_position(mode, sess, new_train_data, noisy_series, n_ep
         except ValueError:
             raise
     elif mode == "kalman":
-        prediction, variance = predict_with_kalman(
+        prediction, pred_unc = predict_with_kalman(
             new_train_data, scaler, predictor, do_training)
     elif mode == "no":
         prediction = None
     elif mode == "tfrnn" or mode == "tftlrnn" or mode == "tftlrnndense":
         prediction, train_error, train_err_per_epoch = predict_with_tfrnn(sess, new_train_data, noisy_series, n_epochs, batch_size, n_time_steps,
-                                                                          n_features, scaler, predictor, returnseq, shuffle)
+                                                                          n_features, scaler, predictor, returnseq, shuffle,
+                                                                          pred_np_rnd_generator, do_training)
     elif mode == "tcn":
-        prediction, ep_unc, avg_al_unc = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
-                                                          n_time_steps, n_features, scaler, predictor,
-                                                          shuffle, do_training,
-                                                          best_found_pos_per_chgperiod, predict_diffs,
-                                                          test_mc_runs)
+        prediction, pred_unc, avg_al_unc = predict_with_tcn(sess, new_train_data, noisy_series, n_epochs,
+                                                            n_time_steps, n_features, scaler, predictor,
+                                                            shuffle, do_training,
+                                                            best_found_pos_per_chgperiod, predict_diffs,
+                                                            test_mc_runs, pred_np_rnd_generator)
+    elif mode == "truepred":
+        prediction, pred_unc = predict_with_truepred(
+            glob_opt, trueprednoise, pred_np_rnd_generator)
 
-    # convert predicted difference into position (tcn has already re-scaled the values
-    # in the sub-functions)
+    # convert predicted difference into position (tcn has already re-scaled and
+    # added the values in the sub-functions)
     # TODO (dev) add possibly predictor type
-    if predict_diffs and mode != "tcn":
+    if predict_diffs and mode != "tcn" and mode != "truepred":
         prediction = np.add(best_found_pos_per_chgperiod[-1], prediction)
-    return prediction, train_error, train_err_per_epoch, ep_unc, avg_al_unc, variance, ar_predictor
+    return prediction, train_error, train_err_per_epoch, pred_unc, avg_al_unc, ar_predictor
 
 
 def get_n_neurons(n_neurons_type, dim):
@@ -593,7 +644,7 @@ def fit_scaler(data_for_fitting):
     return scaler
 
 
-def get_noisy_time_series(original_series, n_series, stddev_per_chgperiod):
+def get_noisy_time_series(original_series, n_series, stddev_per_chgperiod, pred_np_rnd_generator):
     '''
     Generates n_series variations of original_series disturbed with gaussian 
     noise of strength stddev_per_chgperiod.
@@ -608,8 +659,8 @@ def get_noisy_time_series(original_series, n_series, stddev_per_chgperiod):
     @return: nump array, format [n_series, n_chgperiods, dims]
     '''
     n_chgperiods, dims = original_series.shape
-    return np.random.normal(loc=original_series, scale=stddev_per_chgperiod,
-                            size=(n_series, n_chgperiods, dims))
+    return pred_np_rnd_generator.normal(loc=original_series, scale=stddev_per_chgperiod,
+                                        size=(n_series, n_chgperiods, dims))
 
 
 def get_first_chgp_idx_with_pred(overall_n_chgperiods, n_preds):
@@ -675,3 +726,124 @@ def calculate_n_required_chgps_from_n_train_samples(n_train_samples, pred_diffs,
         return n_train_samples + n_time_steps + 1
     else:
         return n_train_samples + n_time_steps
+
+
+def prepare_data_train_and_predict(sess, gen_idx, n_features, predictors,
+                                   experiment_data, n_epochs, batch_size,
+                                   return_seq, shuffle_train_data, n_new_train_data,
+                                   best_found_pos_per_chgperiod, train_interval,
+                                   predict_diffs, n_time_steps, n_required_train_data,
+                                   predictor_name, add_noisy_train_data,
+                                   n_noisy_series, stddev_among_runs_per_chgp,
+                                   test_mc_runs, benchmarkfunction, use_uncs,
+                                   pred_unc_per_chgperiod, aleat_unc_per_chgperiod,
+                                   pred_opt_pos_per_chgperiod, pred_opt_fit_per_chgperiod,
+                                   train_error_per_chgperiod,
+                                   train_error_for_epochs_per_chgperiod,
+                                   glob_opt, trueprednoise, pred_np_rnd_generator):
+    '''
+    TODO use this function in dynpso
+    '''
+    n_past_chgps = len(best_found_pos_per_chgperiod)
+    # number of train data that can be produced from the last chg. periods
+    overall_n_train_data = calculate_n_train_samples(
+        n_past_chgps, predict_diffs, n_time_steps)
+
+    # prevent training with too few train data
+    if (overall_n_train_data < n_required_train_data or predictor_name == "no"):
+        my_pred_mode = "no"
+        train_data = None
+        prediction = None
+
+    else:
+        my_pred_mode = predictor_name
+
+        # number of required change periods (to construct training data)
+        n_required_chgps = calculate_n_required_chgps_from_n_train_samples(
+            n_required_train_data, predict_diffs, n_time_steps)
+        best_found_vals_per_chgperiod = best_found_pos_per_chgperiod[-n_required_chgps:]
+
+        # transform absolute values to differences
+        if predict_diffs:
+            best_found_vals_per_chgperiod = np.subtract(
+                best_found_vals_per_chgperiod[1:], best_found_vals_per_chgperiod[:-1])
+
+        # scale data (the data are re-scaled directly after the
+        # prediction in this iteration)
+        scaler = fit_scaler(best_found_vals_per_chgperiod)
+        train_data = scaler.transform(
+            copy.copy(best_found_vals_per_chgperiod))
+
+        # add noisy training data in order to make network more robust and
+        # increase the number of training data
+        if add_noisy_train_data:
+            # 3d array [n_series, n_chgperiods, dims]
+            noisy_series = get_noisy_time_series(np.array(best_found_pos_per_chgperiod),
+                                                 n_noisy_series,
+                                                 stddev_among_runs_per_chgp, pred_np_rnd_generator)
+            if predict_diffs:
+                noisy_series = np.array([np.subtract(
+                    noisy_series[i, 1:], noisy_series[i, :-1]) for i in range(len(noisy_series))])
+            # scale data
+            noisy_series = np.array([scaler.transform(
+                copy.copy(noisy_series[i])) for i in range(len(noisy_series))])
+        else:
+            noisy_series = None
+
+        # train data
+        train_data = np.array(train_data)
+        # train the model only when train_interval new data are available
+        do_training = n_new_train_data >= train_interval
+        if do_training:
+            n_new_train_data = 0
+        # predict next optimum position or difference (and re-scale value)
+
+        prdctns = []
+        prdctns_fit = []
+        pred_unc_per_predictor = []
+        avg_al_unc_per_predictor = []
+        train_error_per_predictor = []
+        train_err_per_epoch_per_predictor = []
+        prdct_nms = []
+        for prdctr_name in predictors.keys():
+            # make prediction with each single predictor
+            (prdctn, train_error, train_err_per_epoch,
+             pred_unc, avg_al_unc, ar_predictor) = predict_next_optimum_position(prdctr_name, sess, train_data, noisy_series,
+                                                                                 n_epochs, batch_size,
+                                                                                 n_time_steps, n_features,
+                                                                                 scaler, predictors[
+                                                                                     prdctr_name], return_seq, shuffle_train_data,
+                                                                                 do_training, best_found_pos_per_chgperiod,
+                                                                                 predict_diffs, test_mc_runs, n_new_train_data,
+                                                                                 glob_opt, trueprednoise, pred_np_rnd_generator)
+            prdctns.append(prdctn)
+            prdctns_fit.append(utils_dynopt.fitness(
+                benchmarkfunction, prdctn, gen_idx, experiment_data))
+            pred_unc_per_predictor.append(pred_unc)
+            avg_al_unc_per_predictor.append(avg_al_unc)
+            train_error_per_predictor.append(train_error)
+            train_err_per_epoch_per_predictor.append(train_err_per_epoch)
+            prdct_nms.append(prdctr_name)
+            if prdctr_name == "autoregressive":
+                predictors[prdctr_name] = ar_predictor
+
+        # index of best prediction
+        min_idx = np.argmin(prdctns_fit)
+        prediction = prdctns[min_idx]
+        prediction_fit = prdctns_fit[min_idx]
+        pred_unc = pred_unc_per_predictor[min_idx]
+        avg_al_unc = avg_al_unc_per_predictor[min_idx]
+        train_error = train_error_per_predictor[min_idx]
+        train_err_per_epoch = train_err_per_epoch_per_predictor[min_idx]
+
+        # store results
+        pred_opt_pos_per_chgperiod.append(copy.copy(prediction))
+        pred_opt_fit_per_chgperiod.append(prediction_fit)
+        if pred_unc is not None and use_uncs:
+            pred_unc_per_chgperiod.append(copy.copy(pred_unc))
+        if avg_al_unc is not None and use_uncs:
+            aleat_unc_per_chgperiod.append(copy.copy(avg_al_unc))
+        train_error_per_chgperiod.append(train_error)
+        train_error_for_epochs_per_chgperiod.append(
+            train_err_per_epoch)
+    return my_pred_mode, predictors, n_new_train_data

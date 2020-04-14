@@ -35,7 +35,7 @@ def define_parser_arguments():
     # true, if changes occur at random time points
     parser.add_argument("-ischgperiodrandom", type=str)
     # "mpb" or "sphere-rastrigin-rosenbrock" (alt)
-    # sphere, rosenbrock, rastrigin, mpbnoisy, mpbrandom (neu), mpbcorr
+    # sphere, rosenbrock, rastrigin, mpbnoisy, mpbrand (neu), mpbcorr
     # defines the benchmark function, must be located in the datasets folder of
     # this project
     parser.add_argument("-benchmarkfunction", type=str)
@@ -74,9 +74,14 @@ def define_parser_arguments():
     parser.add_argument("-reinitializationmode", type=str)
     parser.add_argument("-sigmafactors", type=float_list_type)
 
+    # for CMA-ES
+    parser.add_argument("-cmavariant", type=str)
+    parser.add_argument("-predvariant", type=str)
+
     # for predictor
-    # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, kalman
+    # no, rnn, autoregressive, tfrnn, tftlrnn, tftlrnndense, tcn, kalman, hybrid-autoregressive-rnn
     parser.add_argument("-predictor", type=str)
+    parser.add_argument("-trueprednoise", type=float)
     parser.add_argument("-timesteps", type=int)
     parser.add_argument("-addnoisytraindata", type=str)
     parser.add_argument("-traininterval", type=int)
@@ -152,24 +157,26 @@ def initialize_comparator_manually(comparator):
     path_to_dynoptim = '/'.join(os.path.abspath(os.pardir).split('/')[:])
 
     # benchmark problem
-    comparator.algorithm = "dynea"
+    comparator.algorithm = "dynea"  # "dyncma"  # "dynea"
     comparator.repetitions = 1
     comparator.chgperiodrepetitions = 1
-    comparator.chgperiods = 50
-    comparator.lenchgperiod = 10
+    comparator.chgperiods = 500
+    comparator.lenchgperiod = 20
     comparator.ischgperiodrandom = False
     comparator.benchmarkfunction = "sphere"
-    comparator.benchmarkfunctionfolderpath = <path>
+    #comparator.benchmarkfunctionfolderpath = path_to_dynoptim + "/DynOpt/datasets/" + "GECCO_2019/"
+    #comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/Ausgaben/DynCMA/Ausgaben/data_2019-09-21_rangeDSB/vel-0.5/"
+    comparator.benchmarkfunctionfolderpath = "/home/ameier/Documents/Promotion/GITs/datasets/Predictorvergleich/EvoStar_2018/structured-for-diss/"
     # attention: naming should be consistent to predictor/other params
-    comparator.outputdirectory = "ersterTest/ea_kalman/"
+    comparator.outputdirectory = "ersterTest/ea_hybrid_neu/"
     comparator.outputdirectorypath = path_to_dynoptim + \
-        "/DynOpt/output/" + "ICANN_2019/" + "sphere/"
+        "/DynOpt/output/" + "Diss/" + "sphere/"
     comparator.lbound = 0
     comparator.ubound = 100
 
     # run only some experiments of all for the benchmark problem
-    # ["linear", "sine", "circle", "mixture"])
-    comparator.poschgtypes = np.array(["sinefreq"])
+    # ["linear", "sine", "circle", "mixture" "sinefreq"])
+    comparator.poschgtypes = np.array(["linear"])
     comparator.fitchgtypes = np.array(["none"])
     comparator.dims = np.array([2])
     # TODO must not be a list (otherwise: log-file name is wrong)
@@ -186,24 +193,36 @@ def initialize_comparator_manually(comparator):
 
     # EA
     elif comparator.algorithm == "dynea":
-        comparator.mu = 50
-        comparator.la = 100
+        comparator.mu = 5
+        comparator.la = 10
         comparator.ro = 2
         comparator.mean = 0.0
         comparator.sigma = 1.0
         comparator.trechenberg = 5
         comparator.tau = 0.5
         # "no-RND" "no-VAR" "no-PRE" "pred-RND" "pred-UNC" "pred-DEV" "pred-KAL"
-        comparator.reinitializationmode = "no-PRE"  # "no-PRE"
+        comparator.reinitializationmode = "pred-RND"  # "no-PRE"
         comparator.sigmafactors = [0.01, 0.1, 1.0, 10.0]
+    # CMA
+    elif comparator.algorithm == "dyncma":
+        # "static" "resetcma" "predcma_internal" "predcma_external"
+        comparator.cmavariant = "predcma_external"
+        # "simplest", "a", "b", "c", "d", "g" ,"branke", "f", "ha", "hb", "hd",
+        # "hawom", "hbwom", "hdwom", "None", "p", "pwm"
+        # TODO (ist "simplest" ueberhaupt noch moeglich?)
+        comparator.predvariant = "c"
 
     # for predictor
-    # "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
-    comparator.predictor = "no"
-    comparator.timesteps = 4
+    # "rnn" "tcn", "tfrnn", "no", "tftlrnn" "autoregressive" "tftlrnndense" "kalman"
+    # "truepred" (true prediction, disturbed with known noise)
+    # "hybrid-autoregressive-rnn"
+    comparator.predictor = "hybrid-autoregressive-rnn"
+    # known prediction noise (standard deviation) of predition "truepred"
+    comparator.trueprednoise = 0.1
+    comparator.timesteps = 10
     comparator.addnoisytraindata = False  # must be true if addnoisytraindata
     comparator.traininterval = 5
-    comparator.nrequiredtraindata = 10
+    comparator.nrequiredtraindata = 3
     comparator.useuncs = False
     comparator.trainmcruns = 5 if comparator.useuncs else 0
     comparator.testmcruns = 5 if comparator.useuncs else 0
@@ -214,17 +233,19 @@ def initialize_comparator_manually(comparator):
     comparator.lr = 0.002
 
     # for ANN predictor
-    if (comparator.predictor == "rnn" or comparator.predictor == "tfrnn" or
-            comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense" or
-            comparator.predictor == "tcn"):
-        # (not everything is necessary for every predictor)
-        comparator.neuronstype = "fixed20"
-        comparator.epochs = 80
+    if comparator.predictor in ["rnn", "hybrid-autoregressive-rnn"]:
+        comparator.batchsize = 1
+    elif comparator.predictor in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
         comparator.batchsize = 8
+    if comparator.predictor in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn", "hybrid-autoregressive-rnn"]:
+        # (not everything is necessary for every predictor)
+        comparator.neuronstype = "dyn1.3"  # "fixed20"
+        comparator.epochs = 80
         comparator.n_layers = 1
         # apply transfer learning only for tftlrnn
         comparator.apply_tl = comparator.predictor == "tftlrnn" or comparator.predictor == "tftlrnndense"
-        comparator.tl_model_path = <path>
+        comparator.tl_model_path = "/home/ameier/Documents/Promotion/Ausgaben/TransferLearning/TrainTLNet/Testmodell/"  # + \
+        #"tl_nntype-RNN_tllayers-1_dim-5_retseq-True_preddiffs-True_steps-50_repetition-0_epoch-499.ckpt"
         comparator.n_tllayers = 1
         comparator.withdensefirst = comparator.predictor == "tftlrnndense"
         comparator.tl_learn_rate = 0.0001 if comparator.n_layers > 1 else 0.001
@@ -236,11 +257,14 @@ def initialize_comparator_manually(comparator):
     # assertions
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
-    if not comparator.useuncs:
+    if comparator.predictor == "no" and comparator.algorithm == "dynea":
+        assert not comparator.reinitializationmode.startswith("pred-")
+    if not comparator.useuncs and comparator.algorithm == "dynea":
         assert (comparator.reinitializationmode !=
                 "pred-UNC" and comparator.reinitializationmode != "pred-KAL")
-    if not comparator.predictor == 'kalman' and not (comparator.predictor == "tcn" and comparator.useuncs):
-        # if neither Kalman prediction model nor AutoTCN is used reinitialization
+    if (not comparator.predictor == 'kalman' and not comparator.predictor == "truepred"
+            and not (comparator.predictor == "tcn" and comparator.useuncs)):
+        # if neither Kalman prediction model, truepred, nor AutoTCN is used reinitialization
         # type pred-KAL must not be employed (since no uncertainty estimations
         # available)
         assert comparator.reinitializationmode != "pred-KAL"
@@ -251,9 +275,9 @@ def initialize_comparator_with_read_inputs(parser, comparator):
 
     n_current_inputs = len(vars(args))
 
-    if n_current_inputs != 52:
-        print("input_parser.py: false number of inputs: ", n_current_inputs)
-        exit(0)
+    if n_current_inputs != 55:
+        exit("Error: input_parser.py: false number of inputs: " +
+             str(n_current_inputs))
 
     # benchmark problem
     comparator.algorithm = args.algorithm
@@ -296,8 +320,14 @@ def initialize_comparator_with_read_inputs(parser, comparator):
         comparator.reinitializationmode = args.reinitializationmode
         comparator.sigmafactors = args.sigmafactors
 
+    # CMA
+    elif comparator.algorithm == "dyncma":
+        comparator.cmavariant = args.cmavariant
+        comparator.predvariant = args.predvariant
+
     # predictor
     comparator.predictor = args.predictor
+    comparator.trueprednoise = args.trueprednoise
     comparator.timesteps = args.timesteps
     comparator.addnoisytraindata = args.addnoisytraindata == 'True'
     comparator.traininterval = args.traininterval
@@ -312,12 +342,14 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     comparator.lr = args.lr
 
     # for ANN predictor
-    if (args.predictor == "rnn" or args.predictor == "tfrnn" or
-            args.predictor == "tftlrnn" or args.predictor == "tftlrnndense" or
-            args.predictor == "tcn"):
+    if args.predictor in ["rnn", "hybrid-autoregressive-rnn"]:
+        comparator.batchsize = 1
+    elif args.predictor in ["tfrnn", "tftlrnn", "tftlrnndense", "tcn"]:
+        comparator.batchsize = args.batchsize
+    if (args.predictor in ["rnn", "tfrnn", "tftlrnn", "tftlrnndense", "tcn",
+                           "hybrid-autoregressive-rnn"]):
         comparator.neuronstype = args.neuronstype
         comparator.epochs = args.epochs
-        comparator.batchsize = args.batchsize
         comparator.n_layers = args.nlayers
         # apply transfer learning only for tftlrnn
         comparator.apply_tl = args.predictor == 'tftlrnn' or args.predictor == "tftlrnndense"
@@ -333,10 +365,11 @@ def initialize_comparator_with_read_inputs(parser, comparator):
     # assertions
     if comparator.addnoisytraindata:
         assert comparator.chgperiodrepetitions > 1, "chgperiodrepetitions must be > 1"
-    if not comparator.useuncs:
+    if not comparator.useuncs and comparator.algorithm == "dynea":
         assert (comparator.reinitializationmode !=
                 "pred-UNC" and comparator.reinitializationmode != "pred-KAL")
-    if not comparator.predictor == 'kalman' and not (comparator.predictor == "tcn" and comparator.useuncs):
+    if (not comparator.predictor == 'kalman' and not comparator.predictor == "truepred"
+            and not (comparator.predictor == "tcn" and comparator.useuncs)):
         # if neither Kalman prediction model nor AutoTCN is used reinitialization
         # type pred-KAL must not be employed (since no uncertainty estimations
         # available)
@@ -431,6 +464,7 @@ if __name__ == '__main__':
 
     np.random.seed(7)
     random.seed(98)
+    warnings.simplefilter("always")  # prints every warning
 
     # this import has to be done before imports of own packages
     import multiprocessing as mp
