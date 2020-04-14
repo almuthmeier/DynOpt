@@ -75,3 +75,6 @@ In the ICANN 2019 paper we propose a new benchmark generator for dynamic optimiz
 ### November 2019
 - integreated hybrid predictor (hybrid-autoregressive-rnn): cannot be combined with uncertainty-based re-initialization (pUNC, pKAL). Only with pRND, pDEV, nRND, nDEV, nVAR. This is because if e.g. an ensemble of unc and ar is used, it is not guaranteed that for each change period with prediction an uncertainty estimate is given since the prediction of either ar or unc is employed/stored. 
 Vice versa has this the effect that uncertainty-based re-initialization must not be combined with hybrid prediction approaches.
+
+### April 2020
+- now in the TCN each block consists of two layers as intended in the original TCN publication
