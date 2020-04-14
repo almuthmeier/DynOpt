@@ -157,7 +157,8 @@ def build_predictor(mode, n_time_steps, n_features, batch_size, n_neurons,
         # 5  # 6  # 5  # 8  # 4
         # #levels like in the paper "an Empirical Evaluation of Generic
         # Convolutional and Reccurent Networks for Sequence Modeling
-        levels = math.ceil(math.log(n_time_steps / (kernel_size - 1), 2))
+        levels = math.ceil(math.log(n_time_steps / (2 * (kernel_size - 1)), 2))
+
         # nhid = 16  # number filters
         in_channels = n_features  # for each dimension one channel
         output_size = n_features  # n_classes
@@ -825,7 +826,7 @@ def prepare_data_train_and_predict(sess, gen_idx, n_features, predictors,
             prdct_nms.append(prdctr_name)
             if prdctr_name == "autoregressive":
                 predictors[prdctr_name] = ar_predictor
-            
+
         # index of best prediction
         min_idx = np.argmin(prdctns_fit)
         prediction = prdctns[min_idx]
