@@ -10,7 +10,7 @@ entrypoints==0.2.3
 enum34==1.1.6
 graphviz==0.8.1
 h5py==2.7.0
-html5lib==0.9999999
+html5lib==0.999999999
 idna==2.6
 ipykernel==4.8.1
 ipython==6.2.1
